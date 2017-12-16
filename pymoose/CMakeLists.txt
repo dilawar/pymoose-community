@@ -56,29 +56,36 @@ if(HDF5_LIBRARY_DIRS)
 endif()
 
 
-if(MACOSX)
+if(UNIX AND APPLE)
     set(CMAKE_MODULE_LINKER_FLAGS "-undefined dynamic_lookup")
     message(STATUS "ADDING some linker flags ${CMAKE_EXE_LINKER_FLAGS}")
-endif(MACOSX)
+endif()
 
-if(MACOSX)
+if(UNIX AND NOT APPLE)
+    if(NOT BUILD_WHEEL)
+        target_link_libraries(_moose
+            "-Wl,--whole-archive"
+            ${MOOSE_LIBRARIES}
+            ${STATIC_LIBRARIES}
+            )
+        target_link_libraries( _moose ${SYSTEM_SHARED_LIBS})
+    elseif(BUILD_WHEEL)
+        message(STATUS "DEBUG: Building _moose.so for wheel" )
+        target_link_libraries(_moose
+            "-Wl,--whole-archive"
+            ${MOOSE_LIBRARIES}
+            ${STATIC_LIBRARIES}
+            ${SYSTEM_SHARED_LIBS}
+            "-Wl,--no-whole-archive"
+            )
+    endif( )
+elseif(APPLE )
     target_link_libraries( _moose
         "-Wl,-all_load"
         ${MOOSE_LIBRARIES}
         ${STATIC_LIBRARIES}
         )
-    target_link_libraries(_moose
-        ${SYSTEM_SHARED_LIBS}
-        )
-ELSE(MACOSX)
-    target_link_libraries(_moose
-        "-Wl,--whole-archive"
-        ${MOOSE_LIBRARIES}
-        ${STATIC_LIBRARIES}
-        "-Wl,--no-whole-archive"
-        ${PYTHON_LIBRARIES}
-        ${SYSTEM_SHARED_LIBS}
-        )
+    target_link_libraries(_moose ${SYSTEM_SHARED_LIBS})
 endif(MACOSX)
 
 # Make this target dependant on all python files in python folder.
