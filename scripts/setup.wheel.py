@@ -83,7 +83,7 @@ class CMakeBuild(build_ext):
             os.path.dirname(self.get_ext_fullpath(ext.name)))
         cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
                 '-DPYTHON_EXECUTABLE=' + sys.executable
-                , '-DBUILD_WHEEL=ON'
+                , '-DBUILD_WHEEL=ON', '-DWITH_BOOST=ON'
                 ]
 
         cfg = 'Debug' if self.debug else 'Release'
@@ -140,5 +140,6 @@ setup(
         ext_modules = [ CMakeExtension( 'moose' ) ],
         cmdclass = dict( build_ext = CMakeBuild ),
         package_data = { 'moose' : [ '_moose' + suffix ] },
-        zip_safe = False
+        zip_safe = False,
+        install_requries = 'networkx,python-libsbml,numpy'
     )
