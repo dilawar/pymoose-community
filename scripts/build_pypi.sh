@@ -1,11 +1,6 @@
 #!/bin/bash
 set -e
 # This creates a package for pip. For testing purpose
-moose_dir=moose-3.0
-(
-    cd ..
-    svn export --force . scripts/$moose_dir
-)
 (
     cp setup.py $moose_dir/
     cd $moose_dir

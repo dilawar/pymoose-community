@@ -41,9 +41,8 @@ from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 
 script_dir = os.path.dirname( os.path.abspath( __file__ ) )
-MOOSE_SRC_DIR_ = os.path.realpath( os.path.join( script_dir, '..' ) )
-version = '3.2.0-git'
-MOOSE_BUILD_DIR = os.path.join( script_dir, '_build_moose' )
+
+version = '3.2.git'
 
 try:
     with open( os.path.join( script_dir, '..', 'VERSION'), 'r' ) as f:
@@ -66,7 +65,6 @@ class CMakeExtension(Extension):
         self.sourcedir = os.path.abspath(sourcedir)
 
 class CMakeBuild(build_ext):
-
     def run(self):
         try:
             out = subprocess.check_output(['cmake', '--version'])
@@ -108,13 +106,12 @@ class CMakeBuild(build_ext):
         env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(
             env.get('CXXFLAGS', ''),
             self.distribution.get_version())
-        if not os.path.exists( MOOSE_BUILD_DIR ):
-            os.makedirs( MOOSE_BUILD_DIR )
-        subprocess.check_call( ['cmake', ext.sourcedir] + cmake_args,
-                              cwd=MOOSE_BUILD_DIR, env=env)
-        subprocess.check_call( ['cmake', '--build', '.'] + build_args,
-                              cwd=MOOSE_BUILD_DIR
-                              )
+        if not os.path.exists(self.build_temp):
+            os.makedirs(self.build_temp)
+        subprocess.check_call(['cmake', ext.sourcedir] + cmake_args,
+                              cwd=self.build_temp, env=env)
+        subprocess.check_call(['cmake', '--build', '.'] + build_args,
+                              cwd=self.build_temp)
         print()  # Add an empty line for cleaner output
 
 
@@ -122,7 +119,7 @@ class CMakeBuild(build_ext):
 setup(
         name='moose',
         version=version,
-        description='MOOSE Simulator. Python bindings.',
+        description='MOOSE python scripting module.',
         author='MOOSERes',
         author_email='bhalla@ncbs.res.in',
         maintainer='Dilawar Singh',
@@ -138,11 +135,11 @@ setup(
             , 'moose.chemMerge'
             ],
         package_dir = {
-            'moose' : os.path.join( MOOSE_SRC_DIR_, 'python',  'moose' )
-            , 'rdesigneur' : os.path.join( MOOSE_SRC_DIR_, 'python', 'rdesigneur' )
+            'moose' : 'moose'
+            , 'rdesigneur' : 'rdesigneur'
             },
+        package_data = { 'moose' : ['_moose' + suffix] },
         ext_modules = [ CMakeExtension( 'moose' ) ],
         cmdclass = dict( build_ext = CMakeBuild ),
-        package_data = { 'moose' : [ '_moose' + suffix ] },
         zip_safe = False
     )

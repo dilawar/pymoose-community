@@ -105,10 +105,11 @@ endif()
 
 ################################### TARGETS ####################################
 
-add_library(libmoose SHARED basecode/main.cpp)
-
 if(DEBUG)
+    add_library(libmoose SHARED basecode/main.cpp)
     add_executable(moose.bin basecode/main.cpp)
+    set_target_properties(libmoose PROPERTIES COMPILE_DEFINITIONS  "MOOSE_LIB")
+    set_target_properties(libmoose PROPERTIES PREFIX "")
 endif( )
 
 ################################### SETUP BUILD ################################
@@ -122,8 +123,6 @@ endif(WITH_BOOST)
 
 include_directories(msg basecode)
 
-set_target_properties(libmoose PROPERTIES COMPILE_DEFINITIONS  "MOOSE_LIB")
-set_target_properties(libmoose PROPERTIES PREFIX "")
 
 ## Variable to collect all static libraries.
 set(STATIC_LIBRARIES "" )
@@ -227,7 +226,9 @@ endif( HDF5_FOUND )
 # This is a fix for new HDF5 package on Debian/Ubuntu which installs hdf5
 # headers in non-standard path. issue #80.
 if(HDF5_LIBRARY_DIRS)
-    set_target_properties( libmoose PROPERTIES LINK_FLAGS "-L${HDF5_LIBRARY_DIRS}" )
+    if(DEBUG)
+        set_target_properties( libmoose PROPERTIES LINK_FLAGS "-L${HDF5_LIBRARY_DIRS}" )
+    endif( )
 endif()
 
 find_package(Termcap)
@@ -346,26 +347,28 @@ endif( )
 
 # MAC linker does not understand many of gnu-ld options.
 message( STATUS "Shared libs: ${SYSTEM_SHARED_LIBS}")
-if(MACOSX)
-    target_link_libraries(libmoose
-        "-Wl,-all_load"
-        ${MOOSE_LIBRARIES}
-        ${STATIC_LIBRARIES}
-        )
+if(DEBUG)
+    if(MACOSX)
+        target_link_libraries(libmoose
+            "-Wl,-all_load"
+            ${MOOSE_LIBRARIES}
+            ${STATIC_LIBRARIES}
+            )
 
-    target_link_libraries(libmoose
-        ${SYSTEM_SHARED_LIBS}
-        ${CMAKE_DL_LIBS}
-        )
-else(MACOSX)
-    target_link_libraries(libmoose
-        "-Wl,--whole-archive"
-        ${MOOSE_LIBRARIES}
-        ${STATIC_LIBRARIES}
-        "-Wl,--no-whole-archive"
-        ${SYSTEM_SHARED_LIBS}
-        )
-endif(MACOSX)
+        target_link_libraries(libmoose
+            ${SYSTEM_SHARED_LIBS}
+            ${CMAKE_DL_LIBS}
+            )
+    else(MACOSX)
+        target_link_libraries(libmoose
+            "-Wl,--whole-archive"
+            ${MOOSE_LIBRARIES}
+            ${STATIC_LIBRARIES}
+            "-Wl,--no-whole-archive"
+            ${SYSTEM_SHARED_LIBS}
+            )
+    endif(MACOSX)
+endif( )
 
 if(DEBUG)
     add_dependencies(moose.bin libmoose)
