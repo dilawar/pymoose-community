@@ -36,6 +36,7 @@ import platform
 import subprocess
 import datetime
 from distutils.version import LooseVersion
+
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 
@@ -141,5 +142,5 @@ setup(
         cmdclass = dict( build_ext = CMakeBuild ),
         package_data = { 'moose' : [ '_moose' + suffix ] },
         zip_safe = False,
-        install_requries = 'networkx,python-libsbml,numpy'
+        install_requires = [ 'networkx','python-libsbml','numpy' ] 
     )
