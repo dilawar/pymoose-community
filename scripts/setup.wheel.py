@@ -28,29 +28,23 @@ __status__           = "Development"
 
 
 import os
-import subprocess
-from setuptools import setup, Extension
 import os
 import re
 import sys
 import sysconfig
 import platform
 import subprocess
+import datetime
 from distutils.version import LooseVersion
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 
+buildNo = datetime.datetime.now( ).strftime( '%Y%m%d' )
+version = '3.2.%s' % buildNo
+
 script_dir = os.path.dirname( os.path.abspath( __file__ ) )
 MOOSE_SRC_DIR_ = os.path.realpath( os.path.join( script_dir, '..' ) )
-version = '3.2.0-git'
 MOOSE_BUILD_DIR = os.path.join( script_dir, '_build_moose' )
-
-try:
-    with open( os.path.join( script_dir, '..', 'VERSION'), 'r' ) as f:
-        version = f.read( )
-except Exception as e:
-    print( 'Failed to read VERSION %s' % e )
-    print( 'Using default 3.2.git' )
 
 try:
     import importlib.machinery
@@ -122,9 +116,9 @@ class CMakeBuild(build_ext):
 
 # Setup .
 setup(
-        name='moose',
+        name='pymoose', # because moose is not available in pypi.
         version=version,
-        description='MOOSE Simulator. Python bindings.',
+        description="MOOSE Simulator's Python scripting interface.",
         author='MOOSERes',
         author_email='bhalla@ncbs.res.in',
         maintainer='Dilawar Singh',

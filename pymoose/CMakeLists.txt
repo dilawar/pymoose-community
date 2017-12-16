@@ -55,7 +55,6 @@ if(HDF5_LIBRARY_DIRS)
     set_target_properties( _moose PROPERTIES LINK_FLAGS "-L${HDF5_LIBRARY_DIRS}" )
 endif()
 
-
 if(UNIX AND APPLE)
     set(CMAKE_MODULE_LINKER_FLAGS "-undefined dynamic_lookup")
     message(STATUS "ADDING some linker flags ${CMAKE_EXE_LINKER_FLAGS}")
@@ -86,7 +85,7 @@ elseif(APPLE )
         ${STATIC_LIBRARIES}
         )
     target_link_libraries(_moose ${SYSTEM_SHARED_LIBS})
-endif(MACOSX)
+endif()
 
 # Make this target dependant on all python files in python folder.
 add_custom_target(copy_python_files
