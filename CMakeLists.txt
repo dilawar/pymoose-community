@@ -357,7 +357,7 @@ if(MACOSX)
         ${SYSTEM_SHARED_LIBS}
         ${CMAKE_DL_LIBS}
         )
-ELSE(MACOSX)
+else(MACOSX)
     target_link_libraries(libmoose
         "-Wl,--whole-archive"
         ${MOOSE_LIBRARIES}

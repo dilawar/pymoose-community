@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-# This file is part of MOOSE simulator: http://moose.ncbs.res.in.
 
+# This file is part of MOOSE simulator: http://moose.ncbs.res.in.
 # MOOSE is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -13,12 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with MOOSE.  If not, see <http://www.gnu.org/licenses/>.
 
-
-"""setup.py:
-
-    Script to install python targets.
-
-"""
+# This script is in beta. It is used to build moose-core as python extension
+# module. 
+# The aim is to make wheel bdist.
 
 __author__           = "Dilawar Singh"
 __copyright__        = "Copyright 2013, Dilawar Singh and NCBS Bangalore"
@@ -29,18 +26,20 @@ __maintainer__       = "Dilawar Singh"
 __email__            = "dilawars@ncbs.res.in"
 __status__           = "Development"
 
+
+
 import os
-from distutils.core import setup
+from setuptools import setup, Extension
 
 script_dir = os.path.dirname( os.path.abspath( __file__ ) )
 
-version = '3.1'
+version = '3.2.git'
 try:
     with open( os.path.join( script_dir, '..', 'VERSION'), 'r' ) as f:
         version = f.read( )
 except Exception as e:
     print( 'Failed to read VERSION %s' % e )
-    print( 'Using default 3.1' )
+    print( 'Using default 3.2.git' )
 
 try:
     import importlib.machinery
