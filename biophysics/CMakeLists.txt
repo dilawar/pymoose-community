@@ -1,5 +1,5 @@
 include_directories(../basecode ../synapse ../utility ../)
-include_directories(../external/muparser/include)
+include_directories(../external/muparserx/parser )
 
 if(WITH_GSL)
     include_directories(${GSL_INCLUDE_DIRS})

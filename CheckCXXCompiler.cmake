@@ -11,6 +11,8 @@ add_definitions(-Wall
     #-Wno-return-type-c-linkage
     -Wno-unused-variable
     -Wno-unused-function
+    -Wno-unused-parameter
+    -Wno-unused-pragmas
     #-Wno-unused-private-field
     )
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")

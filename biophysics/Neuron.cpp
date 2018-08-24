@@ -7,9 +7,9 @@
 ** See the file COPYING.LIB for the full notice.
 **********************************************************************/
 
-#include "header.h"
-#include "ElementValueFinfo.h"
-#include "LookupElementValueFinfo.h"
+#include "../basecode/header.h"
+#include "../basecode/ElementValueFinfo.h"
+#include "../basecode/LookupElementValueFinfo.h"
 #include "shell/Shell.h"
 #include "shell/Wildcard.h"
 #include "ReadCell.h"
@@ -19,9 +19,9 @@
 #include "Neuron.h"
 #include "basecode/global.h"
 
-#include "muParser.h"
+#include "mpParser.h"
 
-class nuParser: public mu::Parser
+class nuParser: public mu::ParserX
 {
 public:
     nuParser( const string& expr ):

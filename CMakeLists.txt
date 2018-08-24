@@ -106,7 +106,7 @@ else()
 		add_definitions(-UDO_UNIT_TESTS -O3 -DDISABLE_DEBUG)
     # Treat all warnings as errors. Some the warnings are disabled in
     #  CheckCXXCompiler.cmake .
-    add_definitions(-Werror)
+    # add_definitions(-Werror)
 endif()
 
 if(GPROF AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
@@ -303,8 +303,8 @@ if(WITH_MPI)
 endif(WITH_MPI)
 
 # Always use private version of muparser. We have some custom edits.
-add_subdirectory(external/muparser)
-list(APPEND MOOSE_LIBRARIES muparser)
+add_subdirectory(external/muparserx)
+list(APPEND MOOSE_LIBRARIES muparserx)
 
 # Add subdirectroeis
 add_subdirectory(basecode)
