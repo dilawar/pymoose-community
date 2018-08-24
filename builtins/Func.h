@@ -47,7 +47,7 @@
 #ifndef _FUNC_H
 #define _FUNC_H
 
-#include "muParser.h"
+#include "mpParser.h"
 
 /**
    Simple function parser and evaluator for MOOSE. This can take a mathematical
@@ -108,12 +108,12 @@ class Func
 protected:
     friend double * _addVar(const char * name, void *data);
     vector< double *> _varbuf;
-    mu::Parser _parser;
+    mup::ParserX _parser;
     double *_x, *_y, *_z;
     unsigned int _mode;
     mutable bool _valid;
     void _clearBuffer();
-    void _showError(mu::Parser::exception_type &e) const;
+    void _showError(std::exception &e) const;
 };
 #endif
 

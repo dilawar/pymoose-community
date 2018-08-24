@@ -19,13 +19,13 @@
 #include "Neuron.h"
 #include "basecode/global.h"
 
-#include "mpParser.h"
+#include "../external/muparserx/parser/mpParser.h"
 
-class nuParser: public mu::ParserX
+class nuParser: public mup::ParserX
 {
 public:
     nuParser( const string& expr ):
-        mu::Parser(),
+        mup::ParserX( mup::pckALL_NON_COMPLEX ),
         p(0.0), // geometrical path distance wound through dendrite
         g(0.0), // geometrical path distance direct from soma.
         L(0.0), // electrical distance arg
@@ -40,19 +40,19 @@ public:
         oldVal(0.0), // Original value of field, if needed.
         useOldVal( false ) // is the 'orig' field needed?
     {
-        DefineVar( "p", &p );
-        DefineVar( "g", &g );
-        DefineVar( "L", &L );
-        DefineVar( "len", &len );
-        DefineVar( "dia", &dia );
-        DefineVar( "maxP", &maxP );
-        DefineVar( "maxG", &maxG );
-        DefineVar( "maxL", &maxL );
-        DefineVar( "x", &x );
-        DefineVar( "y", &y );
-        DefineVar( "z", &z );
-        DefineVar( "oldVal", &oldVal );
-        DefineFun( "H", nuParser::H );
+        NuDefineVar( "p", &p );
+        NuDefineVar( "g", &g );
+        NuDefineVar( "L", &L );
+        NuDefineVar( "len", &len );
+        NuDefineVar( "dia", &dia );
+        NuDefineVar( "maxP", &maxP );
+        NuDefineVar( "maxG", &maxG );
+        NuDefineVar( "maxL", &maxL );
+        NuDefineVar( "x", &x );
+        NuDefineVar( "y", &y );
+        NuDefineVar( "z", &z );
+        NuDefineVar( "oldVal", &oldVal );
+        // DefineFun( nuParser::H );
         if ( expr.find( "oldVal" ) != string::npos )
             useOldVal = true;
         SetExpr( expr );
@@ -66,6 +66,13 @@ public:
     static double H( double arg )   // Heaviside function.
     {
         return ( arg > 0.0);
+    }
+
+    void NuDefineVar( const string& varName, double* val )
+    {
+        mup::Value v(*val);
+        mup::Variable var(&v);
+        mup::ParserXBase::DefineVar( varName, var );
     }
 
     double eval( vector< double >::const_iterator arg0 )
@@ -82,7 +89,7 @@ public:
         y = *(arg0 + nuParser::Y );
         z = *(arg0 + nuParser::Z );
         oldVal = *(arg0 + nuParser::OLDVAL );
-        return Eval();
+        return Eval().GetFloat();
     }
 
     static const unsigned int numVal;
@@ -775,9 +782,9 @@ static void setCompartmentParams(
             }
         }
     }
-    catch ( mu::Parser::exception_type& err )
+    catch ( std::exception& err )
     {
-        cout << err.GetMsg() << endl;
+        cout << err.what() << endl;
     }
 }
 
@@ -801,9 +808,9 @@ static void setMechParams(
             }
         }
     }
-    catch ( mu::Parser::exception_type& err )
+    catch ( std::exception& err )
     {
-        cout << err.GetMsg() << endl;
+        cout << err.what() << endl;
     }
 }
 
@@ -1526,9 +1533,9 @@ void Neuron::evalExprForElist( const vector< ObjId >& elist,
             valIndex += nuParser::numVal;
         }
     }
-    catch ( mu::Parser::exception_type& err )
+    catch ( std::exception& err )
     {
-        cout << err.GetMsg() << endl;
+        cout << err.what() << endl;
     }
 }
 
@@ -1879,9 +1886,9 @@ void Neuron::makeSpacingDistrib( const vector< ObjId >& elist,
             }
         }
     }
-    catch ( mu::Parser::exception_type& err )
+    catch ( std::exception& err )
     {
-        cout << err.GetMsg() << endl;
+        cout << err.what() << endl;
     }
 }
 
@@ -1923,9 +1930,9 @@ static void makeAngleDistrib ( const vector< ObjId >& elist,
                 theta[k] = angle;
         }
     }
-    catch ( mu::Parser::exception_type& err )
+    catch ( std::exception& err )
     {
-        cout << err.GetMsg() << endl;
+        cout << err.what() << endl;
     }
 }
 
@@ -1965,9 +1972,9 @@ static void makeSizeDistrib ( const vector< ObjId >& elist,
                 size[k] = sz;
         }
     }
-    catch ( mu::Parser::exception_type& err )
+    catch ( std::exception& err )
     {
-        cout << err.GetMsg() << endl;
+        cout << err.what() << endl;
     }
 }
 

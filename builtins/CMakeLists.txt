@@ -1,6 +1,6 @@
 include_directories( ${CMAKE_SOURCE_DIR}/msg )
 include_directories( ${CMAKE_SOURCE_DIR}/basecode )
-include_directories( ${CMAKE_SOURCE_DIR}/external/muparserx/src )
+include_directories( ${CMAKE_SOURCE_DIR}/external/muparserx/parser )
 include_directories( ${CMAKE_SOURCE_DIR}/scheduling )
 
 add_library(moose_builtins

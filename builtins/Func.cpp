@@ -288,19 +288,14 @@ const int Func::VARMAX = 10;
 Func::Func():_x(NULL), _y(NULL), _z(NULL), _mode(1), _valid(false)
 {
     _varbuf.reserve(VARMAX);
-    _parser.SetVarFactory(_addVar, this);
-    // Adding pi and e, the defaults are `_pi` and `_e`
-    _parser.DefineConst(_T("pi"), (mu::value_type)M_PI);
-    _parser.DefineConst(_T("e"), (mu::value_type)M_E);
+    // _parser.SetVarFactory(_addVar, this);
 }
 
 Func::Func(const Func& rhs): _mode(rhs._mode)
 {
     _varbuf.reserve(VARMAX);
-    _parser.SetVarFactory(_addVar, this);
+    // _parser.SetVarFactory(_addVar, this);
     // Adding pi and e, the defaults are `_pi` and `_e`
-    _parser.DefineConst(_T("pi"), (mu::value_type)M_PI);
-    _parser.DefineConst(_T("e"), (mu::value_type)M_E);
     setExpr(rhs.getExpr());
     vector <string> vars = rhs.getVars();
     for (unsigned int ii = 0; ii < vars.size(); ++ii)
@@ -314,8 +309,6 @@ Func& Func::operator=(const Func rhs)
     _clearBuffer();
     _mode = rhs._mode;
     // Adding pi and e, the defaults are `_pi` and `_e`
-    _parser.DefineConst(_T("pi"), (mu::value_type)M_PI);
-    _parser.DefineConst(_T("e"), (mu::value_type)M_E);
     setExpr(rhs.getExpr());
     vector <string> vars = rhs.getVars();
     for (unsigned int ii = 0; ii < vars.size(); ++ii)
@@ -341,14 +334,9 @@ void Func::_clearBuffer()
     _varbuf.clear();
 }
 
-void Func::_showError(mu::Parser::exception_type &e) const
+void Func::_showError(std::exception &e) const
 {
-    cout << "Error occurred in parser.\n"
-         << "Message:  " << e.GetMsg() << "\n"
-         << "Formula:  " << e.GetExpr() << "\n"
-         << "Token:    " << e.GetToken() << "\n"
-         << "Position: " << e.GetPos() << "\n"
-         << "Error code:     " << e.GetCode() << endl;
+    cerr << "Error occurred in parser." << e.what() << endl;
 }
 /**
    Call-back to add variables to parser automatically.
@@ -368,50 +356,17 @@ void Func::setExpr(string expr)
     _x = NULL;
     _y = NULL;
     _z = NULL;
-    mu::varmap_type vars;
+    mup::var_maptype vars;
     try
     {
         _parser.SetExpr(expr);
-        vars = _parser.GetUsedVar();
+        vars = _parser.GetExprVar();
     }
-    catch (mu::Parser::exception_type &e)
+    catch (std::exception& e )
     {
         _showError(e);
         _clearBuffer();
         return;
-    }
-    mu::varmap_type::iterator v = vars.find("x");
-    if (v != vars.end())
-    {
-        _x = v->second;
-    }
-    else if (vars.size() >= 1)
-    {
-        v = vars.begin();
-        _x = v->second;
-    }
-    v = vars.find("y");
-    if (v != vars.end())
-    {
-        _y = v->second;
-    }
-    else if (vars.size() >= 2)
-    {
-        v = vars.begin();
-        ++v;
-        _y = v->second;
-    }
-    v = vars.find("z");
-    if (v != vars.end())
-    {
-        _z = v->second;
-    }
-    else if (vars.size() >= 3)
-    {
-        v = vars.begin();
-        v++;
-        v++;
-        _z = v->second;
     }
     _valid = true;
 }
@@ -436,21 +391,21 @@ void Func::setVar(string name, double value)
         cout << "Error: Func::setVar() - invalid parser state" << endl;
         return;
     }
-    mu::varmap_type vars;
+    mup::var_maptype vars;
     try
     {
         vars = _parser.GetVar();
     }
-    catch (mu::Parser::exception_type &e)
+    catch (std::exception& e)
     {
         _valid = false;
         _showError(e);
         return;
     }
-    mu::varmap_type::iterator v = vars.find(name);
+    mup::var_maptype::iterator v = vars.find(name);
     if (v != vars.end())
     {
-        *v->second = value;
+        *v->second = mup::Variable(mup::Value(value));
     }
     else
     {
@@ -470,11 +425,11 @@ double Func::getVar(string name) const
     }
     try
     {
-        const mu::varmap_type &vars = _parser.GetVar();
-        mu::varmap_type::const_iterator v = vars.find(name);
+        const mup::var_maptype &vars = _parser.GetVar();
+        mup::var_maptype::const_iterator v = vars.find(name);
         if (v != vars.end())
         {
-            return *v->second;
+            return (&Variable)(*(v->second));
         }
         else
         {
@@ -482,7 +437,7 @@ double Func::getVar(string name) const
             return 0.0;
         }
     }
-    catch (mu::Parser::exception_type &e)
+    catch (std::exception& e )
     {
         _showError(e);
         return 0.0;

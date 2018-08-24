@@ -1,4 +1,5 @@
 /**********************************************************************
+ *
 ** This program is part of 'MOOSE', the
 ** Messaging Object Oriented Simulation Environment,
 ** also known as GENESIS 3 base code.
@@ -62,6 +63,8 @@ public:
     void buildSegmentTree( const Eref& e );
     void setSpineAndPsdMesh( Id spineMesh, Id psdMesh );
     void setSpineAndPsdDsolve( Id spineDsolve, Id psdDsolve );
+
+    void NuDefineVar( const string& varName, double* val );
 
     ///////////////////////////////////////////////////////////////////
     // MechSpec set
