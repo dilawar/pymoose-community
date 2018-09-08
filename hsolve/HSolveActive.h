@@ -168,6 +168,9 @@ private:
     void advanceSynChans( ProcPtr info );
     void sendSpikes( ProcPtr info );
     void sendValues( ProcPtr info );
+    void sendValuesConcurrently( ProcPtr info, const size_t num_threads_ );
+    void sendVmOutRange( ProcPtr info, const size_t begin, const size_t end );
+    void sendIkOutRange( ProcPtr info, const size_t begin, const size_t end );
 
     static const int INSTANT_X;
     static const int INSTANT_Y;

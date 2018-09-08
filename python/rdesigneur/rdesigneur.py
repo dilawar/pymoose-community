@@ -1191,10 +1191,7 @@ rdesigneur.rmoogli.updateMoogliViewer()
             " compartments and ", len( self.spineList ),
             " spines with ", len( nmdarList ), " NMDARs")
 
-
         self._buildNeuroMesh()
-
-
         self._configureSolvers()
         for i in self.adaptorList:
             print(i)
@@ -1378,8 +1375,9 @@ rdesigneur.rmoogli.updateMoogliViewer()
                 comptList[0].name = 'dend'
             return comptList
         if not self._isModelFromKkit():
-            print( "Not isModelfromKkit" )
+            #  print( "Not isModelfromKkit" )
             return comptList
+
         sortedComptList = sorted( comptList, key=lambda x: -x.volume )
         if self.addSomaChemCompt:
             if self.addEndoChemCompt:
@@ -1437,8 +1435,9 @@ rdesigneur.rmoogli.updateMoogliViewer()
                 self._moveCompt( comptdict['psd'], self.psdCompt )
                 comptdict['psd'] = self.psdCompt
 
-        self.dendCompt.diffLength = self.diffusionLength
-        self.dendCompt.subTree = self.cellPortionElist
+            self.dendCompt.diffLength = self.diffusionLength
+            self.dendCompt.subTree = self.cellPortionElist
+
         for i in comptdict:
             if len(i) > 5:
                 if i[-5:] == '_endo':
@@ -1456,8 +1455,10 @@ rdesigneur.rmoogli.updateMoogliViewer()
     def _configureSolvers( self ) :
         if not hasattr( self, 'chemid' ):
             return
+
         if not hasattr( self, 'dendCompt' ):
             raise BuildError( "configureSolvers: no chem meshes defined." )
+
         fixXreacs.fixXreacs( self.chemid.path )
         dmksolve = moose.Ksolve( self.dendCompt.path + '/ksolve' )
         dmdsolve = moose.Dsolve( self.dendCompt.path + '/dsolve' )

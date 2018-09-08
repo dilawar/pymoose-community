@@ -6,9 +6,10 @@
 ** GNU Lesser General Public License version 2.1
 ** See the file COPYING.LIB for the full notice.
 **********************************************************************/
+#include <queue>
+#include <thread>
 
 #include "header.h"
-#include <queue>
 #include "HSolveStruct.h"
 #include "HinesMatrix.h"
 #include "HSolvePassive.h"
@@ -20,9 +21,8 @@
 #include "../biophysics/CaConcBase.h"
 #include "../biophysics/ChanBase.h"
 #include "ZombieCaConc.h"
+
 using namespace moose;
-//~ #include "ZombieCompartment.h"
-//~ #include "ZombieCaConc.h"
 
 extern ostream& operator <<( ostream& s, const HinesMatrix& m );
 
@@ -48,9 +48,7 @@ void HSolveActive::step( ProcPtr info )
         return;
 
     if ( !current_.size() )
-    {
         current_.resize( channel_.size() );
-    }
 
     advanceChannels( info->dt );
     calculateChannelCurrents();
@@ -60,7 +58,7 @@ void HSolveActive::step( ProcPtr info )
     advanceCalcium();
     advanceSynChans( info );
 
-    sendValues( info );
+    sendValuesConcurrently( info, 4 );
     sendSpikes( info );
 
     externalCurrent_.assign( externalCurrent_.size(), 0.0 );
@@ -92,7 +90,8 @@ void HSolveActive::updateMatrix()
     if ( HJ_.size() != 0 )
         memcpy( &HJ_[ 0 ], &HJCopy_[ 0 ], sizeof( double ) * HJ_.size() );
 
-    double GkSum, GkEkSum; vector< CurrentStruct >::iterator icurrent = current_.begin();
+    double GkSum, GkEkSum;
+    vector< CurrentStruct >::iterator icurrent = current_.begin();
     vector< currentVecIter >::iterator iboundary = currentBoundary_.begin();
     vector< double >::iterator ihs = HS_.begin();
     vector< double >::iterator iv = V_.begin();
@@ -258,7 +257,7 @@ void HSolveActive::advanceChannels( double dt )
         for ( ; ichan < chanBoundary; ++ichan )
         {
 
-	  caTable_.row( *iextca, dRow );
+            caTable_.row( *iextca, dRow );
 
             if ( ichan->Xpower_ > 0.0 )
             {
@@ -288,7 +287,7 @@ void HSolveActive::advanceChannels( double dt )
                     double temp = 1.0 + dt / 2.0 * C2;
                     *istate = ( *istate * ( 2.0 - temp ) + dt * C1 ) / temp;
 
-}
+                }
                 ++icolumn, ++istate;
             }
 
@@ -301,14 +300,14 @@ void HSolveActive::advanceChannels( double dt )
                     caTable_.lookup( *icolumn, *caRow, C1, C2 );
 
                 }
-                 else if (*iextca >0)
+                else if (*iextca >0)
 
-		   {
-		     caTable_.lookup( *icolumn, dRow, C1, C2 );
-		   }
-		else
                 {
-		  vTable_.lookup( *icolumn, vRow, C1, C2 );
+                    caTable_.lookup( *icolumn, dRow, C1, C2 );
+                }
+                else
+                {
+                    vTable_.lookup( *icolumn, vRow, C1, C2 );
 
                 }
 
@@ -325,7 +324,7 @@ void HSolveActive::advanceChannels( double dt )
                 ++icolumn, ++istate, ++icarow;
 
             }
-	    ++iextca;
+            ++iextca;
         }
 
         ++ichannelcount, ++icacount;
@@ -356,27 +355,88 @@ void HSolveActive::sendValues( ProcPtr info )
 {
     vector< unsigned int >::iterator i;
 
-    for ( i = outVm_.begin(); i != outVm_.end(); ++i ) {
+    for ( i = outVm_.begin(); i != outVm_.end(); ++i )
+    {
         Compartment::VmOut()->send(
-            //~ ZombieCompartment::VmOut()->send(
             compartmentId_[ *i ].eref(),
             V_[ *i ]
         );
-	}
+    }
 
-    for ( i = outIk_.begin(); i != outIk_.end(); ++i ){
-
+    for ( i = outIk_.begin(); i != outIk_.end(); ++i )
+    {
         unsigned int comptIndex = chan2compt_[ *i ];
-
         assert( comptIndex < V_.size() );
-
         ChanBase::IkOut()->send(channelId_[*i].eref(),
-				(current_[ *i ].Ek - V_[ comptIndex ]) * current_[ *i ].Gk);
-
+                                (current_[ *i ].Ek - V_[ comptIndex ]) * current_[ *i ].Gk);
     }
 
     for ( i = outCa_.begin(); i != outCa_.end(); ++i )
-        //~ CaConc::concOut()->send(
+        CaConcBase::concOut()->send(
+            caConcId_[ *i ].eref(),
+            ca_[ *i ]
+        );
+}
+
+void HSolveActive::sendVmOutRange( ProcPtr info, const size_t begin, const size_t end )
+{
+    for ( size_t x = begin; x < min(outVm_.size(), end); x++)
+    {
+        auto i = outVm_.begin() + x;
+        Compartment::VmOut()->send(compartmentId_[ *i ].eref(), V_[*i]);
+    }
+}
+
+void HSolveActive::sendIkOutRange( ProcPtr info, const size_t begin, const size_t end )
+{
+    for ( size_t x = begin; x < min(outIk_.size(), end); x++)
+    {
+        auto i = outIk_.begin() + x;
+        unsigned int comptIndex = chan2compt_[ *i ];
+        assert( comptIndex < V_.size() );
+        ChanBase::IkOut()->send(channelId_[*i].eref(),
+                                (current_[ *i ].Ek - V_[ comptIndex ]) * current_[ *i ].Gk);
+    }
+}
+
+void HSolveActive::sendValuesConcurrently( ProcPtr info, const size_t num_threads )
+{
+
+    std::vector<std::thread> workers(num_threads);
+
+    // For less than num_threads; there is no point of launching threads.
+    if( outVm_.size() < num_threads )
+        sendVmOutRange( info, 0, outVm_.size() );
+    else
+    {
+        const size_t grainSize = 1 + (size_t) (outVm_.size() / num_threads);
+        cout << "Concurrent hsolve " << grainSize << " " << endl;
+        for (size_t i = 0; i < num_threads; i++) 
+        {
+            std::thread t( &HSolveActive::sendVmOutRange, this, info, i*grainSize, (i+1)*grainSize );
+            workers[i] = std::move(t);
+        }
+        for( auto & t : workers )
+            t.join();
+    }
+
+    // Ik Out.
+    if( outIk_.size() < num_threads )
+        sendIkOutRange( info, 0, outIk_.size() );
+    else
+    {
+        const size_t grainSize = 1 + (size_t) (outVm_.size() / num_threads);
+        for (size_t i = 0; i < num_threads; i++) 
+        {
+            std::thread t( &HSolveActive::sendIkOutRange, this, info, i*grainSize, (i+1)*grainSize );
+            workers.push_back( std::move(t) );
+        }
+        for( auto & t : workers )
+            t.join();
+    }
+
+
+    for ( auto i = outCa_.begin(); i != outCa_.end(); ++i )
         CaConcBase::concOut()->send(
             caConcId_[ *i ].eref(),
             ca_[ *i ]
