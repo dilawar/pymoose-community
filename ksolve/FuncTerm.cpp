@@ -44,6 +44,7 @@ FuncTerm::FuncTerm():
 
 FuncTerm::~FuncTerm()
 {
+    ;
 }
 
 void FuncTerm::setReactantIndex(const vector<unsigned int>& mol)
@@ -57,7 +58,10 @@ void FuncTerm::setReactantIndex(const vector<unsigned int>& mol)
     // symbol table is now invalidated and thus can't be used anymore. We need
     // to re-assign parser.
     parser_->Reinit();
-    args_ = unique_ptr<double[]>(new double[mol.size()+1]());
+
+    // args_ = shared_ptr<double>(new double[mol.size()+1], [](double* p){ delete[] p;});
+    args_ = new double(mol.size()+1);
+
     for ( unsigned int i = 0; i < mol.size(); ++i )
         addVar( "x"+to_string(i), i );
 
@@ -125,6 +129,10 @@ double FuncTerm::getVolScale() const
 const FuncTerm& FuncTerm::operator=( const FuncTerm& other )
 {
     args_ = other.args_;
+    // And copy values
+    for (size_t i = 0; i < other.reactantIndex_.size()+1; i++) 
+        args_[i] = other.args_[i];
+
     expr_ = other.expr_;
     volScale_ = other.volScale_;
     target_ = other.target_;
@@ -134,7 +142,7 @@ const FuncTerm& FuncTerm::operator=( const FuncTerm& other )
 
 void FuncTerm::addVar( const string& name, size_t i )
 {
-    parser_->DefineVar(name, &args_[i]);
+    parser_->DefineVar(name, args_+i);
 }
 
 /**
@@ -187,7 +195,7 @@ void FuncTerm::evalPool( double* S, double t ) const
 
     try
     {
-        S[ target_] = parser_->Eval() * volScale_;
+        S[target_] = parser_->Eval() * volScale_;
     }
     catch ( moose::Parser::exception_type & e )
     {
