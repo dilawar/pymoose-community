@@ -4,8 +4,8 @@ endif()
 
 ########################### COMPILER MACROS #####################################
 include(CheckCXXCompilerFlag)
+CHECK_CXX_COMPILER_FLAG( "-std=c++14" COMPILER_SUPPORTS_CXX14 )
 CHECK_CXX_COMPILER_FLAG( "-std=c++11" COMPILER_SUPPORTS_CXX11 )
-CHECK_CXX_COMPILER_FLAG( "-std=c++0x" COMPILER_SUPPORTS_CXX0X )
 CHECK_CXX_COMPILER_FLAG( "-Wno-strict-aliasing" COMPILER_WARNS_STRICT_ALIASING )
 
 # Turn warning to error: Not all of the options may be supported on all
@@ -16,10 +16,13 @@ add_definitions(-Wall
     -Wno-unused-function
     #-Wno-unused-private-field
     )
+
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     add_definitions( -Wno-unused-local-typedefs )
 elseif(("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang") OR ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang"))
     add_definitions( -Wno-unused-local-typedef )
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++" )
+    add_definitions( -inline-threshold=1000 )
 endif()
 
 if( "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" )
@@ -39,20 +42,22 @@ if(COMPILER_SUPPORT_UNUSED_BUT_SET_VARIABLE_NO_WARN)
     add_definitions( "-Wno-unused-but-set-variable" )
 endif(COMPILER_SUPPORT_UNUSED_BUT_SET_VARIABLE_NO_WARN)
 
-if(COMPILER_SUPPORTS_CXX11)
+if(COMPILER_SUPPORTS_CXX14)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+    add_definitions( -DENABLE_CPP14 -std=c++14 )
+elseif(COMPILER_SUPPORTS_CXX11)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-    add_definitions( -DENABLE_CPP11 )
+    add_definitions( -DENABLE_CPP11 -std=c++11 )
     if(APPLE)
-			  #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++" )
-        # message(STATUS "NOTE: Making clang to inline more aggresively" )
-				add_definitions( -mllvm -inline-threshold=1000 )
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++" )
+        add_definitions( -mllvm -inline-threshold=1000 )
     endif(APPLE)
 else(COMPILER_SUPPORTS_CXX11)
-    add_definitions( -DBOOST_NO_CXX11_SCOPED_ENUMS -DBOOST_NO_SCOPED_ENUMS )
     message(FATAL_ERROR "\
         The compiler ${CMAKE_CXX_COMPILER} is too old. \
-        Please use a compiler which has c++11 support.
+        Please use a compiler which has full c++11 support such as gcc>=4.9
         ")
-endif(COMPILER_SUPPORTS_CXX11)
+endif()
+
 
 set(COMPILER_IS_TESTED ON)

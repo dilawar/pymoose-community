@@ -32,19 +32,17 @@ using namespace std;
 #include "../utility/testing_macros.hpp"
 #include "../utility/utility.h"
 
-
 FuncTerm::FuncTerm(): 
     args_(nullptr)
     , reactantIndex_(1, 0)
     , volScale_(1.0)
     , target_( ~0U)
     , parser_(new moose::MooseParser())
-{
-}
+{ ; }
 
 FuncTerm::~FuncTerm()
 {
-    ;
+    // smart pointer handle all deallocations.
 }
 
 void FuncTerm::setReactantIndex(const vector<unsigned int>& mol)
@@ -57,11 +55,9 @@ void FuncTerm::setReactantIndex(const vector<unsigned int>& mol)
     // The address of args_ has changed now. Any previous mapping with ExprTK
     // symbol table is now invalidated and thus can't be used anymore. We need
     // to re-assign parser.
+
+    args_ = unique_ptr<double[]>(new double[mol.size()+1]);
     parser_->Reinit();
-
-    // args_ = shared_ptr<double>(new double[mol.size()+1], [](double* p){ delete[] p;});
-    args_ = new double(mol.size()+1);
-
     for ( unsigned int i = 0; i < mol.size(); ++i )
         addVar( "x"+to_string(i), i );
 
@@ -128,11 +124,7 @@ double FuncTerm::getVolScale() const
 
 const FuncTerm& FuncTerm::operator=( const FuncTerm& other )
 {
-    args_ = other.args_;
-    // And copy values
-    for (size_t i = 0; i < other.reactantIndex_.size()+1; i++) 
-        args_[i] = other.args_[i];
-
+    args_ = nullptr; // Don't copy args_. Original one is still using it.
     expr_ = other.expr_;
     volScale_ = other.volScale_;
     target_ = other.target_;
@@ -142,7 +134,7 @@ const FuncTerm& FuncTerm::operator=( const FuncTerm& other )
 
 void FuncTerm::addVar( const string& name, size_t i )
 {
-    parser_->DefineVar(name, args_+i);
+    parser_->DefineVar(name, &args_[i]);
 }
 
 /**
@@ -159,20 +151,9 @@ double FuncTerm::operator() ( const double* S, double t ) const
 
     // update value of t.
     args_[reactantIndex_.size()] = t;
-
-#ifdef exprtk_enable_debugging
-    cout << "FuncTerm::operator() :: ";
-    for (size_t i = 0; i < reactantIndex_.size(); i++)
-        cout << args_[i] << "(" << reactantIndex_[i] << "), ";
-    cout << args_[reactantIndex_.size()] << endl;
-#endif
-
     try
     {
         double result = parser_->Eval() * volScale_;
-#ifdef exprtk_enable_debugging
-        cout << " Result= " << result << endl;
-#endif
         return result;
     }
     catch (moose::Parser::exception_type &e )

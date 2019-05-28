@@ -261,7 +261,7 @@ vector< unsigned int > GssaVoxelPools::numFire() const
 // Rate computation functions
 /////////////////////////////////////////////////////////////////////////
 
-void GssaVoxelPools::updateAllRateTerms( const vector< RateTerm* >& rates,
+void GssaVoxelPools::updateAllRateTerms( const vector< shared_ptr<RateTerm> >& rates,
         unsigned int numCoreRates )
 {
     for ( unsigned int i = 0; i < rates_.size(); ++i )
@@ -276,7 +276,7 @@ void GssaVoxelPools::updateAllRateTerms( const vector< RateTerm* >& rates,
                     getXreacScaleProducts(i - numCoreRates ) );
 }
 
-void GssaVoxelPools::updateRateTerms( const vector< RateTerm* >& rates,
+void GssaVoxelPools::updateRateTerms( const vector< shared_ptr<RateTerm> >& rates,
                                       unsigned int numCoreRates, unsigned int index 	)
 {
     // During setup or expansion of the reac system, this might be called

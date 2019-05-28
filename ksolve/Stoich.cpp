@@ -274,6 +274,9 @@ Stoich::Stoich()
 Stoich::~Stoich()
 {
     unZombifyModel();
+
+#if 0
+
     // Note that we cannot do the unZombify here, because it is too
     // prone to problems with the ordering of the delete operations
     // relative to the zombies.
@@ -292,6 +295,7 @@ Stoich::~Stoich()
     	i != funcs_.end(); ++i )
     	delete *i;
     	*/
+#endif
 }
 
 //////////////////////////////////////////////////////////////
@@ -571,10 +575,10 @@ unsigned int Stoich::getNumCoreRates() const
 const RateTerm* Stoich::rates( unsigned int i ) const
 {
     assert( i < rates_.size() );
-    return rates_[i];
+    return rates_[i].get();
 }
 
-const vector< RateTerm* >& Stoich::getRateTerms() const
+const vector< shared_ptr<RateTerm> >& Stoich::getRateTerms() const
 {
     return rates_;
 }
@@ -588,7 +592,7 @@ const FuncTerm* Stoich::funcs( unsigned int i ) const
 {
     assert( i < funcs_.size() );
     assert( funcs_[i]);
-    return funcs_[i];
+    return funcs_[i].get();
 }
 
 bool Stoich::isFuncTarget( unsigned int poolIndex ) const
@@ -943,8 +947,10 @@ void Stoich::resizeArrays()
         ( enzVec_.size() + offSolverEnzVec_.size() ) * (2 + useOneWay_ ) +
         mmEnzVec_.size() + offSolverMMenzVec_.size() +
         incrementFuncVec_.size();
-    rates_.resize( totNumRates, 0 );
-    funcs_.resize( poolFuncVec_.size(), 0 );
+
+    rates_.resize( totNumRates, nullptr); 
+    funcs_.resize( poolFuncVec_.size(), nullptr);
+
     N_.setSize( totNumPools, totNumRates );
     if ( kinterface_ )
         kinterface_->setNumPools( totNumPools );
@@ -1092,7 +1098,7 @@ void Stoich::installAndUnschedFunc( Id func, Id pool, double volScale )
     assert( funcIndex != ~0U );
     // funcTarget_ vector tracks which pools are controlled by which func.
     funcTarget_[targetIndex] = funcIndex;
-    funcs_[ funcIndex ] = ft;
+    funcs_[ funcIndex ] = shared_ptr<FuncTerm>(ft);
 }
 
 void Stoich::installAndUnschedFuncRate( Id func, Id pool )
@@ -1111,7 +1117,7 @@ void Stoich::installAndUnschedFuncRate( Id func, Id pool )
     assert( tempIndex != ~0U );
     // Install the FuncReac
     FuncRate* fr = new FuncRate( 1.0, tempIndex );
-    rates_[rateIndex] = fr;
+
     int stoichEntry = N_.get( tempIndex, rateIndex );
     N_.set( tempIndex, rateIndex, stoichEntry + 1 );
 
@@ -1135,6 +1141,8 @@ void Stoich::installAndUnschedFuncRate( Id func, Id pool )
     fr->setFuncArgIndex( poolIndex );
     string expr = Field< string >::get( func, "expr" );
     fr->setExpr( expr );
+
+    rates_[rateIndex] = shared_ptr<RateTerm>(fr);
 }
 
 void Stoich::installAndUnschedFuncReac( Id func, Id reac )
@@ -1155,8 +1163,6 @@ void Stoich::installAndUnschedFuncReac( Id func, Id reac )
     // The reactants vector has both substrates and products.
     reactants.resize( numForward );
     FuncReac* fr = new FuncReac( k, reactants );
-    delete rates_[rateIndex];
-    rates_[rateIndex] = fr;
 
     Id ei( func.value() + 1 );
 
@@ -1173,6 +1179,8 @@ void Stoich::installAndUnschedFuncReac( Id func, Id reac )
     fr->setFuncArgIndex( poolIndex );
     string expr = Field< string >::get( func, "expr" );
     fr->setExpr( expr );
+
+    rates_[rateIndex] = shared_ptr<RateTerm>(fr);
 }
 
 void Stoich::convertRatesToStochasticForm()
@@ -1184,17 +1192,17 @@ void Stoich::convertRatesToStochasticForm()
         {
             if ( molIndex.size() == 2 && molIndex[0] == molIndex[1] )
             {
-                RateTerm* oldRate = rates_[i];
-                rates_[ i ] = new StochSecondOrderSingleSubstrate(
-                    oldRate->getR1(), molIndex[ 0 ]
-                );
-                delete oldRate;
+                // RateTerm* oldRate = rates_[i].get();
+                double r1 = rates_[i]->getR1();
+                rates_[i] = shared_ptr<RateTerm>(new StochSecondOrderSingleSubstrate(r1, molIndex[ 0 ]));
+                // delete oldRate;
             }
             else if ( molIndex.size() > 2 )
             {
-                RateTerm* oldRate = rates_[ i ];
-                rates_[i] = new StochNOrder( oldRate->getR1(), molIndex );
-                delete oldRate;
+                // RateTerm* oldRate = rates_[ i ];
+                double r1 = rates_[i]->getR1();
+                rates_[i] = shared_ptr<RateTerm>(new StochNOrder(r1, molIndex ));
+                // delete oldRate;
             }
         }
     }
@@ -1543,21 +1551,11 @@ unsigned int Stoich::innerInstallReaction( Id reacId,
         const vector< Id >& subs,
         const vector< Id >& prds )
 {
-    ZeroOrder* forward = makeHalfReaction( 0, subs );
-    ZeroOrder* reverse = makeHalfReaction( 0, prds );
+    auto forward = shared_ptr<ZeroOrder>(makeHalfReaction( 0, subs));
+    auto reverse = shared_ptr<ZeroOrder>(makeHalfReaction( 0, prds ));
+
     unsigned int rateIndex = convertIdToReacIndex( reacId );
     unsigned int revRateIndex = rateIndex;
-    if ( useOneWay_ )
-    {
-        rates_[ rateIndex ] = forward;
-        revRateIndex = rateIndex + 1;
-        rates_[ revRateIndex ] = reverse;
-    }
-    else
-    {
-        rates_[ rateIndex ] =
-            new BidirectionalReaction( forward, reverse );
-    }
 
     vector< unsigned int > molIndex;
     vector< double > reacScaleSubstrates;
@@ -1565,6 +1563,7 @@ unsigned int Stoich::innerInstallReaction( Id reacId,
 
     if ( useOneWay_ )
     {
+        revRateIndex = rateIndex + 1;
         unsigned int numReactants = forward->getReactants( molIndex );
         for ( unsigned int i = 0; i < numReactants; ++i )
         {
@@ -1599,14 +1598,27 @@ unsigned int Stoich::innerInstallReaction( Id reacId,
             N_.set( molIndex[i], rateIndex, temp + 1 );
         }
     }
+
+    if ( useOneWay_ )
+    {
+        rates_[ rateIndex ] = (forward);
+        rates_[ revRateIndex ] = (reverse);
+    }
+    else
+    {
+        rates_[ rateIndex ] = shared_ptr<RateTerm>(
+            new BidirectionalReaction( forward.get(), reverse.get() )
+            );
+    }
+
     return rateIndex;
 }
 
-void installDummy( RateTerm** entry, Id enzId, const string& s )
+void installDummy( shared_ptr<RateTerm>& entry, Id enzId, const string& s )
 {
     cout << "Warning: Stoich::installMMenz: No " << s << " for: "  <<
          enzId.path() << endl;
-    *entry = new ZeroOrder( 0.0 );
+    entry = shared_ptr<RateTerm>(new ZeroOrder( 0.0 ));
 }
 
 /**
@@ -1617,18 +1629,17 @@ void Stoich::installMMenz( Id enzId, const vector< Id >& enzMols,
                            const vector< Id >& subs, const vector< Id >& prds )
 {
     MMEnzymeBase* meb;
-    unsigned int enzSiteIndex = convertIdToReacIndex( enzId );
-    RateTerm** entry = &rates_[enzSiteIndex];
+    size_t enzSiteIndex = convertIdToReacIndex( enzId );
     if ( enzMols.size() != 1 )
     {
-        installDummy( entry, enzId, "enzmols" );
+        installDummy( rates_[enzSiteIndex], enzId, "enzmols" );
         status_ |= 2;
         return;
     }
 
     if ( prds.size() < 1 )
     {
-        installDummy( entry, enzId, "products" );
+        installDummy( rates_[enzSiteIndex], enzId, "products" );
         status_ |= 1;
         return;
     }
@@ -1649,11 +1660,12 @@ void Stoich::installMMenz( Id enzId, const vector< Id >& enzMols,
     }
     else
     {
-        installDummy( entry, enzId, "substrates" );
+        installDummy( rates_[enzSiteIndex], enzId, "substrates" );
         status_ |= 2;
         return;
     }
-    installMMenz( meb, enzSiteIndex, subs, prds );
+
+    installMMenz( meb, (size_t)rates_[enzSiteIndex].get(), subs, prds );
     if ( enzSiteIndex < getNumCoreRates() ) // Only handle off-compt reacs
         return;
     vector< Id > subCompt;
@@ -1670,7 +1682,6 @@ void Stoich::installMMenz( Id enzId, const vector< Id >& enzMols,
 void Stoich::installMMenz( MMEnzymeBase* meb, unsigned int rateIndex,
                            const vector< Id >& subs, const vector< Id >& prds )
 {
-    rates_[rateIndex] = meb;
 
     for ( unsigned int i = 0; i < subs.size(); ++i )
     {
@@ -1684,6 +1695,8 @@ void Stoich::installMMenz( MMEnzymeBase* meb, unsigned int rateIndex,
         int temp = N_.get( poolIndex, rateIndex );
         N_.set( poolIndex, rateIndex, temp + 1 );
     }
+
+    rates_[rateIndex] = shared_ptr<RateTerm>(meb);
 }
 
 // Handles dangling enzymes.
@@ -1696,14 +1709,14 @@ void Stoich::installDummyEnzyme( Id enzId, Id enzMolId )
     unsigned int rateIndex = convertIdToReacIndex( enzId );
     if ( useOneWay_ )
     {
-        rates_[ rateIndex ] = r1;
-        rates_[ rateIndex + 1 ] = r2;
-        rates_[ rateIndex + 2 ] = r3;
+        rates_[ rateIndex ] = shared_ptr<RateTerm>(r1);
+        rates_[ rateIndex + 1 ] = shared_ptr<RateTerm>(r2);
+        rates_[ rateIndex + 2 ] = shared_ptr<RateTerm>(r3);
     }
     else
     {
-        rates_[ rateIndex ] = new BidirectionalReaction( r1, r2 );
-        rates_[ rateIndex + 1 ] = r3;
+        rates_[ rateIndex ] = shared_ptr<RateTerm>(new BidirectionalReaction( r1, r2 ));
+        rates_[ rateIndex + 1 ] = shared_ptr<RateTerm>(r3);
     }
     status_ = 1;
 }
@@ -1758,17 +1771,6 @@ void Stoich::installEnzyme( ZeroOrder* r1, ZeroOrder* r2, ZeroOrder* r3,
 {
     unsigned int rateIndex = convertIdToReacIndex( enzId );
 
-    if ( useOneWay_ )
-    {
-        rates_[ rateIndex ] = r1;
-        rates_[ rateIndex + 1 ] = r2;
-        rates_[ rateIndex + 2 ] = r3;
-    }
-    else
-    {
-        rates_[ rateIndex ] = new BidirectionalReaction( r1, r2 );
-        rates_[ rateIndex + 1 ] = r3;
-    }
 
     vector< unsigned int > poolIndex;
     unsigned int numReactants = r2->getReactants( poolIndex );
@@ -1821,6 +1823,18 @@ void Stoich::installEnzyme( ZeroOrder* r1, ZeroOrder* r2, ZeroOrder* r3,
     unsigned int enzPool = convertIdToPoolIndex( enzMolId );
     temp = N_.get( enzPool, reac3index );
     N_.set( enzPool, reac3index, temp + 1 );
+
+    if ( useOneWay_ )
+    {
+        rates_[ rateIndex ] = shared_ptr<RateTerm>(r1);
+        rates_[ rateIndex + 1 ] = shared_ptr<RateTerm>(r2);
+        rates_[ rateIndex + 2 ] = shared_ptr<RateTerm>(r3);
+    }
+    else
+    {
+        rates_[ rateIndex ] = shared_ptr<RateTerm>(new BidirectionalReaction( r1, r2 ));
+        rates_[ rateIndex + 1 ] = shared_ptr<RateTerm>(r3);
+    }
 }
 
 //////////////////////////////////////////////////////////////
@@ -1875,7 +1889,7 @@ void Stoich::setMMenzKm( const Eref& e, double v ) const
 {
     // Identify MMenz rate term
     unsigned int index = convertIdToReacIndex( e.id() );
-    RateTerm* rt = rates_[ index ];
+    RateTerm* rt = rates_[ index ].get();
     //MMEnzymeBase* enz = dynamic_cast< MMEnzymeBase* >( rt );
     //assert( enz );
     // Identify MMenz Enzyme substrate. I would have preferred the parent,
@@ -1905,7 +1919,9 @@ double Stoich::getMMenzNumKm( const Eref& e ) const
 void Stoich::setMMenzKcat( const Eref& e, double v ) const
 {
     unsigned int index = convertIdToReacIndex( e.id() );
-    RateTerm* rt = rates_[ index ];
+    auto rt = rates_[ index ];
+    assert(rt);
+
     // MMEnzymeBase* enz = dynamic_cast< MMEnzymeBase* >( rt );
     // assert( enz );
 
@@ -2009,7 +2025,7 @@ void Stoich::setFunctionExpr( const Eref& e, string expr )
     unsigned int index = convertIdToReacIndex( e.id() );
     FuncRate* fr = 0;
     if ( index != ~0U )
-        fr = dynamic_cast< FuncRate* >( rates_[index] );
+        fr = dynamic_cast< FuncRate* >( rates_[index].get() );
     if ( fr )
     {
         fr->setExpr( expr );
@@ -2019,7 +2035,7 @@ void Stoich::setFunctionExpr( const Eref& e, string expr )
         index = convertIdToFuncIndex( e.id() );
         if ( index != ~0U )
         {
-            FuncTerm *ft = dynamic_cast< FuncTerm* >( funcs_[index] );
+            FuncTerm *ft = dynamic_cast< FuncTerm* >( funcs_[index].get());
             if ( ft )
             {
                 ft->setExpr( expr );

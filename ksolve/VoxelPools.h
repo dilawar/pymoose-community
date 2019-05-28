@@ -21,6 +21,8 @@
 class Stoich;
 class ProcInfo;
 
+#include <memory>
+
 /**
  * This is the class for handling reac-diff voxels used for deterministic
  * computations.
@@ -64,7 +66,7 @@ public:
     void setVolumeAndDependencies( double vol );
 
     /// Updates all the rate constants from the reference rates vector.
-    void updateAllRateTerms( const vector< RateTerm* >& rates,
+    void updateAllRateTerms( const vector<std::shared_ptr<RateTerm>>& rates,
                              unsigned int numCoreRates	);
     /**
      * updateRateTerms updates the rate consts of a belonging to
@@ -72,7 +74,7 @@ public:
      * It does recaling and assigning using values from the
      * internal rates vector.
      */
-    void updateRateTerms( const vector< RateTerm* >& rates,
+    void updateRateTerms( const vector< std::shared_ptr<RateTerm>>& rates,
                           unsigned int numCoreRates, unsigned int index );
 
     /**

@@ -758,16 +758,16 @@ void Gsolve::fillPoolFuncDep()
 void Gsolve::fillIncrementFuncDep()
 {
     // create map of funcs that depend on specified molecule.
-    vector< vector< unsigned int > > funcMap(
-        stoichPtr_->getNumAllPools() );
-    const vector< RateTerm* >& rates = stoichPtr_->getRateTerms();
+    vector< vector< unsigned int > > funcMap(stoichPtr_->getNumAllPools());
+
+    const auto rates = stoichPtr_->getRateTerms();
+
     vector< FuncRate* > incrementRates;
     vector< unsigned int > incrementRateIndex;
     const vector< RateTerm* >::const_iterator q;
     for ( unsigned int i = 0; i < rates.size(); ++i )
     {
-        FuncRate *term =
-            dynamic_cast< FuncRate* >( rates[i] );
+        FuncRate *term = dynamic_cast< FuncRate* >( rates[i].get());
         if (term)
         {
             incrementRates.push_back( term );

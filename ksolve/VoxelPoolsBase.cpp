@@ -130,8 +130,10 @@ void VoxelPoolsBase::scaleVolsBufsRates(
         delete( rates_[i] );
 
     unsigned int numCoreRates = stoichPtr->getNumCoreRates();
-    const vector< RateTerm* >& rates = stoichPtr->getRateTerms();
+
+    const auto rates = stoichPtr->getRateTerms();
     rates_.resize( rates.size() );
+
     for ( unsigned int i = 0; i < numCoreRates; ++i )
         rates_[i] = rates[i]->copyWithVolScaling( getVolume(), 1, 1 );
     for ( unsigned int i = numCoreRates; i < rates.size(); ++i )

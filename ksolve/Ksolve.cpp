@@ -22,7 +22,6 @@
 #include "ZombiePoolInterface.h"
 
 #include "RateTerm.h"
-#include "FuncTerm.h"
 #include "../basecode/SparseMatrix.h"
 #include "KinSparseMatrix.h"
 #include "Stoich.h"

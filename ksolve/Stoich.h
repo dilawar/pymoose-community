@@ -46,6 +46,11 @@
  * - Reinit.
  */
 
+#include <memory>
+
+// Forward declations.
+class FuncTerm;
+
 class Stoich
 {
 public:
@@ -128,7 +133,7 @@ public:
     const RateTerm* rates( unsigned int i ) const;
 
     /// Returns a reference to the entire rates_ vector.
-    const vector< RateTerm* >& getRateTerms() const;
+    const vector< shared_ptr<RateTerm> >& getRateTerms() const;
 
     unsigned int getNumFuncs() const;
     const FuncTerm* funcs( unsigned int i ) const;
@@ -528,7 +533,7 @@ private:
      * off-compartment products. These need special volume scaling
      * involving all the interactiong compartments.
      */
-    vector< RateTerm* > rates_;
+    vector< shared_ptr<RateTerm> > rates_;
 
     /**
      * This tracks the unique volumes handled by the reac system.
@@ -540,7 +545,7 @@ private:
     unsigned int numVoxels_;
 
     /// The FuncTerms handle mathematical ops on mol levels.
-    vector< FuncTerm* > funcs_;
+    vector< shared_ptr<FuncTerm> > funcs_;
 
     /// N_ is the stoichiometry matrix. All pools * all reac terms.
     KinSparseMatrix N_;

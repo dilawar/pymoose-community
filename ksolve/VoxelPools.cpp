@@ -232,7 +232,7 @@ void VoxelPools::evalRates( VoxelPools* vp, const vector_type_& y,  vector_type_
 // Here are the internal reaction rate calculation functions
 ///////////////////////////////////////////////////////////////////////
 
-void VoxelPools::updateAllRateTerms( const vector< RateTerm* >& rates,
+void VoxelPools::updateAllRateTerms( const vector< shared_ptr<RateTerm> >& rates,
         unsigned int numCoreRates )
 {
     // Clear out old rates if any
@@ -253,7 +253,7 @@ void VoxelPools::updateAllRateTerms( const vector< RateTerm* >& rates,
     }
 }
 
-void VoxelPools::updateRateTerms( const vector< RateTerm* >& rates,
+void VoxelPools::updateRateTerms( const vector<shared_ptr<RateTerm> >& rates,
                                   unsigned int numCoreRates, unsigned int index )
 {
     // During setup or expansion of the reac system, it is possible to

@@ -12,6 +12,7 @@
 
 #include <map>
 #include <vector>
+#include <memory>
 
 using namespace std;
 
@@ -104,7 +105,7 @@ public:
     /**
      * Reassign entire rate vector.
      */
-    virtual void updateAllRateTerms( const vector< RateTerm* >& rates,
+    virtual void updateAllRateTerms( const vector< std::shared_ptr<RateTerm> >& rates,
                                      unsigned int numCoreRates ) = 0;
 
     /**
@@ -112,7 +113,7 @@ public:
      * passed in for the source values, the index specifies which
      * entry on the local rate vector is to be updated.
      */
-    virtual void updateRateTerms( const vector< RateTerm* >& rates,
+    virtual void updateRateTerms( const vector< std::shared_ptr<RateTerm> >& rates,
                                   unsigned int numCoreRates, unsigned int index ) = 0;
 
     /**

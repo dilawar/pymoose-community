@@ -50,9 +50,9 @@ public:
      */
     void reinit( const GssaSystem* g );
 
-    void updateAllRateTerms( const vector< RateTerm* >& rates,
+    void updateAllRateTerms( const vector< shared_ptr<RateTerm> >& rates,
             unsigned int numCoreRates	);
-    void updateRateTerms( const vector< RateTerm* >& rates,
+    void updateRateTerms( const vector< shared_ptr<RateTerm> >& rates,
             unsigned int numCoreRates, unsigned int index );
 
     double getReacVelocity( unsigned int r, const double* s ) const;

@@ -126,9 +126,6 @@ private:
     Parser::varmap_type const_map_;
     Parser::varmap_type used_vars_;
 
-    /* Map to variable names and pointer to their values. */
-    map<string, double*> map_;
-
     /* Parser related */
     // unique_ptr<Parser::symbol_table_t> symbol_table_;   [> symbol table <]
     Parser::symbol_table_t symbol_table_;
