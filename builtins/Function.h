@@ -1,4 +1,3 @@
-// Function.h ---
 // Description: moose.Function class.
 // Author: Subhasis Ray
 // Maintainer: Dilawar Singh
@@ -103,7 +102,8 @@ protected:
 
     // this stores variables received via incoming messages, identifiers of
     // the form x{i} are included in this
-    vector<shared_ptr<Variable>> xs_;
+    // vector<shared_ptr<Variable>> xs_;
+    map<size_t, shared_ptr<Variable>> xs_;
 
     // this stores variable values pulled by sending request. identifiers of
     // the form y{i} are included in this
