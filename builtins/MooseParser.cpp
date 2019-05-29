@@ -241,7 +241,9 @@ bool MooseParser::CompileExpr()
 
 void MooseParser::RegisterSymbolTable(shared_ptr<moose::Parser::symbol_table_t>& tab)
 {
+    MOOSE_DEBUG( "+ Registering symbol table " );
     expression_.register_symbol_table(*tab);
+    cout << SymbolTable2String();
 }
 
 double MooseParser::Eval( ) const

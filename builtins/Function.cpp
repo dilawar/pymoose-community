@@ -291,6 +291,7 @@ Function &Function::operator=(const Function& rhs)
 
     symbols_ = std::move(rhs.symbols_);
     parser_ = std::move(rhs.parser_);
+    MOOSE_DEBUG( "==> Registering symbol table in copy constructor " );
     parser_->RegisterSymbolTable(symbols_);
 
     return *this;
