@@ -81,7 +81,7 @@ def makeChemProto( name, Aexpr, Bexpr, params ):
     CaStim.x.num = 3
     moose.connect( phase, 'nOut', CaStim.x[0], 'input' )
     moose.connect( vel, 'nOut', CaStim.x[1], 'input' )
-    moose.connect( ampl, 'nOut', CaStim.x[2], 'input' )
+    #  moose.connect( ampl, 'nOut', CaStim.x[2], 'input' )
     moose.connect( CaStim, 'valueOut', Ca, 'setN' )
 
     return compt
