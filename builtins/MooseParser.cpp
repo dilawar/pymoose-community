@@ -79,14 +79,14 @@ double MooseParser::Fmod( double a, double b )
 /*-----------------------------------------------------------------------------
  *  Get/Set
  *-----------------------------------------------------------------------------*/
-Parser::symbol_table_t MooseParser::GetSymbolTable( ) const
+Parser::symbol_table_t* MooseParser::GetSymbolTable( ) 
 {
-    return expression_.get_symbol_table();
+    return &expression_.get_symbol_table();
 }
 
-Parser::expression_t MooseParser::GetExpression( ) const
+Parser::expression_t* MooseParser::GetExpression( ) 
 {
-    return expression_;
+    return &expression_;
 }
 
 /*-----------------------------------------------------------------------------
@@ -205,7 +205,7 @@ string MooseParser::SymbolTable2String( )
     // map is
     auto symbTable = GetSymbolTable();
     vector<std::pair<string, double>> vars;
-    auto n = symbTable.get_variable_list(vars);
+    auto n = symbTable->get_variable_list(vars);
     ss << "More Information:\nTotal variables " << n << ".";
     for (auto i : vars)
         ss << "\t" << i.first << "=" << i.second << " " << &symbol_table_.get_variable(i.first)->ref();
@@ -239,10 +239,9 @@ bool MooseParser::CompileExpr()
     return true;
 }
 
-void MooseParser::SetVariableMap( const map<string, double*> m )
+void MooseParser::RegisterSymbolTable(shared_ptr<moose::Parser::symbol_table_t>& tab)
 {
-    for( auto &v : m )
-        symbol_table_.add_variable( v.first, *v.second );
+    expression_.register_symbol_table(*tab);
 }
 
 double MooseParser::Eval( ) const
@@ -252,7 +251,7 @@ double MooseParser::Eval( ) const
     return expression_();
 }
 
-Parser::varmap_type MooseParser::GetVar() const
+moose::Parser::varmap_type MooseParser::GetVar() const
 {
     return var_map_;
 }

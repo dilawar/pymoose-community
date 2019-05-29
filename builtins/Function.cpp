@@ -270,12 +270,13 @@ Function::Function()
       t_(0.0),
       independent_("x0"),
       parser_(make_shared<moose::MooseParser>()),
-      stoich_(nullptr)
+      stoich_(nullptr),
+      symbols_(make_shared<moose::Parser::symbol_table_t>())
 {
 }
 
 // Careful: This is a critical function.
-Function &Function::operator=(const Function &rhs)
+Function &Function::operator=(const Function& rhs)
 {
     valid_ = rhs.valid_;
     numVar_ = rhs.numVar_;
@@ -288,12 +289,9 @@ Function &Function::operator=(const Function &rhs)
     independent_ = rhs.independent_;
     stoich_ = rhs.stoich_;
 
-    // Need to initialize parser properly. Mere assignment don't going to work.
-    // Just use std::move on shared_ptr and live happily ever-after! We get a
-    // nicely initialised parser.
-    // NOTE: we don't have a copy-assignment in MooseParser so don't do
-    // `parser = rhs.parser_
+    symbols_ = std::move(rhs.symbols_);
     parser_ = std::move(rhs.parser_);
+    parser_->RegisterSymbolTable(symbols_);
 
     return *this;
 }
@@ -348,7 +346,8 @@ void Function::addVariable(const string &name)
         // This must be true.
         if( xs_.find(index) == xs_.end())
             xs_[index] = make_shared<Variable>();
-        parser_->DefineVar(name, &xs_[index]->value);
+
+        symbols_->add_variable(name, xs_[index]->value);
         numVar_ = xs_.cend()->first;
     }
     else if (name[0] == 'y')
@@ -362,11 +361,12 @@ void Function::addVariable(const string &name)
             for (size_t i = ys_.size(); i <= (size_t)index; i++)
                 ys_.push_back(make_shared<double>());
         }
-        if (ys_[index]) parser_->DefineVar(name, ys_[index].get());
+        if (ys_[index]) 
+            symbols_->add_variable(name, *ys_[index]);
     }
     else if (name == "t")
     {
-        parser_->DefineVar("t", &t_);
+        symbols_->add_variable("t", t_);
     }
     else
     {
@@ -395,13 +395,13 @@ void Function::setExpr(const Eref &eref, string expr)
     valid_ = false;
 
     // Delete the old parser if already set.
-    if(parser_->GetExpr().size() > 0)
-        parser_.reset(new moose::MooseParser());
+
 
     // Find all variables x\d+ or y\d+ etc, and add them to variable buffer.
     set<string> xs;
     set<string> ys;
     moose::MooseParser::findXsYs(expr, xs, ys);
+    symbols_->clear();
 
     // Now create a map which maps the variable name to location of values. This
     // is critical to make sure that pointers remain valid when multi-threaded
@@ -414,6 +414,7 @@ void Function::setExpr(const Eref &eref, string expr)
     {
         // Set parser expression. Note that the symbol table is popultated by
         // addVariable function above.
+        parser_->RegisterSymbolTable(symbols_);
         valid_ = parser_->SetExpr(expr);
     }
     catch (moose::Parser::exception_type &e)
@@ -549,7 +550,7 @@ void Function::setVar(unsigned int index, double value)
 Variable *Function::getVar(unsigned int ii)
 {
     static Variable dummy;
-    if (xs_.find(ii) != xs_.end()) 
+    if (xs_.find(ii) != xs_.end())
         return xs_[ii].get();
 
     MOOSE_WARN("Warning: Function::getVar: index: "

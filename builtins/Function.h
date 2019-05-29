@@ -117,7 +117,8 @@ protected:
 
     // These variables may be redundant but used for interfacing with
     // MooseParser.
-    map<string, double*> vars_;
+    // map<string, double*> vars_;
+    shared_ptr<moose::Parser::symbol_table_t>  symbols_;
 };
 
 #endif /* end of include guard: FUNCTIONH_ */

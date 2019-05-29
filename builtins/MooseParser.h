@@ -70,10 +70,11 @@ public:
     /*-----------------------------------------------------------------------------
      *  Set/Get
      *-----------------------------------------------------------------------------*/
-    Parser::symbol_table_t GetSymbolTable() const;
-    Parser::expression_t GetExpression() const;
+    Parser::symbol_table_t* GetSymbolTable();
+    Parser::expression_t* GetExpression();
 
     void SetSymbolTable(Parser::symbol_table_t tab);
+    void RegisterSymbolTable(shared_ptr<Parser::symbol_table_t>& tab);
 
     /*-----------------------------------------------------------------------------
      *  User interface.
@@ -91,8 +92,6 @@ public:
     // Reformat the expression to meet TkExpr.
     string Reformat(const string user_expr);
     string SymbolTable2String( );
-
-    void SetVariableMap(const map<string, double*> map);
 
     static void findAllVarsRegex(const string& expr, set<string>& vars,
                                  const string& start);
