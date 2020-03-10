@@ -7,11 +7,12 @@ import time
 import moose
 import rdesigneur as rd
 import numpy as np
+import memprof as M
 
-# pip install memory_profile
-# run it python3 -m memory_profiler
+# pip install memprof
+# run it python3 -m memprof
 
-@profile
+@M.memprof(plot=True)
 def main():
     rdes = rd.rdesigneur(
         chanProto = [['make_HH_Na()', 'Na'], ['make_HH_K()', 'K']],
@@ -23,7 +24,7 @@ def main():
     )
     elecid_ori = rdes.elecid
 
-    for i in np.arange(1, 1000):
+    for i in np.arange(1, 3000):
         t0 = time.time()
         try:
             moose.delete('/model')
@@ -35,5 +36,4 @@ def main():
         moose.start( 3 )
         print(f"{i}, {time.time()-t0}")
 
-if __name__ == '__main__':
-    main()
+main()
