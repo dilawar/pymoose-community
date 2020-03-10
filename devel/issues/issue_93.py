@@ -13,7 +13,7 @@ d = os.path.split( os.path.abspath( __file__ ) )[0]
 
 def loadAndRun(solver=True):
     simtime = 500e-3
-    model = moose.loadModel(os.path.join(d, '../data/h10.CNG.swc'), '/cell')
+    model = moose.loadModel(os.path.join(d, '../../tests/data/h10.CNG.swc'), '/cell')
     comp = moose.element('/cell/apical_e_177_0')
     soma = moose.element('/cell/soma')
     for i in range(10):
