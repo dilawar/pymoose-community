@@ -49,6 +49,7 @@ def main( ):
     plt.plot( t, hsolveVec, label = 'hsolve' )
     outfile = '%s.png' % sys.argv[0]
     plt.legend( )
+    plt.show()
     plt.savefig( outfile )
     print( '[INFO] Wrote results to %s' % outfile )
     return 1

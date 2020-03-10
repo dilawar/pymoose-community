@@ -1,4 +1,4 @@
-all : 124 239 34 47 93
+all : 93
 
 # default is just call the file
 % : issue_%.py
