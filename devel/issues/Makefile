@@ -1,10 +1,11 @@
-all : 124 239 34 379 45 47 93
+all : 124 239 34 45 47 93
 
 # default is just call the file
 % : issue_%.py
 	python3 $< | tee -a $@.log
 
-# This issue requires memory profiling.
+# This issue requires memory profiling. 
+# # WONTFIX.
 379: issue_379.py
 	python3 -m pip install memprof --user
 	# Witch threshold of 1 kB
