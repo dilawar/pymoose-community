@@ -13,13 +13,15 @@ __maintainer__       = "Dilawar Singh"
 __email__            = "dilawars@ncbs.res.in"
 
 import sys
+import time
+from pathlib import Path
+
 import moose
+from moose.neuroml2.units import SI
 
 from lems.model.model import Model
 
-from pathlib import Path
-import xml.etree.ElementTree as ET
-
+import lxml.etree as ET
 
 import logging
 logger_ = logging.getLogger('moose.LEMS')
@@ -31,15 +33,29 @@ args_ = Args()
 # namespace support for etree
 ns = {'ns' : 'http://www.neuroml.org/lems/0.7.3'}
 
-def addTarget(target, tree, root):
-    logger_.info("Adding target '%s'" % target)
-    pass
+def addSimulation(tid, sim, mroot):
+    logger_.info("Adding simulation '%s' (%s)" % (tid, mroot))
+    # Each target has a component.
+    assert sim.attrib['type'] == 'Simulation', "Other type not supported."
+
+    componentToSimulate = sim.attrib['target']
+    mSimRoot = moose.Neutral(mroot.path + '/' + componentToSimulate) 
+    components = sim.xpath("//ns:Component[@id='%s']"%componentToSimulate
+            , namespaces=ns)
+    assert components
+    
+
+    moose.reinit()
+    runtime = SI(sim.attrib['length'])
+    t0 = time.time()
+    moose.start(runtime)
+    logger_.info("Took %g s for %g sec" % (time.time()-t0, runtime))
 
 
 def toMoose(root):
     global args_
     if args_.debug:
-        ET.ElementTree(root).write('flatten.xml', encoding='unicode')
+        ET.ElementTree(root).write('flatten.xml', pretty_print=True)
 
     # Everything starts with Taget.
     parent = moose.Neutral('/model')
@@ -47,7 +63,8 @@ def toMoose(root):
     for tgt in root.findall('./ns:Target', ns):
         cname = tgt.attrib['component']
         parent = moose.Neutral(parent.path+'/'+cname)
-        addTarget(cname, root, parent)
+        for sim in root.xpath("//ns:Component[@id='%s']" % cname, namespaces=ns):
+            addSimulation(cname, sim, parent)
 
     moose.reinit()
 
@@ -65,7 +82,7 @@ def main():
     model = model.resolve()
 
     # Its easier to work with ET then with dom. It is not such a costly
-    # expression.
+    # expression. Use lxml since children in lxml knows their parent!
     root = ET.fromstring(model.export_to_dom().toxml())
     toMoose(root)
 
