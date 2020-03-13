@@ -12,40 +12,62 @@ __copyright__        = "Copyright 2019-, Dilawar Singh"
 __maintainer__       = "Dilawar Singh"
 __email__            = "dilawars@ncbs.res.in"
 
+import sys
 import moose
-from pathlib import Path
-from lems.model.model import Model
-import logging
 
+from lems.model.model import Model
+
+from pathlib import Path
+import xml.etree.ElementTree as ET
+
+
+import logging
 logger_ = logging.getLogger('moose.LEMS')
+logger_.setLevel(logging.INFO)
 
 class Args: pass 
 args_ = Args()
 
-def buildMooseModel(tname, component, parent):
-    for child in component.children:
-        print(child, child.toxml())
+# namespace support for etree
+ns = {'ns' : 'http://www.neuroml.org/lems/0.7.3'}
+
+def addTarget(target, tree, root):
+    logger_.info("Adding target '%s'" % target)
+    pass
+
+
+def toMoose(root):
+    global args_
+    if args_.debug:
+        ET.ElementTree(root).write('flatten.xml', encoding='unicode')
+
+    # Everything starts with Taget.
+    parent = moose.Neutral('/model')
+
+    for tgt in root.findall('./ns:Target', ns):
+        cname = tgt.attrib['component']
+        parent = moose.Neutral(parent.path+'/'+cname)
+        addTarget(cname, root, parent)
+
+    moose.reinit()
 
 
 def main():
     global args_
     lemsFile = Path(args_.LEMS)
     assert lemsFile.exists()
-    
     model = Model()
-    for _dir in args_.I:
-        model.add_include_directory(_dir)
+    for idir in args_.I:
+        model.add_include_directory(idir)
 
+    # Use lems to parse the file, validate it and return the DOM.
     model.import_from_file(lemsFile)
     model = model.resolve()
-    moose.Neutral('/model')
-    parent = moose.Neutral('/model/LEMS')
-    for tname in model.targets:
-        logger_.info("Adding target %s" % tname)
-        parent = moose.Neutral(parent.path + '/' + tname)
-        comps = model.fat_components[tname]
-        print(comps)
-        buildMooseModel(tname, model.fat_components[tname], parent)
+
+    # Its easier to work with ET then with dom. It is not such a costly
+    # expression.
+    root = ET.fromstring(model.export_to_dom().toxml())
+    toMoose(root)
 
 
 if __name__ == '__main__':
@@ -56,5 +78,12 @@ if __name__ == '__main__':
     parser.add_argument('LEMS', help = 'LEMS file.', metavar='<LEMS FILE>')
     parser.add_argument('-I', default=[], action='append'
             , help = 'include paths.', metavar='<INCLUDE PATH>')
+
+    parser.add_argument('--debug', '-d'
+             , required = False
+             , default=False
+             , action='store_true'
+             , help = 'Debug mode.'
+            )
     parser.parse_args(namespace=args_)
     main()
