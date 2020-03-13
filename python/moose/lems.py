@@ -7,10 +7,10 @@
 #  - Docuementation: http://lems.github.io/LEMS/
 #  - Paper: https://doi.org/10.3389/fninf.2014.00079
 
-__author__           = "Dilawar Singh"
-__copyright__        = "Copyright 2019-, Dilawar Singh"
-__maintainer__       = "Dilawar Singh"
-__email__            = "dilawars@ncbs.res.in"
+__author__ = "Dilawar Singh"
+__copyright__ = "Copyright 2019-, Dilawar Singh"
+__maintainer__ = "Dilawar Singh"
+__email__ = "dilawars@ncbs.res.in"
 
 import sys
 import time
@@ -19,19 +19,12 @@ from pathlib import Path
 import moose
 from moose.neuroml2.units import SI
 
-from lems.model.model import Model
-
 import lxml.etree as ET
 
 import logging
 logger_ = logging.getLogger('moose.LEMS')
 logger_.setLevel(logging.INFO)
 
-class Args: pass 
-args_ = Args()
-
-# namespace support for etree
-ns = {'ns' : 'http://www.neuroml.org/lems/0.7.3'}
 
 def addSimulation(tid, sim, mroot):
     logger_.info("Adding simulation '%s' (%s)" % (tid, mroot))
@@ -39,52 +32,111 @@ def addSimulation(tid, sim, mroot):
     assert sim.attrib['type'] == 'Simulation', "Other type not supported."
 
     componentToSimulate = sim.attrib['target']
-    mSimRoot = moose.Neutral(mroot.path + '/' + componentToSimulate) 
-    components = sim.xpath("//ns:Component[@id='%s']"%componentToSimulate
-            , namespaces=ns)
+    mSimRoot = moose.Neutral(mroot.path + '/' + componentToSimulate)
+    components = sim.xpath("//ns:Component[@id='%s']" % componentToSimulate,
+                           namespaces=ns)
     assert components
-    
 
     moose.reinit()
     runtime = SI(sim.attrib['length'])
     t0 = time.time()
     moose.start(runtime)
-    logger_.info("Took %g s for %g sec" % (time.time()-t0, runtime))
+    logger_.info("Took %g s for %g sec" % (time.time() - t0, runtime))
 
 
-def toMoose(root):
-    global args_
-    if args_.debug:
-        ET.ElementTree(root).write('flatten.xml', pretty_print=True)
 
-    # Everything starts with Taget.
-    parent = moose.Neutral('/model')
+def _dumpXML(xml, fs=sys.stdout):
+    print(ET.tostring(xml, pretty_print=True).decode('utf8'), file=fs)
 
-    for tgt in root.findall('./ns:Target', ns):
+
+def _flattenXML(xml, source_dir):
+    """Flatten a given LEMS. All <Include> are replaced by its inner xml.
+
+    :param xml:
+    :param source_dir:
+    """
+
+    toRemove = []
+    for inc in xml.xpath('//Include'):
+        includeFilePath = source_dir / inc.attrib['file']
+        if not includeFilePath.exists():
+            logger_.warning("Could not find included file '%s'"%includeFilePath)
+            continue
+
+        # If the included file has extenstion `nml`, load neuroml.
+        if includeFilePath.suffix == '.nml':
+            moose.mooseReadNML2(str(includeFilePath))
+            continue
+
+        # Else replace the included file by its content.
+        incParent = inc.getparent()
+        # Recursion
+        thisXML = ET.parse(str(includeFilePath))
+        thisXML = _flattenXML(thisXML, includeFilePath.parent)
+
+        for child in thisXML.getroot():
+            incParent.append(child)
+
+        # delete inc node or just ignore it later.
+        toRemove.append(inc)
+
+    # Delete all Include nodes. They have been added recursively.
+    for x in toRemove:
+        xml.getroot().remove(x)
+
+    return xml
+
+
+class LEMS(object):
+
+    def __init__(self, lemsFile, **kwargs):
+        self.lemsFile = lemsFile
+        self.kwargs = kwargs
+        xml = ET.parse(str(lemsFile))
+        self.xml = _flattenXML(xml, lemsFile.parent)
+
+        if self.kwargs['debug']:
+            with open('_flatten.xml', 'w') as f:
+                _dumpXML(self.xml, f)
+
+    def build(self):
+        parent = moose.Neutral('/model')
+
+        # Starting point in LEMS is Target
+        for tgt in self.xml.findall('./Target'):
+            self.addTarget(tgt, parent)
+
+    def addNetwork(self, network, mroot):
+        netID = network.attrib['id']
+        logger_.info("Adding network %s to simulation %s" % (netID, mroot))
+
+    def addSimulation(self, sim, mroot):
+        simID = sim.attrib['id']
+        logger_.info("Adding simulation %s under %s" % (simID, mroot))
+        simTarget = sim.attrib['target']
+        assert simTarget, "<Simulation> must have a 'target' attribute"
+        for net in sim.xpath("//Network[@id='%s']"%simTarget):
+            mroot = moose.Neutral(mroot.path+'/'+simTarget)
+            self.addNetwork(net, mroot)
+
+    def addTarget(self, tgt, mroot):
         cname = tgt.attrib['component']
-        parent = moose.Neutral(parent.path+'/'+cname)
-        for sim in root.xpath("//ns:Component[@id='%s']" % cname, namespaces=ns):
-            addSimulation(cname, sim, parent)
+        assert cname
+        logger_.info("Adding target %s under %s" % (cname, mroot))
+        for sim in tgt.xpath("//Simulation[@id='%s']" % cname):
+            mroot = moose.Neutral(mroot.path+'/'+sim.attrib['id'])
+            self.addSimulation(sim, mroot)
 
-    moose.reinit()
+        # Add simulation properties.
+        moose.reinit()
 
 
-def main():
-    global args_
-    lemsFile = Path(args_.LEMS)
+def main(**kwargs):
+    lemsFile = Path(kwargs['LEMS'])
     assert lemsFile.exists()
-    model = Model()
-    for idir in args_.I:
-        model.add_include_directory(idir)
+    lems = LEMS(lemsFile, **kwargs)
+    lems.build()
 
-    # Use lems to parse the file, validate it and return the DOM.
-    model.import_from_file(lemsFile)
-    model = model.resolve()
-
-    # Its easier to work with ET then with dom. It is not such a costly
-    # expression. Use lxml since children in lxml knows their parent!
-    root = ET.fromstring(model.export_to_dom().toxml())
-    toMoose(root)
 
 
 if __name__ == '__main__':
@@ -92,15 +144,20 @@ if __name__ == '__main__':
     # Argument parser.
     description = '''Run a LEMS simulation.'''
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('LEMS', help = 'LEMS file.', metavar='<LEMS FILE>')
-    parser.add_argument('-I', default=[], action='append'
-            , help = 'include paths.', metavar='<INCLUDE PATH>')
+    parser.add_argument('LEMS', help='LEMS file.', metavar='<LEMS FILE>')
+    parser.add_argument('-I',
+                        default=[],
+                        action='append',
+                        help='include paths.',
+                        metavar='<INCLUDE PATH>')
 
-    parser.add_argument('--debug', '-d'
-             , required = False
-             , default=False
-             , action='store_true'
-             , help = 'Debug mode.'
-            )
-    parser.parse_args(namespace=args_)
-    main()
+    parser.add_argument('--debug',
+                        '-d',
+                        required=False,
+                        default=False,
+                        action='store_true',
+                        help='Debug mode.')
+    class Args: pass
+    args = Args()
+    parser.parse_args(namespace=args)
+    main(**vars(args))

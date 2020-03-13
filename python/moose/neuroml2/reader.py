@@ -640,11 +640,12 @@ class NML2Reader(object):
         rate = []
         for v in tab:
             req_vars = {
-                "v": "%sV" % v,
-                "vShift": vShift,
-                "temperature": self._getTemperature(),
+                "v": "%gV" % v,
+                "vShift": float(vShift),
+                "temperature": float(self._getTemperature()),
             }
-            req_vars.update(self._variables)
+            if self._variables:
+                req_vars.update(self._variables)
             vals = pynml.evaluate_component(ct, req_variables=req_vars)
             """print(vals)"""
             if "x" in vals:
