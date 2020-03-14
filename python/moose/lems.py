@@ -13,6 +13,8 @@ __maintainer__ = "Dilawar Singh"
 __email__ = "dilawars@ncbs.res.in"
 
 import sys
+assert sys.version_info >= (3,5), "Minimum Python version 3.5 is required."
+
 import time
 from pathlib import Path
 
@@ -59,9 +61,7 @@ def _flattenXML(xml, source_dir):
     toRemove = []
     for inc in xml.xpath('//Include'):
         includeFilePath = source_dir / inc.attrib['file']
-        if not includeFilePath.exists():
-            logger_.warning("Could not find included file '%s'"%includeFilePath)
-            continue
+        assert includeFilePath.exists(), f"File {includeFilePath} not found"
 
         # If the included file has extenstion `nml`, load neuroml.
         if includeFilePath.suffix == '.nml':

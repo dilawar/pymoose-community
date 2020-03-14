@@ -42,13 +42,18 @@
 
 # Code:
 
+import os
+import matplotlib
+matplotlib.use('Agg')
 import moose
 import sys
-from reader import NML2Reader
+from moose.neuroml2.reader import NML2Reader
 import numpy as np
 
+SCRIPT_DIR = os.path.dirname(__file__)
 
-def test_channel_gates():
+
+def channel_gates():
     """Creates prototype channels under `/library` and plots the time
     constants (tau) and activation (minf, hinf, ninf) parameters for the
     channel gates.
@@ -60,6 +65,14 @@ def test_channel_gates():
     h = moose.element('/library[0]/naChan[0]/gateY')
     n = moose.element('/library[0]/kChan[0]/gateX')
     v = np.linspace(n.min,n.max, n.divs+1)
+
+    Z1 = m.tableA / m.tableB
+    assert np.allclose((Z1.mean(), Z1.std()), (0.5555422943641506,
+        0.45630927943804045))
+
+    Z2 = h.tableA / h.tableB
+    print(Z2.mean(), Z2.std())
+    assert np.allclose((Z2.mean(), Z2.std()), (0.3530622180892085, 0.446286093435516))
     
     plt.subplot(221)
     plt.plot(v, 1/m.tableB, label='tau_m')
@@ -90,14 +103,15 @@ def test_channel_gates():
     plt.plot(v, n.tableB-n.tableA, label='nB-nA(beta)')
     plt.legend()
     
-    plt.show()
+    plt.savefig(__file__ + '1.png')
+    plt.close()
 
 
-def run(nogui):
+def test_hh_cell(nogui=False):
     
     reader = NML2Reader(verbose=True)
 
-    filename = 'test_files/NML2_SingleCompHHCell.nml'
+    filename = os.path.join(SCRIPT_DIR, 'nml_files/NML2_SingleCompHHCell.nml')
     print('Loading: %s'%filename)
     reader.read(filename, symmetric=True)
     
@@ -130,15 +144,16 @@ def run(nogui):
     print("Finished simulation!")
     
     t = np.linspace(0, simtime, len(vm.vector))
+
+    V = vm.vector
+    I = inj.vector
+    assert np.allclose((V.mean(),V.std()), (-0.0622818195, 0.0152544)), (
+            V.mean(), V.std())
+    assert np.allclose((I.mean(),I.std()), (2.6657780739753425e-11,
+        3.7709218835869634e-11)), (I.mean(), I.std())
     
     if not nogui:
         import matplotlib.pyplot as plt
-
-        vfile = open('moose_v_hh.dat','w')
-
-        for i in range(len(t)):
-            vfile.write('%s\t%s\n'%(t[i],vm.vector[i]))
-        vfile.close()
         plt.subplot(211)
         plt.plot(t, vm.vector * 1e3, label='Vm (mV)')
         plt.legend()
@@ -150,14 +165,11 @@ def run(nogui):
         #plt.plot(t, gNa.vector * 1e6, label='Na')
         plt.legend()
         plt.figure()
-        test_channel_gates()
-        plt.show()
-        plt.close()
+        channel_gates()
+        plt.savefig(__file__+'.png')
         
     
 if __name__ == '__main__':
-    
     nogui = '-nogui' in sys.argv
-    
-    run(nogui)
+    test_hh_cell(nogui)
     
