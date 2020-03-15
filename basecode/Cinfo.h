@@ -50,7 +50,7 @@ class Cinfo
 			Cinfo( const Cinfo& other );
 
 			~Cinfo();
-//////////////////////////////////////////////////////////////////////////
+
 			/**
 			 * Initializes the Cinfo. Must be called exactly once for
 			 * each Cinfo.

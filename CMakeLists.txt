@@ -309,6 +309,7 @@ endif( WITH_BOOST )
 
 
 # This target is built by pymoose/CMakeLists.txt file.
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/pybind11)
 add_subdirectory(pymoose)
 
 # always override debian default installation directory. It will be installed in

@@ -2486,6 +2486,7 @@ int defineClass(PyObject * module_dict, const Cinfo * cinfo)
 
     PyTypeObject * new_class =
         (PyTypeObject*)PyType_Type.tp_alloc(&PyType_Type, 0);
+
 // Python3 does not like it without heaptype: aborts on import
 // Fatal Python error:
 // type_traverse() called for non-heap type 'moose.Neutral'
@@ -2493,43 +2494,11 @@ int defineClass(PyObject * module_dict, const Cinfo * cinfo)
     new_class->tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HEAPTYPE;
     PyHeapTypeObject* et = (PyHeapTypeObject*)new_class;
     et->ht_name = PyUnicode_FromString(className.c_str());
-#if PY_MINOR_VERSION >= 3
     et->ht_qualname = PyUnicode_FromString(str.c_str());
 #endif
-#else
-    new_class->tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
-#endif
-    /*
-      Thu Jul 9 09:58:09 IST 2015 - commenting out
-      Py_TPFLAGS_HEAPTYPE because it causes segfault on accessing
-      __class__ attribute of instances. Bug # 168. Another
-      possible solution would be to catch __class__ request in
-      tp_getattro and INCREF the class object when returning the
-      same.
-
-      ------
-    should we avoid Py_TPFLAGS_HEAPTYPE as it imposes certain
-    limitations:
-    http://mail.python.org/pipermail/python-dev/2009-July/090921.html
-    But otherwise somehow GC tries tp_traverse on these classes
-    (even when I unset Py_TPFLAGS_HAVE_GC) and fails the
-    assertion in debug build of Python:
-
-    python: Objects/typeobject.c:2683: type_traverse: Assertion `type->tp_flags & Py_TPFLAGS_HEAPTYPE' failed.
-
-    In released versions of Python there is a crash at
-    Py_Finalize().
-
-    Also if HEAPTYPE is true, then help(classname) causes a
-    segmentation fault as it tries to convert the class object
-    to a heaptype object (resulting in an invalid pointer). If
-    heaptype is not set it uses tp_name to print the help.
-    Py_SIZE(new_class) = sizeof(_ObjId);
-    */
     new_class->tp_name = strdup(str.c_str());
     new_class->tp_doc = moose_Class_documentation;
 
-    //strncpy(new_class->tp_doc, moose_Class_documentation, strlen(moose_Class_documentation));
     map<string, PyTypeObject *>::iterator base_iter =
         get_moose_classes().find(cinfo->getBaseClass());
     if (base_iter == get_moose_classes().end())
