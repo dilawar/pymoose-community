@@ -38,23 +38,22 @@ def _findInNeuromlCoreTypes(incpath):
     return incpath
 
 
-def addSimulation(tid, sim, mroot):
-    logger_.info("Adding simulation '%s' (%s)" % (tid, mroot))
-    # Each target has a component.
-    assert sim.attrib['type'] == 'Simulation', "Other type not supported."
-
-    componentToSimulate = sim.attrib['target']
-    mSimRoot = moose.Neutral(mroot.path + '/' + componentToSimulate)
-    components = sim.xpath("//ns:Component[@id='%s']" % componentToSimulate,
-                           namespaces=ns)
-    assert components
-
-    moose.reinit()
-    runtime = SI(sim.attrib['length'])
-    t0 = time.time()
-    moose.start(runtime)
-    logger_.info("Took %g s for %g sec" % (time.time() - t0, runtime))
-
+## def addSimulation(tid, sim, mroot):
+##     logger_.info("Adding simulation '%s' (%s)" % (tid, mroot))
+##     # Each target has a component.
+##     assert sim.attrib['type'] == 'Simulation', "Other type not supported."
+## 
+##     componentToSimulate = sim.attrib['target']
+##     mSimRoot = moose.Neutral(mroot.path + '/' + componentToSimulate)
+##     components = sim.xpath("//ns:Component[@id='%s']" % componentToSimulate,
+##                            namespaces=ns)
+##     assert components
+## 
+##     moose.reinit()
+##     runtime = SI(sim.attrib['length'])
+##     t0 = time.time()
+##     moose.start(runtime)
+##     logger_.info("Took %g s for %g sec" % (time.time() - t0, runtime))
 
 
 def _dumpXML(xml, fs=sys.stdout):
@@ -143,8 +142,13 @@ class LEMS(object):
             mroot = moose.Neutral(mroot.path+'/'+sim.attrib['id'])
             self.addSimulation(sim, mroot)
 
-        # Add simulation properties.
-        moose.reinit()
+            # Now add the simulation time.
+            simtime = SI(sim.attrib['length'])
+            logger_.info("Running for %s s" % simtime)
+            t0 = time.time()
+            moose.reinit()
+            moose.start(simtime)
+            logger_.info("Finished in %f s" % (time.time()-t0) )
 
 
 def main(**kwargs):
