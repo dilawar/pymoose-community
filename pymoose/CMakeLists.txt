@@ -4,7 +4,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/../CheckCXXCompiler.cmake)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../cmake_modules/")
 
 pybind11_add_module(_moose pymoose.cpp)
-target_link_libraries(_moose moose)
+target_link_libraries(_moose PRIVATE moose)
 
 enable_testing()
 add_test(NAME sanity 
