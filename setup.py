@@ -23,6 +23,7 @@ import sys
 import multiprocessing
 import subprocess
 import datetime
+import glob
 
 try:
     cmakeVersion = subprocess.call(["cmake", "--version"],
@@ -165,15 +166,13 @@ setup(
         'moose': os.path.join(sdir_, 'python', 'moose')
     },
     package_data={
-        'moose': [
-            '_moose.so'
-            , os.path.join('neuroml2','schema','NeuroMLCoreDimensions.xml')
+        'moose': [ '_moose.so'
             , os.path.join('chemUtil', 'rainbow2.pkl')
-        ]
+        ] + glob.glob('neuroml2/**.xml', recursive=True)
     },
+
     # python2 specific version here as well.
     install_requires=['numpy', 'matplotlib'],
-    extra_requires={'dev' : [ 'coverage', 'pytest', 'pytest-cov' ]},
     ext_modules=[CMakeExtension('dummy', optional=True)],
     cmdclass={'build_ext': build_ext, 'test': TestCommand},
 )

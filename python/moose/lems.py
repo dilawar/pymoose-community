@@ -7,10 +7,10 @@
 #  - Docuementation: http://lems.github.io/LEMS/
 #  - Paper: https://doi.org/10.3389/fninf.2014.00079
 
-__author__ = "Dilawar Singh"
-__copyright__ = "Copyright 2019-, Dilawar Singh"
+__author__     = "Dilawar Singh"
+__copyright__  = "Copyright 2019-, Dilawar Singh"
 __maintainer__ = "Dilawar Singh"
-__email__ = "dilawars@ncbs.res.in"
+__email__      = "dilawars@ncbs.res.in"
 
 import sys
 assert sys.version_info >= (3,5), "Minimum Python version 3.5 is required."
@@ -26,6 +26,16 @@ import lxml.etree as ET
 import logging
 logger_ = logging.getLogger('moose.LEMS')
 logger_.setLevel(logging.INFO)
+
+SCRIPT_DIR = Path(__file__).parent
+
+# neuroml2 coretypes.
+def _findInNeuromlCoreTypes(incpath):
+    global SCRIPT_DIR
+    nmlCoreTypePath = SCRIPT_DIR / 'neuroml2' / 'NeuroML2CoreTypes'
+    if (nmlCoreTypePath / incpath.name).exists():
+        return nmlCoreTypePath / incpath.name
+    return incpath
 
 
 def addSimulation(tid, sim, mroot):
@@ -61,6 +71,11 @@ def _flattenXML(xml, source_dir):
     toRemove = []
     for inc in xml.xpath('//Include'):
         includeFilePath = source_dir / inc.attrib['file']
+
+        ## Search them in neuroml core types folder if not found.
+        if not includeFilePath.exists():
+            includeFilePath = _findInNeuromlCoreTypes(includeFilePath)
+
         assert includeFilePath.exists(), f"File {includeFilePath} not found"
 
         # If the included file has extenstion `nml`, load neuroml.
@@ -70,6 +85,7 @@ def _flattenXML(xml, source_dir):
 
         # Else replace the included file by its content.
         incParent = inc.getparent()
+
         # Recursion
         thisXML = ET.parse(str(includeFilePath))
         thisXML = _flattenXML(thisXML, includeFilePath.parent)
@@ -132,11 +148,12 @@ class LEMS(object):
 
 
 def main(**kwargs):
+    if kwargs['debug']:
+        logger_.setLevel(logging.DEBUG)
     lemsFile = Path(kwargs['LEMS'])
     assert lemsFile.exists()
     lems = LEMS(lemsFile, **kwargs)
     lems.build()
-
 
 
 if __name__ == '__main__':
@@ -145,18 +162,14 @@ if __name__ == '__main__':
     description = '''Run a LEMS simulation.'''
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('LEMS', help='LEMS file.', metavar='<LEMS FILE>')
-    parser.add_argument('-I',
-                        default=[],
-                        action='append',
+
+    parser.add_argument('-I', default=[], action='append',
                         help='include paths.',
                         metavar='<INCLUDE PATH>')
 
-    parser.add_argument('--debug',
-                        '-d',
-                        required=False,
-                        default=False,
-                        action='store_true',
+    parser.add_argument('--debug', '-d', default=False, action='store_true',
                         help='Debug mode.')
+
     class Args: pass
     args = Args()
     parser.parse_args(namespace=args)
