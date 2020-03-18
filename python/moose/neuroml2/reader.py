@@ -18,7 +18,8 @@ from moose.neuroml2.hhfit import exponential2
 from moose.neuroml2.hhfit import sigmoid2
 from moose.neuroml2.hhfit import linoid2
 from moose.neuroml2.units import SI
-import moose
+
+import moose._moose as _moose
 
 import logging
 
@@ -122,10 +123,10 @@ def _findCaConc():
     Find a suitable CaConc for computing HHGate tables.
     This is a hack, though it is likely to work in most cases. 
     """
-    caConcs = moose.wildcardFind("/library/##[TYPE=CaConc]")
-    assert len(caConcs) == 1, "No moose.CaConc found." + \
+    caConcs = _moose.wildcardFind("/library/##[TYPE=CaConc]")
+    assert len(caConcs) == 1, "No _moose.CaConc found." + \
         " Currently moose supports HHChannel which depends only " + \
-        " on moose.CaConc. %s" % str(caConcs)
+        " on _moose.CaConc. %s" % str(caConcs)
     return caConcs[0]
 
 
@@ -226,25 +227,26 @@ class NML2Reader(object):
         self.nml_chans_to_moose = {}  # NeuroML object to MOOSE object
         self.nml_concs_to_moose = {}  # NeuroML object to MOOSE object
         self.moose_to_nml = {}  # Moose object to NeuroML object
-        self.proto_cells = {}  # map id to prototype cell in moose
-        self.proto_chans = {}  # map id to prototype channels in moose
-        self.proto_pools = {}  # map id to prototype pools (Ca2+, Mg2+)
-        self.includes = {}  # Included files mapped to other readers
+        self.proto_cells = {}   # map id to prototype cell in moose
+        self.proto_chans = {}   # map id to prototype channels in moose
+        self.proto_pools = {}   # map id to prototype pools (Ca2+, Mg2+)
+        self.includes = {}      # Included files mapped to other readers
 
         # /library may have alreay been created.
-        if moose.exists("/library"):
-            self.lib = moose.element("/library")
+        if _moose.exists("/library"):
+            self.lib = _moose.element("/library")
         else:
-            self.lib = moose.Neutral("/library")
+            self.lib = _moose.Neutral("/library")
 
-        if not moose.exists('/model'):
-            moose.Neutral('/model')
+        if not _moose.exists('/model'):
+            _moose.Neutral('/model')
 
-        # Basepath for storing cell populations.
-        if moose.exists('/model/cells'):
-            self.popbase = moose.element('/model/nml2')
-        else:
-            self.popbase = moose.Neutral('/model/nml2')
+        # Basepath for storing cell populations, and inputs etc. These
+        # components also belong to /model 
+        self.mModelBase = _moose.element('/model') if _moose.exists('/model') \
+                else _moose.Neutral('/model')
+
+        self.mPopBase = self.mModelBase
 
         self.id_to_ionChannel = {}
 
@@ -269,7 +271,7 @@ class NML2Reader(object):
         if len(self.doc.networks) >= 1:
             self.network = self.doc.networks[0]
 
-            moose.celsius = self._getTemperature()
+            _moose.celsius = self._getTemperature()
 
         self.importConcentrationModels(self.doc)
         self.importIonChannels(self.doc)
@@ -313,10 +315,10 @@ class NML2Reader(object):
                 , pop_id, cellType, str(list(compt.keys()))))
             raise LookupError("%s not found" % segId)
 
-        return moose.element(
+        return _moose.element(
             "%s/%s/%s/%s"
             % (
-                self.popbase.path,
+                self.mPopBase.path,
                 pop_id,
                 cellIndex,
                 self.seg_id_to_comp_name[self.pop_to_cell_type[pop_id]][segId],
@@ -332,14 +334,14 @@ class NML2Reader(object):
             # FIXME: Instance of population is added under self.pop. Before it was
             # under self.lib . If everything works OK, remove this line else
             # revert back to original.
-            mpop = moose.Neutral("%s/%s" % (self.popbase.path, pop.id))
+            mpop = _moose.Neutral("%s/%s" % (self.mPopBase.path, pop.id))
             self.cells_in_populations[pop.id] = {}
 
             # Either population have size or instances.
             # 1. Add population by size.
             for i in range(pop.size):
                 self.pop_to_cell_type[pop.id] = pop.component
-                chid = moose.copy(self.proto_cells[pop.component], mpop, "%d"%i)
+                chid = _moose.copy(self.proto_cells[pop.component], mpop, "%d"%i)
                 self.cells_in_populations[pop.id][i] = chid
                 logger_.info("Created %s instances of %s (Type %s)"
                     % (chid, pop.id, pop.component)
@@ -348,14 +350,14 @@ class NML2Reader(object):
             # 2. Add instances of population.
             for i, instance in enumerate(pop.instances):
                 self.pop_to_cell_type[pop.id] = pop.component
-                chid = moose.copy(self.proto_cells[pop.component], mpop, '%d'%instance.id)
+                chid = _moose.copy(self.proto_cells[pop.component], mpop, '%d'%instance.id)
                 self.cells_in_populations[pop.id][instance.id] = chid
                 logger_.info("Created %s instances of %s (Type %s)"
                     % (chid, pop.id, pop.component)
                 )
 
     def getInput(self, input_id):
-        return moose.element("%s/inputs/%s" % (self.lib.path, input_id))
+        return _moose.element("%s/inputs/%s" % (self.lib.path, input_id))
 
     def createInputs(self):
         for el in self.network.explicit_inputs:
@@ -365,12 +367,19 @@ class NML2Reader(object):
             if "/" in el.target:
                 seg_id = el.target.split("/")[1]
             _input = self.getInput(el.input)
-            moose.connect(_input, "output", self.getComp(pop_id, i, seg_id), "injectMsg")
+
+            # Copy this input to mModelBase. In previous version, everything
+            # was under /library. We want active components during simulation
+            # to be under self.mModelBase
+            _input = _moose.copy(_input, self.mModelBase.path)
+            logger_.debug("Adding input %s" % _input)
+            _moose.connect(_input, "output", self.getComp(pop_id, i, seg_id), "injectMsg")
 
         for il in self.network.input_lists:
             for ii in il.input:
+                logger_.debug("Adding input %s" % ii)
                 _input = self.getInput(il.component)
-                moose.connect(
+                _moose.connect(
                     _input,
                     "output",
                     self.getComp(
@@ -382,7 +391,7 @@ class NML2Reader(object):
     def createIAFCellPrototype(self, iaf):
         """FIXME: Not tested.
         """
-        mLIF = moose.LIF("%s/%s" % (self.lib.path, iaf.id))
+        mLIF = _moose.LIF("%s/%s" % (self.lib.path, iaf.id))
         _setAttrFromNMLAttr(mLIF, 'vReset', iaf, 'reset', True)
         _setAttrFromNMLAttr(mLIF, 'thres', iaf, 'thres', True)
         _setAttrFromNMLAttr(mLIF, 'refractoryPeriod', iaf, 'refrac', True)
@@ -408,7 +417,7 @@ class NML2Reader(object):
 
     def createCellPrototype(self, cell, symmetric=True):
         """To be completed - create the morphology, channels in prototype"""
-        nrn = moose.Neuron("%s/%s" % (self.lib.path, cell.id))
+        nrn = _moose.Neuron("%s/%s" % (self.lib.path, cell.id))
         self.proto_cells[cell.id] = nrn
         self.nml_cells_to_moose[cell.id] = nrn
         self.moose_to_nml[nrn] = cell
@@ -432,9 +441,9 @@ class NML2Reader(object):
 
         id_to_segment = dict([(seg.id, seg) for seg in segments])
         if symmetric:
-            compclass = moose.SymCompartment
+            compclass = _moose.SymCompartment
         else:
-            compclass = moose.Compartment
+            compclass = _moose.Compartment
         # segment names are used as compartment names - assuming
         # naming convention does not clash with that in MOOSE
         cellpath = moosecell.path
@@ -488,7 +497,7 @@ class NML2Reader(object):
             comp.diameter = (float(p0.diameter) + float(p1.diameter)) * self.lunit / 2
             if parent:
                 pcomp = id_to_comp[parent.id]
-                moose.connect(comp, src, pcomp, dst)
+                _moose.connect(comp, src, pcomp, dst)
 
         sg_to_segments = {}
         for sg in morphology.segment_groups:
@@ -577,8 +586,8 @@ class NML2Reader(object):
                 "No prototype pool for %s referred to by %s"
                 % (species.concentration_model, species.id)
             )
-        pool_id = moose.copy(proto_pool, compartment, species.id)
-        pool = moose.element(pool_id)
+        pool_id = _moose.copy(proto_pool, compartment, species.id)
+        pool = _moose.element(pool_id)
         pool.B = pool.B / (
             np.pi
             * compartment.length
@@ -630,7 +639,7 @@ class NML2Reader(object):
                 if _whichGate(mgate) != "Z":
                     raise RuntimeWarning(
                         "Concentration dependant gate "
-                        " should use gateZ of moose.HHChannel. "
+                        " should use gateZ of _moose.HHChannel. "
                         " If you know what you are doing, ignore this "
                         " warning. "
                     )
@@ -711,7 +720,7 @@ class NML2Reader(object):
                         chdens, self.nml_segs_to_moose[seg.id], condDensity, erev
                     )
             """moose.le(self.nml_segs_to_moose[seg.id])
-            moose.showfield(self.nml_segs_to_moose[seg.id], field="*", showtype=True)"""
+            _moose.showfield(self.nml_segs_to_moose[seg.id], field="*", showtype=True)"""
 
     def copyChannel(self, chdens, comp, condDensity, erev):
         """Copy moose prototype for `chdens` condutcance density to `comp`
@@ -734,8 +743,8 @@ class NML2Reader(object):
 
         logger_.debug("Copying %s to %s, %s; erev=%s" % (chdens.id, comp, condDensity, erev))
         orig = chdens.id
-        chid = moose.copy(proto_chan, comp, chdens.id)
-        chan = moose.element(chid)
+        chid = _moose.copy(proto_chan, comp, chdens.id)
+        chan = _moose.element(chid)
         els = list(self.paths_to_chan_elements.keys())
         for p in els:
             pp = p.replace("%s/" % chdens.ion_channel, "%s/" % orig)
@@ -745,7 +754,7 @@ class NML2Reader(object):
         # print(self.paths_to_chan_elements)
         chan.Gbar = sarea(comp) * condDensity
         chan.Ek = erev
-        moose.connect(chan, "channel", comp, "channel")
+        _moose.connect(chan, "channel", comp, "channel")
         return chan
 
     """
@@ -784,11 +793,11 @@ class NML2Reader(object):
 
     def createHHChannel(self, chan, vmin=-150e-3, vmax=100e-3, vdivs=5000):
         path = "%s/%s" % (self.lib.path, chan.id)
-        if moose.exists(path):
-            mchan = moose.element(path)
+        if _moose.exists(path):
+            mchan = _moose.element(path)
         else:
-            mchan = moose.HHChannel(path)
-        mgates = [moose.element(g) for g in [mchan.gateX, mchan.gateY, mchan.gateZ]]
+            mchan = _moose.HHChannel(path)
+        mgates = [_moose.element(g) for g in [mchan.gateX, mchan.gateY, mchan.gateZ]]
 
         # We handle only up to 3 gates in HHCHannel
         assert len(chan.gate_hh_rates) <= 3, "No more than 3 gates"
@@ -799,15 +808,16 @@ class NML2Reader(object):
         all_gates = chan.gates + chan.gate_hh_rates
 
         # If user set bnml channels' id to 'x', 'y' or 'z' then pair this gate
-        # with moose.HHChannel's gateX, gateY, gateZ respectively. Else pair
+        # with _moose.HHChannel's gateX, gateY, gateZ respectively. Else pair
         # them with gateX, gateY, gateZ acording to list order.
         for mgate, ngate in _pairNmlGateWithMooseGates(mgates, all_gates):
             self._addGateToHHChannel(chan, mchan, mgate, ngate, vmin, vmax, vdivs)
         logger_.debug("== Created %s for %s" % (mchan.path, chan.id))
         return mchan
 
+
     def _addGateToHHChannel(self, chan, mchan, mgate, ngate, vmin, vmax, vdivs):
-        """Add gateX, gateY, gateZ etc to moose.HHChannel (mchan). 
+        """Add gateX, gateY, gateZ etc to _moose.HHChannel (mchan). 
 
         Each gate can be voltage dependant and/or concentration dependant.
         Only caConc dependant channels are supported.
@@ -899,17 +909,17 @@ class NML2Reader(object):
                 mgate.tableB = q10_scale * (1 / tau)
 
     def createPassiveChannel(self, chan):
-        mchan = moose.Leakage("%s/%s" % (self.lib.path, chan.id))
+        mchan = _moose.Leakage("%s/%s" % (self.lib.path, chan.id))
         logger_.debug("%s: Created %s for %s" % (self.filename, mchan.path,
             chan.id))
         return mchan
 
     def importInputs(self, doc):
-        minputs = moose.Neutral("%s/inputs" % (self.lib.path))
+        minputs = _moose.Neutral("%s/inputs" % (self.lib.path))
 
         for pg_nml in doc.pulse_generators:
             assert pg_nml.id
-            pg = moose.PulseGen("%s/%s" % (minputs.path, pg_nml.id))
+            pg = _moose.PulseGen("%s/%s" % (minputs.path, pg_nml.id))
             pg.firstDelay = SI(pg_nml.delay)
             pg.firstWidth = SI(pg_nml.duration)
             pg.firstLevel = SI(pg_nml.amplitude)
@@ -944,7 +954,7 @@ class NML2Reader(object):
         name = concModel.id
         if hasattr(concModel, "name") and concModel.name is not None:
             name = concModel.name
-        ca = moose.CaConc("%s/%s" % (self.lib.path, name))
+        ca = _moose.CaConc("%s/%s" % (self.lib.path, name))
 
         ca.CaBasal = SI(concModel.resting_conc)
         ca.tau = SI(concModel.decay_constant)

@@ -99,6 +99,12 @@ def _printMooseObject():
         print(f" {x.path:50s} {type(x)}")
 
 
+def _quantityToMooseElems(path, prefix='/model/cells/'):
+    # The last value is field value.
+    path = Path(path).parent
+    return moose.element(prefix+'/'+str(path))
+
+
 class LEMS(object):
 
     def __init__(self, lemsFile : Path, **kwargs):
@@ -124,6 +130,31 @@ class LEMS(object):
         netID = network.attrib['id']
         logger_.info("Adding network %s to simulation %s" % (netID, mroot))
 
+    def toMooseTable(self, lineElem):
+        variable = lineElem.attrib['id']
+        assert variable in ['v', 'i']
+        quantity = lineElem.attrib['quantity']
+        mElem = _quantityToMooseElems(quantity, '/model')
+
+
+
+    def addComponentDisplay(self, elem, mroot):
+        logger_.info(f"Adding {elem.tag} under simulation component.")
+        print(elem.attrib)
+        for lElem in elem:
+            quantity = lElem.attrib['quantity']
+            logger_.info(f" Adding line {lElem.attrib} for {quantity}")
+            table = self.toMooseTable(lElem)
+            print(table)
+
+
+    def addSimulationComponent(self, simElem, mRoot):
+        if simElem.tag == 'Display':
+            self.addComponentDisplay(simElem, mRoot)
+        else:
+            logger_.warning(f"Not implmented: Component: {simElem.tag}")
+
+
     def addSimulation(self, sim, mroot):
         simID = sim.attrib['id']
         logger_.info("Adding simulation %s under %s" % (simID, mroot))
@@ -133,24 +164,30 @@ class LEMS(object):
             mroot = moose.Neutral(mroot.path+'/'+simTarget)
             self.addNetwork(net, mroot)
 
+        # Find other elements under simulation
+        [self.addSimulationComponent(x, mroot) for x in sim]
+
 
     def addTarget(self, tgt, mroot):
         cname = tgt.attrib['component']
         assert cname
         logger_.info(f"Adding target {cname} under {mroot}")
+
+        # There can be at most one simulation under target. Let the schema
+        # handle the validation.
         for sim in tgt.xpath("//Simulation[@id='%s']" % cname):
             mroot = moose.Neutral(mroot.path+'/'+sim.attrib['id'])
             self.addSimulation(sim, mroot)
 
-            _printMooseObject()
+            #  _printMooseObject()
 
             # Now add the simulation time.
             simtime = SI(sim.attrib['length'])
-            logger_.info("Running for %s s" % simtime)
-            t0 = time.time()
-            moose.reinit()
-            moose.start(simtime)
-            logger_.info("Finished in %f s" % (time.time()-t0) )
+            #  logger_.info("Running for %s s" % simtime)
+            #  t0 = time.time()
+            #  moose.reinit()
+            #  moose.start(simtime)
+            #  logger_.info("Finished in %f s" % (time.time()-t0) )
 
 
 def main(**kwargs):
