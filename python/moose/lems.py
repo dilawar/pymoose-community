@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+# THIS IS IN ALPHA. SHOULD NOT EVEN BE TRIED BY OTHER THAN MAIN DEVELOPER.
 # LEMS support in MOOSE simulator.
 #
 # REFERENCES:
@@ -7,10 +8,10 @@
 #  - Docuementation: http://lems.github.io/LEMS/
 #  - Paper: https://doi.org/10.3389/fninf.2014.00079
 
-__author__     = "Dilawar Singh"
-__copyright__  = "Copyright 2019-, Dilawar Singh"
+__author__ = "Dilawar Singh"
+__copyright__ = "Copyright 2019-, Dilawar Singh"
 __maintainer__ = "Dilawar Singh"
-__email__      = "dilawars@ncbs.res.in"
+__email__ = "dilawars@ncbs.res.in"
 
 import sys
 assert sys.version_info >= (3, 6), "Minimum Python version 3.6 is required."
@@ -30,7 +31,8 @@ logger_.setLevel(logging.INFO)
 
 SCRIPT_DIR = Path(__file__).parent
 
-def _findInNeuromlCoreTypes(incpath : Path) -> Path:
+
+def _findInNeuromlCoreTypes(incpath: Path) -> Path:
     """incpath may be a Neuroml2CoreType. These are included in the source code
     now. 
 
@@ -92,6 +94,7 @@ def _flattenXML(xml, source_dir):
 
     return xml
 
+
 def _printMooseObject():
     for x in moose.wildcardFind('/##'):
         if '/classes' == x.path[:8] or '/Msgs' == x.path[:5]:
@@ -99,15 +102,17 @@ def _printMooseObject():
         print(f" {x.path:50s} {type(x)}")
 
 
-def _quantityToMooseElems(path, prefix='/model/cells/'):
+def _quantityToMooseElems(path, prefix='/model'):
     # The last value is field value.
     path = Path(path).parent
-    return moose.element(prefix+'/'+str(path))
+    return moose.element(prefix + '/' + str(path))
+
+def _getPopulation(popid):
+    return moose.wilcardFind('%s/##[TYPE=Neuron]'%popid)
 
 
 class LEMS(object):
-
-    def __init__(self, lemsFile : Path, **kwargs):
+    def __init__(self, lemsFile: Path, **kwargs):
         self.lemsFile = lemsFile
         self.kwargs = kwargs
         xml = ET.parse(str(lemsFile))
@@ -130,13 +135,14 @@ class LEMS(object):
         netID = network.attrib['id']
         logger_.info("Adding network %s to simulation %s" % (netID, mroot))
 
-    def toMooseTable(self, lineElem):
+    def addTable(self, lineElem):
         variable = lineElem.attrib['id']
         assert variable in ['v', 'i']
         quantity = lineElem.attrib['quantity']
         mElem = _quantityToMooseElems(quantity, '/model')
-
-
+        tab = moose.Table(mElem.path + '/tab')
+        moose.connect(tab, 'requestOut', mElem, 'get' + variable.upper())
+        return tab
 
     def addComponentDisplay(self, elem, mroot):
         logger_.info(f"Adding {elem.tag} under simulation component.")
@@ -144,9 +150,8 @@ class LEMS(object):
         for lElem in elem:
             quantity = lElem.attrib['quantity']
             logger_.info(f" Adding line {lElem.attrib} for {quantity}")
-            table = self.toMooseTable(lElem)
+            table = self.addTable(lElem)
             print(table)
-
 
     def addSimulationComponent(self, simElem, mRoot):
         if simElem.tag == 'Display':
@@ -154,19 +159,17 @@ class LEMS(object):
         else:
             logger_.warning(f"Not implmented: Component: {simElem.tag}")
 
-
     def addSimulation(self, sim, mroot):
         simID = sim.attrib['id']
         logger_.info("Adding simulation %s under %s" % (simID, mroot))
         simTarget = sim.attrib['target']
         assert simTarget, "<Simulation> must have a 'target' attribute"
-        for net in sim.xpath("//Network[@id='%s']"%simTarget):
-            mroot = moose.Neutral(mroot.path+'/'+simTarget)
+        for net in sim.xpath("//Network[@id='%s']" % simTarget):
+            mroot = moose.Neutral(mroot.path + '/' + simTarget)
             self.addNetwork(net, mroot)
 
         # Find other elements under simulation
         [self.addSimulationComponent(x, mroot) for x in sim]
-
 
     def addTarget(self, tgt, mroot):
         cname = tgt.attrib['component']
@@ -176,7 +179,7 @@ class LEMS(object):
         # There can be at most one simulation under target. Let the schema
         # handle the validation.
         for sim in tgt.xpath("//Simulation[@id='%s']" % cname):
-            mroot = moose.Neutral(mroot.path+'/'+sim.attrib['id'])
+            mroot = moose.Neutral(mroot.path + '/' + sim.attrib['id'])
             self.addSimulation(sim, mroot)
 
             #  _printMooseObject()
@@ -185,8 +188,8 @@ class LEMS(object):
             simtime = SI(sim.attrib['length'])
             #  logger_.info("Running for %s s" % simtime)
             #  t0 = time.time()
-            #  moose.reinit()
-            #  moose.start(simtime)
+            moose.reinit()
+            moose.start(simtime)
             #  logger_.info("Finished in %f s" % (time.time()-t0) )
 
 
@@ -206,14 +209,21 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('LEMS', help='LEMS file.', metavar='<LEMS FILE>')
 
-    parser.add_argument('-I', default=[], action='append',
+    parser.add_argument('-I',
+                        default=[],
+                        action='append',
                         help='include paths.',
                         metavar='<INCLUDE PATH>')
 
-    parser.add_argument('--debug', '-d', default=False, action='store_true',
+    parser.add_argument('--debug',
+                        '-d',
+                        default=False,
+                        action='store_true',
                         help='Debug mode.')
 
-    class Args: pass
+    class Args:
+        pass
+
     args = Args()
     parser.parse_args(namespace=args)
     main(**vars(args))

@@ -222,15 +222,18 @@ class NML2Reader(object):
         self.doc = None
         self.filename = None
 
-        self.nml_cells_to_moose = {}  # NeuroML object to MOOSE object
-        self.nml_segs_to_moose = {}  # NeuroML object to MOOSE object
-        self.nml_chans_to_moose = {}  # NeuroML object to MOOSE object
-        self.nml_concs_to_moose = {}  # NeuroML object to MOOSE object
-        self.moose_to_nml = {}  # Moose object to NeuroML object
-        self.proto_cells = {}   # map id to prototype cell in moose
-        self.proto_chans = {}   # map id to prototype channels in moose
-        self.proto_pools = {}   # map id to prototype pools (Ca2+, Mg2+)
-        self.includes = {}      # Included files mapped to other readers
+        # NeuroML object to MOOSE object
+        self.nml_cells_to_moose = {} 
+        self.nml_segs_to_moose = {} 
+        self.nml_chans_to_moose = {}
+        self.nml_concs_to_moose = {}
+
+        # Moose object to NeuroML object
+        self.moose_to_nml = {}
+        self.proto_cells = {} 
+        self.proto_chans = {}
+        self.proto_pools = {}
+        self.includes = {}
 
         # /library may have alreay been created.
         if _moose.exists("/library"):
@@ -328,7 +331,7 @@ class NML2Reader(object):
     def createPopulations(self):
         for pop in self.network.populations:
             # Sometime NML2 returns None instead of 0
-            logger_.info("Adding population %s" % pop)
+            logger_.info("Adding population '%s'" % pop.id)
             pop.size = 0 if pop.size is None else pop.size
 
             # FIXME: Instance of population is added under self.pop. Before it was
@@ -343,7 +346,7 @@ class NML2Reader(object):
                 self.pop_to_cell_type[pop.id] = pop.component
                 chid = _moose.copy(self.proto_cells[pop.component], mpop, "%d"%i)
                 self.cells_in_populations[pop.id][i] = chid
-                logger_.info("Created %s instances of %s (Type %s)"
+                logger_.info(" Created '%s' instances of '%s' (Type %s)"
                     % (chid, pop.id, pop.component)
                 )
 
@@ -371,7 +374,7 @@ class NML2Reader(object):
             # Copy this input to mModelBase. In previous version, everything
             # was under /library. We want active components during simulation
             # to be under self.mModelBase
-            _input = _moose.copy(_input, self.mModelBase.path)
+            _input = _moose.copy(_input, self.mModelBase.path+'/'+pop_id)
             logger_.debug("Adding input %s" % _input)
             _moose.connect(_input, "output", self.getComp(pop_id, i, seg_id), "injectMsg")
 
@@ -418,6 +421,7 @@ class NML2Reader(object):
     def createCellPrototype(self, cell, symmetric=True):
         """To be completed - create the morphology, channels in prototype"""
         nrn = _moose.Neuron("%s/%s" % (self.lib.path, cell.id))
+        logger_.debug("Created Neuron %s" % nrn)
         self.proto_cells[cell.id] = nrn
         self.nml_cells_to_moose[cell.id] = nrn
         self.moose_to_nml[nrn] = cell
