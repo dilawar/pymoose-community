@@ -8,7 +8,7 @@ foreach(_test_script ${PY_TEST_SCRIPTS} )
         COMMAND ${PYTHON_EXECUTABLE} ${_test_script}
         WORKING_DIRECTORY ${PYMOOSE_TEST_DIRECTORY})
      set_tests_properties(${_test_name}
-         PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}/python"
+         PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python"
         )
 endforeach()
 
@@ -22,7 +22,7 @@ foreach(_test_script ${PY_TEST_SCRIPTS} )
         COMMAND ${PYTHON_EXECUTABLE} ${_test_script}
         WORKING_DIRECTORY ${SUPPORT_TEST_DIRECTORY})
      set_tests_properties(${_test_name}
-         PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}/python"
+         PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python"
         )
 endforeach()
 
@@ -37,7 +37,7 @@ foreach(_test_script ${RDES_TEST_SCRIPTS})
         WORKING_DIRECTORY ${RDES_TEST_DIRECTORY}
         )
     set_tests_properties(${_test_name} PROPERTIES 
-        ENVIRONMENT "PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}/python;MOOSE_NUM_THREADS=4"
+        ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python;MOOSE_NUM_THREADS=4"
         )
 endforeach()
 
@@ -58,7 +58,7 @@ foreach(_test_script ${PYTEST_TEST_SCRIPTS})
             --cov=moose --cov=rdesigneur --cov-append --cov-report= 
             ${_test_script}
         DEPENDS _moose
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         COMMENT "Executing ${_test_script} using pytest"
         VERBATIM)
     add_dependencies(coverage  ${_test_name})
@@ -68,7 +68,7 @@ endforeach()
 add_custom_command(TARGET coverage POST_BUILD
     COMMAND ${PYTHON_EXECUTABLE} -m coverage report 
     COMMAND ${PYTHON_EXECUTABLE} -m coverage html 
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Genearting coverage report"
     VERBATIM)
 

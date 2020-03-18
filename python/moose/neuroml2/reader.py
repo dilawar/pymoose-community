@@ -215,6 +215,9 @@ class NML2Reader(object):
         self.lunit = 1e-6
 
         self.verbose = verbose
+        if self.verbose:
+            logger_.setLevel(logging.DEBUG)
+
         self.doc = None
         self.filename = None
 
@@ -234,6 +237,15 @@ class NML2Reader(object):
         else:
             self.lib = moose.Neutral("/library")
 
+        if not moose.exists('/model'):
+            moose.Neutral('/model')
+
+        # Basepath for storing cell populations.
+        if moose.exists('/model/cells'):
+            self.popbase = moose.element('/model/nml2')
+        else:
+            self.popbase = moose.Neutral('/model/nml2')
+
         self.id_to_ionChannel = {}
 
         # nml cell to dict - the dict maps segment groups to segments
@@ -252,8 +264,6 @@ class NML2Reader(object):
             filename, include_includes=True, verbose=self.verbose
         )
 
-        if self.verbose:
-            print("Parsed NeuroML2 file: %s" % filename)
         self.filename = filename
 
         if len(self.doc.networks) >= 1:
@@ -271,10 +281,10 @@ class NML2Reader(object):
         for iaf in self.doc.iaf_cells:
             self.createIAFCellPrototype(iaf)
 
-        if len(self.doc.networks) >= 1:
+        if len(self.doc.networks) > 0:
+            logger_.debug("%d Network(s) found." % len(self.doc.networks))
             self.createPopulations()
             self.createInputs()
-        print("Read all from %s" % filename)
 
     def _getTemperature(self):
         if self.network.type == "networkWithTemperature":
@@ -302,10 +312,11 @@ class NML2Reader(object):
             logger_.error("%s not found in %s.%s.segments: %s" % (compt
                 , pop_id, cellType, str(list(compt.keys()))))
             raise LookupError("%s not found" % segId)
+
         return moose.element(
             "%s/%s/%s/%s"
             % (
-                self.lib.path,
+                self.popbase.path,
                 pop_id,
                 cellIndex,
                 self.seg_id_to_comp_name[self.pop_to_cell_type[pop_id]][segId],
@@ -317,10 +328,15 @@ class NML2Reader(object):
             # Sometime NML2 returns None instead of 0
             logger_.info("Adding population %s" % pop)
             pop.size = 0 if pop.size is None else pop.size
-            mpop = moose.Neutral("%s/%s" % (self.lib.path, pop.id))
+
+            # FIXME: Instance of population is added under self.pop. Before it was
+            # under self.lib . If everything works OK, remove this line else
+            # revert back to original.
+            mpop = moose.Neutral("%s/%s" % (self.popbase.path, pop.id))
             self.cells_in_populations[pop.id] = {}
 
-            # Either population have size of instances
+            # Either population have size or instances.
+            # 1. Add population by size.
             for i in range(pop.size):
                 self.pop_to_cell_type[pop.id] = pop.component
                 chid = moose.copy(self.proto_cells[pop.component], mpop, "%d"%i)
@@ -329,7 +345,7 @@ class NML2Reader(object):
                     % (chid, pop.id, pop.component)
                 )
 
-            # Add instance of population.
+            # 2. Add instances of population.
             for i, instance in enumerate(pop.instances):
                 self.pop_to_cell_type[pop.id] = pop.component
                 chid = moose.copy(self.proto_cells[pop.component], mpop, '%d'%instance.id)
@@ -348,14 +364,14 @@ class NML2Reader(object):
             seg_id = 0
             if "/" in el.target:
                 seg_id = el.target.split("/")[1]
-            input = self.getInput(el.input)
-            moose.connect(input, "output", self.getComp(pop_id, i, seg_id), "injectMsg")
+            _input = self.getInput(el.input)
+            moose.connect(_input, "output", self.getComp(pop_id, i, seg_id), "injectMsg")
 
         for il in self.network.input_lists:
             for ii in il.input:
-                input = self.getInput(il.component)
+                _input = self.getInput(il.component)
                 moose.connect(
-                    input,
+                    _input,
                     "output",
                     self.getComp(
                         il.populations, ii.get_target_cell_id(), ii.get_segment_id()
@@ -389,6 +405,7 @@ class NML2Reader(object):
 
         return iaf, mLIF
 
+
     def createCellPrototype(self, cell, symmetric=True):
         """To be completed - create the morphology, channels in prototype"""
         nrn = moose.Neuron("%s/%s" % (self.lib.path, cell.id))
@@ -398,6 +415,7 @@ class NML2Reader(object):
         self.createMorphology(cell, nrn, symmetric=symmetric)
         self.importBiophysics(cell, nrn)
         return cell, nrn
+
 
     def createMorphology(self, nmlcell, moosecell, symmetric=True):
         """Create the MOOSE compartmental morphology in `moosecell` using the
@@ -471,9 +489,11 @@ class NML2Reader(object):
             if parent:
                 pcomp = id_to_comp[parent.id]
                 moose.connect(comp, src, pcomp, dst)
+
         sg_to_segments = {}
         for sg in morphology.segment_groups:
             sg_to_segments[sg.id] = [id_to_segment[m.segments] for m in sg.members]
+
         for sg in morphology.segment_groups:
             if not sg.id in sg_to_segments:
                 sg_to_segments[sg.id] = []
@@ -487,13 +507,13 @@ class NML2Reader(object):
         self._cell_to_sg[nmlcell.id] = sg_to_segments
         return id_to_comp, id_to_segment, sg_to_segments
 
+
     def importBiophysics(self, nmlcell, moosecell):
         """Create the biophysical components in moose Neuron `moosecell`
         according to NeuroML2 cell `nmlcell`."""
         bp = nmlcell.biophysical_properties
         if bp is None:
-            print(
-                "Warning: %s in %s has no biophysical properties"
+            logger_.warning("Warning: %s in %s has no biophysical properties"
                 % (nmlcell.id, self.filename)
             )
             return
@@ -504,8 +524,7 @@ class NML2Reader(object):
 
     def importMembraneProperties(self, nmlcell, moosecell, mp):
         """Create the membrane properties from nmlcell in moosecell"""
-        if self.verbose:
-            print("Importing membrane properties")
+        logger_.debug("Importing membrane properties")
         self.importCapacitances(nmlcell, moosecell, mp.specific_capacitances)
         self.importChannelsToCell(nmlcell, moosecell, mp)
         self.importInitMembPotential(nmlcell, moosecell, mp)
@@ -640,12 +659,11 @@ class NML2Reader(object):
         rate = []
         for v in tab:
             req_vars = {
-                "v": "%gV" % v,
-                "vShift": float(vShift),
-                "temperature": float(self._getTemperature()),
+                "v": "%sV" % v,
+                "vShift": vShift,
+                "temperature": self._getTemperature(),
             }
-            if self._variables:
-                req_vars.update(self._variables)
+            req_vars.update(self._variables)
             vals = pynml.evaluate_component(ct, req_variables=req_vars)
             """print(vals)"""
             if "x" in vals:
@@ -671,17 +689,16 @@ class NML2Reader(object):
                 print("No channel with id", chdens.ion_channel)
                 continue
 
-            if self.verbose:
-                print(
-                    "Setting density of channel %s in %s to %s; erev=%s (passive: %s)"
-                    % (
-                        chdens.id,
-                        segments,
-                        condDensity,
-                        erev,
-                        self.isPassiveChan(ionChannel),
-                    )
+            logger_.debug(
+                "Setting density of channel %s in %s to %s; erev=%s (passive: %s)"
+                % (
+                    chdens.id,
+                    segments,
+                    condDensity,
+                    erev,
+                    self.isPassiveChan(ionChannel),
                 )
+            )
 
             if self.isPassiveChan(ionChannel):
                 for seg in segments:
@@ -715,10 +732,7 @@ class NML2Reader(object):
                 % (chdens.ion_channel, chdens.id)
             )
 
-        if self.verbose:
-            print(
-                "Copying %s to %s, %s; erev=%s" % (chdens.id, comp, condDensity, erev)
-            )
+        logger_.debug("Copying %s to %s, %s; erev=%s" % (chdens.id, comp, condDensity, erev))
         orig = chdens.id
         chid = moose.copy(proto_chan, comp, chdens.id)
         chan = moose.element(chid)
@@ -779,11 +793,8 @@ class NML2Reader(object):
         # We handle only up to 3 gates in HHCHannel
         assert len(chan.gate_hh_rates) <= 3, "No more than 3 gates"
 
-        if self.verbose:
-            print(
-                "== Creating channel: %s (%s) -> %s (%s)"
-                % (chan.id, chan.gate_hh_rates, mchan, mgates)
-            )
+        logger_.debug("== Creating channel: %s (%s) -> %s (%s)"
+                % (chan.id, chan.gate_hh_rates, mchan, mgates))
 
         all_gates = chan.gates + chan.gate_hh_rates
 
@@ -834,9 +845,7 @@ class NML2Reader(object):
                     (self._getTemperature() - SI(ngate.q10_settings.experimental_temp))
                     / 10,
                 )
-                logger_.debug(
-                    "Q10: %s; %s; %s; %s"
-                    % (
+                logger_.debug("Q10: %s; %s; %s; %s" % (
                         ngate.q10_settings.q10_factor,
                         self._getTemperature(),
                         SI(ngate.q10_settings.experimental_temp),
@@ -891,8 +900,8 @@ class NML2Reader(object):
 
     def createPassiveChannel(self, chan):
         mchan = moose.Leakage("%s/%s" % (self.lib.path, chan.id))
-        if self.verbose:
-            print(self.filename, "Created", mchan.path, "for", chan.id)
+        logger_.debug("%s: Created %s for %s" % (self.filename, mchan.path,
+            chan.id))
         return mchan
 
     def importInputs(self, doc):
@@ -907,8 +916,7 @@ class NML2Reader(object):
             pg.secondDelay = 1e9
 
     def importIonChannels(self, doc, vmin=-150e-3, vmax=100e-3, vdivs=5000):
-        if self.verbose:
-            print(self.filename, "Importing the ion channels")
+        logger_.debug(self.filename, "Importing the ion channels")
 
         for chan in doc.ion_channel + doc.ion_channel_hhs:
             if chan.type == "ionChannelHH":
@@ -922,15 +930,8 @@ class NML2Reader(object):
             self.id_to_ionChannel[chan.id] = chan
             self.nml_chans_to_moose[chan.id] = mchan
             self.proto_chans[chan.id] = mchan
-            if self.verbose:
-                print(
-                    self.filename,
-                    "Created ion channel",
-                    mchan.path,
-                    "for",
-                    chan.type,
-                    chan.id,
-                )
+            logger_.debug("%s: Created ion channel %s for %s, %s" % (self.filename,
+                    mchan.path, chan.type, chan.id))
 
     def importConcentrationModels(self, doc):
         for concModel in doc.decaying_pool_concentration_models:

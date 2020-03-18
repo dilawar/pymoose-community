@@ -13,7 +13,6 @@ def library1():
     import moose.SBML 
     import moose.chemMerge
     import moose.utils 
-    import moose.network_utils
     print('done')
 
     p1 = moose.le()

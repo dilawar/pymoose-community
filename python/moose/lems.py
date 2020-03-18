@@ -13,9 +13,10 @@ __maintainer__ = "Dilawar Singh"
 __email__      = "dilawars@ncbs.res.in"
 
 import sys
-assert sys.version_info >= (3,5), "Minimum Python version 3.5 is required."
+assert sys.version_info >= (3, 6), "Minimum Python version 3.6 is required."
 
 import time
+import typing as _T
 from pathlib import Path
 
 import moose
@@ -29,8 +30,13 @@ logger_.setLevel(logging.INFO)
 
 SCRIPT_DIR = Path(__file__).parent
 
-# neuroml2 coretypes.
-def _findInNeuromlCoreTypes(incpath):
+def _findInNeuromlCoreTypes(incpath : Path) -> Path:
+    """incpath may be a Neuroml2CoreType. These are included in the source code
+    now. 
+
+    FIXME: Ideally they should be distributed in pyneuroml library. 
+    See: https://github.com/NeuralEnsemble/libNeuroML/issues/88
+    """
     global SCRIPT_DIR
     nmlCoreTypePath = SCRIPT_DIR / 'neuroml2' / 'NeuroML2CoreTypes'
     if (nmlCoreTypePath / incpath.name).exists():
@@ -38,25 +44,7 @@ def _findInNeuromlCoreTypes(incpath):
     return incpath
 
 
-## def addSimulation(tid, sim, mroot):
-##     logger_.info("Adding simulation '%s' (%s)" % (tid, mroot))
-##     # Each target has a component.
-##     assert sim.attrib['type'] == 'Simulation', "Other type not supported."
-## 
-##     componentToSimulate = sim.attrib['target']
-##     mSimRoot = moose.Neutral(mroot.path + '/' + componentToSimulate)
-##     components = sim.xpath("//ns:Component[@id='%s']" % componentToSimulate,
-##                            namespaces=ns)
-##     assert components
-## 
-##     moose.reinit()
-##     runtime = SI(sim.attrib['length'])
-##     t0 = time.time()
-##     moose.start(runtime)
-##     logger_.info("Took %g s for %g sec" % (time.time() - t0, runtime))
-
-
-def _dumpXML(xml, fs=sys.stdout):
+def _dumpXML(xml, fs=sys.stdout) -> None:
     print(ET.tostring(xml, pretty_print=True).decode('utf8'), file=fs)
 
 
@@ -77,9 +65,12 @@ def _flattenXML(xml, source_dir):
 
         assert includeFilePath.exists(), f"File {includeFilePath} not found"
 
+        logger_.debug(f"Replacing Include {includeFilePath} by its content.")
+
         # If the included file has extenstion `nml`, load neuroml.
         if includeFilePath.suffix == '.nml':
-            moose.mooseReadNML2(str(includeFilePath))
+            logger_.debug(f"Loading neuroml2 model {includeFilePath}")
+            moose.mooseReadNML2(str(includeFilePath), verbose=True)
             continue
 
         # Else replace the included file by its content.
@@ -101,18 +92,26 @@ def _flattenXML(xml, source_dir):
 
     return xml
 
+def _printMooseObject():
+    for x in moose.wildcardFind('/##'):
+        if '/classes' == x.path[:8] or '/Msgs' == x.path[:5]:
+            continue
+        print(f" {x.path:50s} {type(x)}")
+
 
 class LEMS(object):
 
-    def __init__(self, lemsFile, **kwargs):
+    def __init__(self, lemsFile : Path, **kwargs):
         self.lemsFile = lemsFile
         self.kwargs = kwargs
         xml = ET.parse(str(lemsFile))
         self.xml = _flattenXML(xml, lemsFile.parent)
 
         if self.kwargs['debug']:
-            with open('_flatten.xml', 'w') as f:
+            outfile = '_flatten.moose-lems.xml'
+            with open(outfile, 'w') as f:
                 _dumpXML(self.xml, f)
+            logger_.debug(f"Wrote flattened model to {outfile}")
 
     def build(self):
         parent = moose.Neutral('/model')
@@ -134,13 +133,16 @@ class LEMS(object):
             mroot = moose.Neutral(mroot.path+'/'+simTarget)
             self.addNetwork(net, mroot)
 
+
     def addTarget(self, tgt, mroot):
         cname = tgt.attrib['component']
         assert cname
-        logger_.info("Adding target %s under %s" % (cname, mroot))
+        logger_.info(f"Adding target {cname} under {mroot}")
         for sim in tgt.xpath("//Simulation[@id='%s']" % cname):
             mroot = moose.Neutral(mroot.path+'/'+sim.attrib['id'])
             self.addSimulation(sim, mroot)
+
+            _printMooseObject()
 
             # Now add the simulation time.
             simtime = SI(sim.attrib['length'])
