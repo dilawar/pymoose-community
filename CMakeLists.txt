@@ -64,7 +64,6 @@ option(WITH_MPI             "Enable Openmpi support" OFF)
 option(WITH_BOOST           "Enable boost. Prefer boost over stl" OFF)
 option(WITH_BOOST_ODE       "Use boost library ode2 library instead of GSL" OFF)
 option(WITH_GSL             "Use gsl-library. Alternative is WITH_BOOST" ON)
-option(PARALLELIZED_CLOCK   "High level parallelization of moose::Clock (alpha)" OFF )
 option(USE_PRIVATE_RNG      "Stochastic Objects use their private RNG" ON)
 option(WITH_ASAN            "Use AddressSanitizer in DEBUG mode." OFF)
 
@@ -304,13 +303,14 @@ if( WITH_BOOST )
     target_link_libraries( moose.bin ${Boost_LIBRARIES} )
 endif( WITH_BOOST )
 
-
-######################### BUILD PYMOOSE ########################################
-
+########################### PYTHON BINDING  USING PYBIND11 ####################
 
 # This target is built by pymoose/CMakeLists.txt file.
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/pybind11)
-add_subdirectory(pymoose)
+add_subdirectory(pybind11)
+
+######################### BUILD PYMOOSE ########################################
+# add_subdirectory(pymoose)
 
 # always override debian default installation directory. It will be installed in
 # site-packages instead of dist-packages.

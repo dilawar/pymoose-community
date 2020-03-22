@@ -1,11 +1,11 @@
 // =====================================================================================
 //
-//       Filename:  pymoose.cpp
+//       Filename:  helper.cpp
 //
-//    Description:  
+//    Description: Helper functions. 
 //
 //        Version:  1.0
-//        Created:  03/15/2020 04:03:58 PM
+//        Created:  03/22/2020 09:05:13 PM
 //       Revision:  none
 //       Compiler:  g++
 //
@@ -14,34 +14,27 @@
 //
 // =====================================================================================
 
-#include <vector>
-#include <typeinfo>
-#include <utility>
+#include <stdexcept>
+#include <memory>
 
 #include "../basecode/header.h"
+// #include "../basecode/global.h"
 #include "../shell/Shell.h"
 #include "../scheduling/Clock.h"
-#include "../utility/print_function.hpp"
-#include "../utility/utility.h"
-#include "../utility/strutil.h"
 #include "../mpi/PostMaster.h"
+#include "../utility/strutil.h"
 
-#include "pymoose.h"
-
-class Pool;
-class BufPool;
-
-#include "../external/pybind11/include/pybind11/pybind11.h"
-
+#include "helper.h"
 
 using namespace std;
-namespace py = pybind11;
 
 Id initShell(void)
 {
     Cinfo::rebuildOpIndex();
+
     Id shellId;
-    Element* shelle = new GlobalDataElement( shellId, Shell::initCinfo(), "root", 1 );
+
+    unique_ptr<Element> shelle(new GlobalDataElement(shellId, Shell::initCinfo(), "root", 1 ));
 
     Id clockId = Id::nextId();
     assert( clockId.value() == 1 );
@@ -50,7 +43,7 @@ Id initShell(void)
 
     Shell* s = reinterpret_cast< Shell* >( shellId.eref().data() );
     s->setHardware(1, 1, 0);
-    s->setShellElement( shelle );
+    s->setShellElement( shelle.get() );
 
     /// Sets up the Elements that represent each class of Msg.
     auto numMsg = Msg::initMsgManagers();
@@ -86,12 +79,12 @@ Id initShell(void)
 /* ----------------------------------------------------------------------------*/
 Id getShell()
 {
-    static int inited = 0;
+    static bool inited = false;
     if (inited)
         return Id(0);
 
     Id shellId = initShell();
-    inited = 1;
+    inited = true;
     return shellId;
 } 
 
@@ -120,24 +113,19 @@ Id createIdFromPath(string path, string type, size_t numData)
     {
         string current_path = SHELLPTR->getCwe().path();
         if (current_path != "/")
-        {
             parent_path = current_path + "/" + parent_path;
-        }
         else
-        {
             parent_path = current_path + parent_path;
-        }
     }
     else if (parent_path.empty())
-    {
         parent_path = "/";
-    }
+
     ObjId parent_id(parent_path);
     if (parent_id.bad() )
     {
         string message = "Parent element does not exist: ";
         message += parent_path;
-        PyErr_SetString(PyExc_ValueError, message.c_str());
+        throw std::runtime_error(message);
         return Id();
     }
 
@@ -151,48 +139,9 @@ Id createIdFromPath(string path, string type, size_t numData)
     if (nId == Id() && trimmed_path != "/" && trimmed_path != "/root")
     {
         string message = "no such moose class : " + type;
-        PyErr_SetString(PyExc_TypeError, message.c_str());
+        throw std::runtime_error(message);
     }
 
     return nId;
 }
 
-PYBIND11_MODULE(_moose, m)
-{
-    m.doc() = R"moosedoc(moose module.
-    )moosedoc";
-
-    py::class_<ObjId>(m, "ObjId")
-        .def(py::init<>())
-        ;
-
-    py::class_<Id>(m, "Id")
-        .def(py::init<>())
-        ;
-
-    // Add Shell Class.
-    py::class_<Shell>(m, "Shell")
-        .def(py::init<>())
-        .def("doCreate", &Shell::doCreate)
-        .def("doDelete", &Shell::doDelete)
-        .def("doAddMsg", &Shell::doAddMsg)
-        .def("doQuit", &Shell::doQuit)
-        .def("doStart", &Shell::doStart)
-        .def("doReinit", &Shell::doReinit)
-        .def("doStop", &Shell::doStop)
-        .def("doMove", &Shell::doMove)
-        .def("doCopy", &Shell::doCopy)
-        .def("destroy", &Shell::destroy)
-        .def("doFind", &Shell::doFind)
-        .def("doLoadModel", &Shell::doLoadModel)
-        .def("doSaveModel", &Shell::doSaveModel)
-        .def("handleCreate", &Shell::handleCreate)
-        .def("handleCopy", &Shell::handleCopy)
-        .def("handleQuit", &Shell::handleQuit)
-        ;
-
-    m.def("create", &createIdFromPath);
-
-    m.attr("__version__") = MOOSE_VERSION;
-
-}

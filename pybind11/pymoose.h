@@ -17,17 +17,4 @@
 #ifndef PYMOOSE_H
 #define PYMOOSE_H
 
-Id initShell(void);
-
-/**
-   Return the Id of the Shell object.
-*/
-Id getShell(int argc, char ** argv);
-
-// Macro to create the Shell * out of shellId
-#define SHELLPTR (reinterpret_cast<Shell*>(getShell(0, NULL).eref().data()))
-
-Id createIdFromPath(string path, string type, size_t numData=1);
-
-
 #endif /* end of include guard: PYMOOSE_H */
