@@ -170,8 +170,6 @@ PYBIND11_MODULE(_moose, m)
         .def(py::init<>())
         ;
 
-    auto shell = getShell();
-
     // Add Shell Class.
     py::class_<Shell>(m, "Shell")
         .def(py::init<>())
@@ -196,7 +194,5 @@ PYBIND11_MODULE(_moose, m)
     m.def("create", &createIdFromPath);
 
     m.attr("__version__") = MOOSE_VERSION;
-
-    //m.attr("shell") = shell;
 
 }
