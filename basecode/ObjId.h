@@ -17,10 +17,9 @@
  * in a node-independent manner.
  * It is basically a composite of Id and DataIndex.
  */
-class ObjId
-{
-    friend ostream& operator <<( ostream& s, const ObjId& i );
-    friend istream& operator >>( istream& s, ObjId& i );
+class ObjId {
+    friend ostream& operator<<(ostream& s, const ObjId& i);
+    friend istream& operator>>(istream& s, ObjId& i);
 
 public:
     //////////////////////////////////////////////////////////////
@@ -29,8 +28,7 @@ public:
     /**
      * Returns the root Id
      */
-    ObjId()
-        : id(), dataIndex( 0 ), fieldIndex( 0 )
+    ObjId() : id(), dataIndex(0), fieldIndex(0)
     {
         ;
     }
@@ -38,14 +36,13 @@ public:
     /**
      * Creates a ObjId using specified Id and DataIndex
      */
-    ObjId( Id i, unsigned int d, unsigned int f = 0 )
-        : id( i ), dataIndex( d ), fieldIndex( f )
+    ObjId(Id i, unsigned int d, unsigned int f = 0)
+        : id(i), dataIndex(d), fieldIndex(f)
     {
         ;
     }
 
-    ObjId( Id i )
-        : id( i ), dataIndex( 0 ), fieldIndex( 0 )
+    ObjId(Id i) : id(i), dataIndex(0), fieldIndex(0)
     {
         ;
     }
@@ -54,7 +51,7 @@ public:
      * Creates an ObjId by reading the path string
      * Returns bad on failure.
      */
-    ObjId( const string& path );
+    ObjId(const string& path);
 
     /**
      * Returns the absolute path including all array indices.
@@ -69,13 +66,13 @@ public:
     /**
      * For equality check
      */
-    bool operator==( const ObjId& other ) const;
-    bool operator!=( const ObjId& other ) const;
+    bool operator==(const ObjId& other) const;
+    bool operator!=(const ObjId& other) const;
 
     /**
      * For sorting
      */
-    bool operator<( const ObjId& other ) const;
+    bool operator<(const ObjId& other) const;
 
     /**
      * True if the data is present on the current node. Always true for
@@ -117,4 +114,4 @@ public:
 private:
 };
 
-#endif // _OBJ_ID_H
+#endif  // _OBJ_ID_H
