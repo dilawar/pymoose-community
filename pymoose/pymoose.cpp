@@ -37,26 +37,6 @@ class BufPool;
 using namespace std;
 namespace py = pybind11;
 
-const vector<const char*> classMap  { "AdExIF", "AdThreshIF", "Adaptor",
-    "Annotator", "Arith", "BufPool", "CaConc", "Cell", "ChemCompt", "Cinfo",
-    "Clock", "Compartment", "ConcChan",  "CubeMesh", "CylMesh", "DestField",
-    "DiagonalMsg", "DifBuffer",  "DifShell", "DiffAmp", "Dsolve",
-    "ElementField", "EndoMesh", "Enz", "ExIF", "Finfo", "Function",
-    "GapJunction", "GraupnerBrunel2012CaPlasticitySynHandler", "Group",
-    "Gsolve", "HHChannel", "HHChannel2D",  "HHGate", "HHGate2D", "HSolve",
-    "INFINITE", "IntFire",  "Interpol", "Interpol2D", "IzhIF", "IzhikevichNrn",
-    "Ksolve", "LIF", "Leakage", "LookupField", "MMPump", "MMenz",
-    "MarkovChannel", "MarkovGslSolver", "MarkovRateTable", "MarkovSolver",
-    "MeshEntry", "MgBlock", "Msg", "Mstring", "NMDAChan", "Nernst",
-    "NeuroMesh", "Neuron", "Neutral", "OneToAllMsg", "OneToOneDataIndexMsg",
-    "OneToOneMsg", "PIDController", "Pool",  "PostMaster", "PsdMesh",
-    "PulseGen", "PyRun", "QIF", "RC", "RandSpike", "Reac",  "STDPSynHandler",
-    "STDPSynapse", "SeqSynHandler", "Shell", "SimpleSynHandler", "SingleMsg",
-    "SocketStreamer", "SparseMsg", "Species", "SpikeGen", "SpikeStats",
-    "Spine", "SpineMesh", "Stats", "SteadyState", "StimulusTable", "Stoich",
-    "Streamer", "SymCompartment", "SynChan",  "Synapse", "Table", "Table2",
-    "TimeTable", "VClamp" };
-
 Id initShell(void)
 {
     Cinfo::rebuildOpIndex();
@@ -104,7 +84,7 @@ Id initShell(void)
  * @Returns   
  */
 /* ----------------------------------------------------------------------------*/
-Id getShell(int argc, char ** argv)
+Id getShell()
 {
     static int inited = 0;
     if (inited)
@@ -112,19 +92,6 @@ Id getShell(int argc, char ** argv)
 
     Id shellId = initShell();
     inited = 1;
-
-    Shell * shellPtr = reinterpret_cast<Shell*>(shellId.eref().data());
-    if ( shellPtr->myNode() == 0 )
-    {
-        if ( Shell::numNodes() > 1 )
-        {
-            // Use the last clock for the postmaster, so that it is called
-            // after everything else has been processed and all messages
-            // are ready to send out.
-            shellPtr->doUseClock( "/postmaster", "process", 9 );
-            shellPtr->doSetClock( 9, 1.0 ); // Use a sensible default.
-        }
-    }
     return shellId;
 } 
 
@@ -203,6 +170,8 @@ PYBIND11_MODULE(_moose, m)
         .def(py::init<>())
         ;
 
+    auto shell = getShell();
+
     // Add Shell Class.
     py::class_<Shell>(m, "Shell")
         .def(py::init<>())
@@ -227,5 +196,7 @@ PYBIND11_MODULE(_moose, m)
     m.def("create", &createIdFromPath);
 
     m.attr("__version__") = MOOSE_VERSION;
+
+    //m.attr("shell") = shell;
 
 }
