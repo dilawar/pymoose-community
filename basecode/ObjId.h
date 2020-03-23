@@ -58,6 +58,15 @@ public:
      */
     string path() const;
 
+    /* --------------------------------------------------------------------------*/
+    /**
+     * @Synopsis  Return name of element.
+     *
+     * @Returns   
+     */
+    /* ----------------------------------------------------------------------------*/
+    string name() const;
+
     /**
      * Returns the Eref matching itself.
      */

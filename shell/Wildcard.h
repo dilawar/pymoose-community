@@ -62,6 +62,8 @@ int simpleWildcardFind( const string& path, vector<ObjId>& ret);
  */
 int wildcardFind(const string& n, vector<ObjId>& ret, bool clear = true);
 
+vector<ObjId> wildcardFindPybind(const string& path);
+
 /**
  * Recursive function to compare all descendants and cram matches into ret.
  * Returns number of matches.

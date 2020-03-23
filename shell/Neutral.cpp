@@ -802,6 +802,7 @@ string Neutral::path( const Eref& e )
     return ss.str();
 }
 
+
 // Neutral does not have any fields.
 istream& operator >>( istream& s, Neutral& d )
 {

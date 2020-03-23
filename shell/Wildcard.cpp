@@ -155,6 +155,13 @@ int wildcardFind(const string& path, vector<ObjId>& ret, bool clear)
     return ret.size();
 }
 
+vector<ObjId> wildcardFindPybind(const string& path)
+{
+    vector<ObjId> ret;
+    simpleWildcardFind(path, ret);
+    return ret;
+}
+
 /**
  * 	singleLevelWildcard parses a single level of the path and returns all
  * 	ids that match it. If there is a suitable doublehash, it will recurse

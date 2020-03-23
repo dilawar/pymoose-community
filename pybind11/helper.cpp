@@ -125,3 +125,8 @@ Id createIdFromPath(string path, string type, size_t numData)
     return nId;
 }
 
+
+Shell* const getShellPtr(void)
+{
+    return reinterpret_cast<Shell*>(Id().eref().data());
+}

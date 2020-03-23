@@ -23,6 +23,6 @@ Id initShell();
 
 Id createIdFromPath(string path, string type, size_t numData=1);
 
-Shell* getShellPtr();
+Shell* const getShellPtr();
 
 #endif /* end of include guard: HELPER_H */

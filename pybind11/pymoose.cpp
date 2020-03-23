@@ -19,9 +19,11 @@
 #include <utility>
 
 #include "../external/pybind11/include/pybind11/pybind11.h"
+#include "../external/pybind11/include/pybind11/stl.h"
 
 #include "../basecode/header.h"
 #include "../shell/Shell.h"
+#include "../shell/Wildcard.h"
 
 #include "helper.h"
 #include "pymoose.h"
@@ -29,22 +31,28 @@
 using namespace std;
 namespace py = pybind11;
 
-PYBIND11_MODULE(_moose, m)
+void initModule(py::module& m)
 {
     initShell();
+    auto pShell = getShellPtr();
+}
+
+PYBIND11_MODULE(_moose, m)
+{
+    initModule(m);
 
     m.doc() = R"moosedoc(moose module.
     )moosedoc";
 
-   // py::class_<ObjId>(m, "ObjId")
-   //     .def(py::init<>())
-   //     ;
+    py::class_<Id>(m, "_Id").def(py::init<>());
 
-   //py::class_<Id>(m, "Id")
-   //    .def(py::init<>())
-   //    ;
+    py::class_<ObjId>(m, "_ObjId")
+        .def(py::init<>())
+        .def_property_readonly("path", &ObjId::path)
+        ;
 
     m.def("create", &createIdFromPath);
+    m.def("_wildcardFind", &wildcardFindPybind);
 
     m.attr("__version__") = MOOSE_VERSION;
 
