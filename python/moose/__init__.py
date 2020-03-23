@@ -84,6 +84,7 @@ def wildcardFind(pattern):
         paths.append(__toMooseObject(p))
     return paths
 
+from moose._cmoose import *
 
 # Bring everything from moose.py to global namespace.
 # IMP: It will overwrite any c++ function with the same name.  We can override

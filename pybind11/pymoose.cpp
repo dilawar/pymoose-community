@@ -24,6 +24,7 @@
 #include "../external/pybind11/include/pybind11/stl.h"
 
 #include "../basecode/header.h"
+#include "../basecode/global.h"
 #include "../basecode/Cinfo.h"
 
 #include "../shell/Shell.h"
@@ -89,8 +90,25 @@ PYBIND11_MODULE(_cmoose, m)
         .def("findFinfo", &Cinfo::findFinfoWrapper);
 
     m.def("create", &createIdFromPath);
+
+    m.def("move", [](Id o, ObjId oid){ getShellPtr()->doMove(o, oid); });
+    m.def("copy", [](Id o, ObjId newP, string newName="", size_t n=1, bool toGlobal=false, bool copyExtMsg=false){ 
+            if(newName.empty())
+                newName = o.element()->getName();
+            getShellPtr()->doCopy(o, newP, newName, n, toGlobal, copyExtMsg); 
+        });
+
     m.def("setCwe", [](Id id) { getShellPtr()->setCwe(id); });
     m.def("getCwe", []() { return getShellPtr()->getCwe(); });
+    m.def("delete", [](ObjId oid) { return getShellPtr()->doDelete(oid);});
+    m.def("reinit", []() { return getShellPtr()->doReinit();});
+    m.def("stop", []() { return getShellPtr()->doStop();});
+
+    m.def("seed", [](int seed) { return moose::setGlobalSeed(seed);});
+
+    m.def("start", [](double runtime, bool notify=false) {
+            getShellPtr()->doStart(runtime, notify);
+            });
 
     m.def("getCinfo", [](const string& name) { return Cinfo::find(name); },
           py::return_value_policy::reference);
