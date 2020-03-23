@@ -1,4 +1,4 @@
-import moose._moose as M
+import _cmoose as M
 print("Using _moose from %s" % M.__file__)
 print(dir(M))
 a0 = M.create('/a0', 'Neutral', 1)

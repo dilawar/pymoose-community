@@ -37,7 +37,7 @@ void initModule(py::module& m)
     auto pShell = getShellPtr();
 }
 
-PYBIND11_MODULE(_moose, m)
+PYBIND11_MODULE(_cmoose, m)
 {
     initModule(m);
 

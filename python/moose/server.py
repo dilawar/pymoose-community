@@ -25,10 +25,23 @@ import signal
 import tarfile 
 import tempfile 
 import threading 
+import logging
 import subprocess
 
-import logging
-logger_ = logging.getLogger('moose.server')
+# create a logger for this server.
+logging.basicConfig(
+        level=logging.DEBUG,
+        format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+        datefmt='%m-%d %H:%M',
+        filename='moose_server.log',
+        filemode='a'
+        )
+console = logging.StreamHandler()
+console.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+console.setFormatter(formatter)
+_logger = logging.getLogger('')
+_logger.addHandler(console)
 
 __all__ = [ 'serve' ]
 
@@ -120,7 +133,7 @@ def prefix_data_with_size(data):
 def signal_handler(signum, frame):
     global stop_all_
     global sock_
-    logger_.info( "User terminated all processes." )
+    _logger.info( "User terminated all processes." )
     stop_all_ = True
     #  sock_.shutdown( socket.SHUT_RDWR )
     sock_.close()
@@ -136,14 +149,14 @@ def send_msg(msg, conn, prefix='LOG'):
     if not msg.strip():
         return False
     if prefix != 'TAB':
-        logger_.debug(msg)
+        _logger.debug(msg)
     else:
-        logger_.debug( 'Sending msg with size %d' % len(msg))
+        _logger.debug( 'Sending msg with size %d' % len(msg))
     msg = '<%s>%s' % (prefix, msg)
     conn.sendall(prefix_data_with_size(msg))
 
 def run(cmd, conn, cwd=None):
-    logger_.info( "Executing %s" % cmd )
+    _logger.info( "Executing %s" % cmd )
     oldCWD = os.getcwd()
     if cwd is not None:
         os.chdir(cwd)
@@ -163,7 +176,7 @@ def recv_input(conn, size=1024):
         try:
             d = conn.recv(prefixL_, socket.MSG_WAITALL)
         except Exception:
-            logger_.error("MSG FORMAT: %d bytes are size of msg."%prefixL_)
+            _logger.error("MSG FORMAT: %d bytes are size of msg."%prefixL_)
             continue
     d, data = int(d), b''
     while len(data) < d:
@@ -173,12 +186,12 @@ def recv_input(conn, size=1024):
 def writeTarfile( data ):
     tfile = os.path.join(tempfile.mkdtemp(), 'data.tar.bz2')
     with open(tfile, 'wb' ) as f:
-        logger_.info( "Writing %d bytes to %s" % (len(data), tfile))
+        _logger.info( "Writing %d bytes to %s" % (len(data), tfile))
         f.write(data)
     # Sleep for some time so that file can be written to disk.
     time.sleep(0.1)
     if not tarfile.is_tarfile(tfile):
-        logger_.warning( 'Not a valid tar file: %s' % tfile)
+        _logger.warn( 'Not a valid tar file: %s' % tfile)
         return None
     return tfile
 
@@ -197,7 +210,7 @@ def streamer_client(socketPath, conn):
     # Connect to running socket server.
     global stop_streamer_
     stop = False
-    logger_.debug( "Trying to connect to server at : %s" % socketPath )
+    _logger.debug( "Trying to connect to server at : %s" % socketPath )
     while not os.path.exists( socketPath ):
         #print( 'socket %s is not available yet.' % socketPath )
         time.sleep(0.1)
@@ -209,12 +222,12 @@ def streamer_client(socketPath, conn):
     try:
         stClient.connect(socketPath)
     except socket.error as e:
-        logger_.warning('Could not connect: %s' % e)
+        _logger.warning('Could not connect: %s' % e)
         return
 
     # send streaming data back to client. The streamer send fixed size messages
     # of 1024/2048 bytes each (see the c++ implmenetation).
-    logger_.info( "Socket Streamer is connected with server." )
+    _logger.info( "Socket Streamer is connected with server." )
     stClient.settimeout(0.05)
     send_msg( b'Now streaming table data.', conn, 'TAB')
     while not stop:
@@ -245,7 +258,7 @@ def run_file(filename, conn, cwd=None):
     stop_streamer_[streamerThread.name] = True
     streamerThread.join( timeout = 1)
     if streamerThread.is_alive():
-        logger_.error( "The socket streamer client is still running...")
+        _logger.error( "The socket streamer client is still running...")
 
 def extract_files(tfile, to):
     userFiles = []
@@ -254,11 +267,11 @@ def extract_files(tfile, to):
         try:
             f.extractall( to )
         except Exception as e:
-            logger_.warning( e)
+            _logger.warn( e)
     # now check if all files have been extracted properly
     for f in userFiles:
         if not os.path.exists(f):
-            logger_.error( "File %s could not be extracted." % f )
+            _logger.error( "File %s could not be extracted." % f )
     return userFiles
 
 def prepareMatplotlib( cwd ):
@@ -275,14 +288,14 @@ def sendResults(tdir, conn, notTheseFiles):
     resfile = os.path.join(resdir, 'results.tar.bz2')
     with tarfile.open( resfile, 'w|bz2') as tf:
         for f in find_files(tdir, ext='png'):
-            logger_.info( "Adding file %s" % f )
+            _logger.info( "Adding file %s" % f )
             tf.add(f, os.path.basename(f))
 
     time.sleep(0.01)
     # now send the tar file back to client
     with open(resfile, 'rb' ) as f:
         data = f.read()
-        logger_.info( 'Total bytes to send to client: %d' % len(data))
+        _logger.info( 'Total bytes to send to client: %d' % len(data))
         send_bz2(conn, data)
     shutil.rmtree(resdir)
 
@@ -335,11 +348,11 @@ def savePayload( conn ):
 
 def handle_client(conn, ip, port):
     isActive = True
-    logger_.info( "Serving request from %s:%s" % (ip, port) )
+    _logger.info( "Serving request from %s:%s" % (ip, port) )
     while isActive:
         tarfileName, nBytes = savePayload(conn)
         if tarfileName is None:
-            logger_.warning( "Could not recieve data." )
+            _logger.warn( "Could not recieve data." )
             isActive = False
         if not os.path.isfile(tarfileName):
             send_msg("[ERROR] %s is not a valid tarfile. Retry"%tarfileName, conn)
@@ -366,9 +379,9 @@ def start_server( host, port, max_requests = 10 ):
     sock_.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     try:
         sock_.bind( (host, port))
-        logger_.info( "Server created %s:%s" %(host,port) )
+        _logger.info( "Server created %s:%s" %(host,port) )
     except Exception as e:
-        logger_.error( "Failed to bind: %s" % e)
+        _logger.error( "Failed to bind: %s" % e)
         quit(1)
 
     # listen upto 10 of requests

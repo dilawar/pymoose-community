@@ -387,4 +387,5 @@ def doc(arg, inherited=True, paged=True):
         print(text)
 
 
+#
 # moose.py ends here
