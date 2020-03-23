@@ -10,8 +10,7 @@ import pydoc
 import io
 from contextlib import closing
 
-import moose._moose as _moose
-import moose.utils as mu
+import moose._cmoose as _moose
 
 
 def about():
@@ -25,7 +24,7 @@ def about():
 # Version
 def version():
     # Show user version.
-    return _moose.VERSION
+    return _moose.__version__
 
 
 def pwe():

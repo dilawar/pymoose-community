@@ -10,8 +10,6 @@
 #ifndef _OBJ_ID_H
 #define _OBJ_ID_H
 
-#include "Id.h"
-
 /**
  * This class manages lookups for specific data entries in elements,
  * in a node-independent manner.
@@ -22,9 +20,6 @@ class ObjId {
     friend istream& operator>>(istream& s, ObjId& i);
 
 public:
-    //////////////////////////////////////////////////////////////
-    //	ObjId creation
-    //////////////////////////////////////////////////////////////
     /**
      * Returns the root Id
      */
@@ -58,13 +53,9 @@ public:
      */
     string path() const;
 
-    /* --------------------------------------------------------------------------*/
     /**
-     * @Synopsis  Return name of element.
-     *
-     * @Returns   
+     * Return name.
      */
-    /* ----------------------------------------------------------------------------*/
     string name() const;
 
     /**

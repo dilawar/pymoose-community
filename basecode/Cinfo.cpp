@@ -8,6 +8,7 @@
 ** See the file COPYING.LIB for the full notice.
 **********************************************************************/
 #include "header.h"
+#include "Finfo.h"
 #include "../shell/Shell.h"
 #include "Dinfo.h"
 
@@ -221,6 +222,19 @@ const Finfo* Cinfo::findFinfo(const string& name) const
     if (i != finfoMap_.end())
         return i->second;
     return 0;
+}
+
+const FinfoWrapper Cinfo::findFinfoWrapper(const string& name) const
+{
+    return FinfoWrapper(findFinfo(name));
+}
+
+vector<string> Cinfo::getFinfoNames() const
+{
+    vector<string> res;
+    for(auto v: finfoMap_)
+        res.push_back(v.first);
+    return res;
 }
 
 bool Cinfo::banCreation() const
@@ -463,6 +477,11 @@ Finfo* Cinfo::getLookupFinfo(unsigned int i) const
     return lookupFinfos_[i];
 }
 
+const FinfoWrapper Cinfo::getLookupFinfoWrapper(unsigned int i) const
+{
+    return FinfoWrapper(getLookupFinfo(i));
+}
+
 unsigned int Cinfo::getNumLookupFinfo() const
 {
     if (baseCinfo_)
@@ -484,6 +503,11 @@ Finfo* Cinfo::getSharedFinfo(unsigned int i)
     }
 
     return sharedFinfos_[i];
+}
+
+FinfoWrapper Cinfo::getSharedFinfoWrapper(unsigned int i)
+{
+    return FinfoWrapper(getSharedFinfo(i));
 }
 
 unsigned int Cinfo::getNumSharedFinfo() const
@@ -508,6 +532,11 @@ Finfo* Cinfo::getFieldElementFinfo(unsigned int i) const
     }
 
     return fieldElementFinfos_[i];
+}
+
+const FinfoWrapper Cinfo::getFieldElementFinfoWrapper(unsigned int i) const
+{
+    return FinfoWrapper(getFieldElementFinfo(i));
 }
 
 unsigned int Cinfo::getNumFieldElementFinfo() const

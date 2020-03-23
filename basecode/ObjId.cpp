@@ -115,6 +115,11 @@ string ObjId::path() const
     return Neutral::path(eref());
 }
 
+string ObjId::name() const
+{
+    return element()->getName();
+}
+
 Element* ObjId::element() const
 {
     return id.element();

@@ -10,8 +10,7 @@
 #include <typeinfo>
 #include "header.h"
 
-Finfo::Finfo( const string& name, const string& doc )
-    : name_( name ), doc_( doc )
+Finfo::Finfo(const string& name, const string& doc) : name_(name), doc_(doc)
 {
     ;
 }

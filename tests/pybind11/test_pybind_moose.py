@@ -1,13 +1,20 @@
-import _cmoose as M
-print("Using _moose from %s" % M.__file__)
-print(dir(M))
-a0 = M.create('/a0', 'Neutral', 1)
-a1 = M.create('/a0/a1', 'Neutral', 1)
-print(a1)
-a2 = M.create('/a2', 'Neutral', 1)
-print(a2)
+import moose._cmoose as M
 
-ps = M._wildcardFind('/##[TYPE=Cinfo]')
-for p in ps:
-    print(p, p.path)
-print(len(ps))
+def test_sanity_1():
+    print("Using _moose from %s" % M.__file__)
+    a0 = M.create('/a0', 'Neutral', 1)
+    a1 = M.create('/a0/a1', 'Neutral', 1)
+    a2 = M.create('/a2', 'Neutral', 10)
+    for f in M._wildcardFind('/##'):
+        print(f.path)
+
+
+def test_sanity_2():
+    print(M.getCwe().path)
+    a = M.create('/xyz', 'Neutral', 1)
+    M.setCwe(a)
+    print(M.getCwe().path)
+
+if __name__ == '__main__':
+    test_sanity_1()
+    test_sanity_2()
