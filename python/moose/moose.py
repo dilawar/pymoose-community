@@ -12,7 +12,6 @@ from contextlib import closing
 
 import moose._cmoose as _moose
 
-
 def about():
     """info: Return some 'about me' information.
     """
@@ -25,7 +24,6 @@ def about():
 def version():
     # Show user version.
     return _moose.__version__
-
 
 def pwe():
     """Print present working element. Convenience function for GENESIS
@@ -71,7 +69,6 @@ def le(el=None):
 
 # ce is a GENESIS shorthand for change element.
 ce = _moose.setCwe
-
 
 def syncDataHandler(target):
     """Synchronize data handlers for target.
@@ -386,5 +383,3 @@ def doc(arg, inherited=True, paged=True):
         print(text)
 
 
-#
-# moose.py ends here

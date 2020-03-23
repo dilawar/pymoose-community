@@ -1,22 +1,27 @@
 # -*- coding: utf-8 -*-
 
-# Bring everything from c++ module to global namespace.
-#  from moose._cmoose import *
 import time
 import functools
-from moose import _cmoose
+import moose._cmoose as _cmoose
 
+import logging
+logger_ = logging.getLogger('moose')
 
-class MooseClass:
+# String to python classes.
+__classmap__ = {} 
+
+class __MooseClass__(object):
     # type of MOOSE class. Must be set when defining new class dynamically
     # using `type(name, bases, dict)`.
     mType = 'Unknown'
 
-    def __init__(self, path, numData=1):
+    def __init__(self, path, numData=1, _id=None):
         assert numData > 0
         self._ndata = numData
         self.path = path
-        self.id = _cmoose.create(path, self.mType, numData)
+        if _id is None:
+            _id = _cmoose.create(path, self.mType, numData)
+        self.id = _id
 
     def __repr__(self):
         return "<moose.%s: id=%d, dataIndex=%d, path=%s>" % (
@@ -51,15 +56,34 @@ t0 = time.time()
 for p in _cmoose._wildcardFind('/##[TYPE=Cinfo]'):
     cinfo = _cmoose.getCinfo(p.name)
     # create a class.
-    cls = type(p.name, (MooseClass, ), dict(mType=p.name))
+    cls = type(p.name, (__MooseClass__, ), dict(mType=p.name))
     __addFinfos(cls, cinfo)
 
-    # Add this class to module.
+    # Add this class to module and save them in a map for easy reuse later.
+    __classmap__[p.name] = cls
     setattr(_cmoose, cls.__name__, cls)
 
+logger_.info("Declarting classes took %f sec" % (time.time() - t0))
 
 
-print("[INFO ] Declarting classes took %f sec" % (time.time() - t0))
+# Turns C++ object to Python objects.
+def __toMooseObject(objid):
+    return __classmap__[objid.type](objid.path, _id=objid.id)
+
+def wildcardFind(pattern):
+    """wildcardFind.
+
+    Parameters
+    ----------
+    pattern :
+        pattern
+    """
+    paths = []
+    print('xxx', dir(_cmoose))
+    for p in _cmoose._wildcardFind(pattern):
+        paths.append(__toMooseObject(p))
+    return paths
+
 
 # Bring everything from moose.py to global namespace.
 # IMP: It will overwrite any c++ function with the same name.  We can override

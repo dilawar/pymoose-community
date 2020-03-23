@@ -66,7 +66,12 @@ PYBIND11_MODULE(_cmoose, m)
     py::class_<ObjId>(m, "_ObjId")
         .def(py::init<>())
         .def_property_readonly("path", &ObjId::path)
-        .def_property_readonly("name", &ObjId::name);
+        .def_property_readonly("name", &ObjId::name)
+        .def_property_readonly("id", [](ObjId& oid) { return oid.id; })
+        .def_property_readonly("type"
+                , [](ObjId& oid){ return oid.element()->cinfo()->name(); }
+                )
+        ;
 
     py::class_<FinfoWrapper>(m, "_FinfoWrapper")
         .def(py::init<const Finfo*>())
@@ -89,6 +94,7 @@ PYBIND11_MODULE(_cmoose, m)
 
     m.def("getCinfo", [](const string& name) { return Cinfo::find(name); },
           py::return_value_policy::reference);
+
     m.def("_wildcardFind", &wildcardFindPybind);
 
     m.def("getProperty", &getProperty<double>);

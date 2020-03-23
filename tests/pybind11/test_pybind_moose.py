@@ -1,3 +1,4 @@
+import moose
 import moose._cmoose as M
 
 def test_sanity_1():
@@ -5,8 +6,8 @@ def test_sanity_1():
     a0 = M.create('/a0', 'Neutral', 1)
     a1 = M.create('/a0/a1', 'Neutral', 1)
     a2 = M.create('/a2', 'Neutral', 10)
-    for f in M._wildcardFind('/##'):
-        print(f.path)
+    for f in moose.wildcardFind('/##'):
+        print(f)
 
 
 def test_sanity_2():
