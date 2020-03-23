@@ -15,8 +15,10 @@
 // =====================================================================================
 
 #include <vector>
-#include <typeinfo>
 #include <utility>
+#include <typeinfo>
+#include <typeindex>
+#include <map>
 
 #include "../external/pybind11/include/pybind11/pybind11.h"
 #include "../external/pybind11/include/pybind11/stl.h"
@@ -24,6 +26,7 @@
 #include "../basecode/header.h"
 #include "../shell/Shell.h"
 #include "../shell/Wildcard.h"
+#include "../shell/Neutral.h"
 
 #include "helper.h"
 #include "pymoose.h"
@@ -34,7 +37,6 @@ namespace py = pybind11;
 void initModule(py::module& m)
 {
     initShell();
-    auto pShell = getShellPtr();
 }
 
 PYBIND11_MODULE(_cmoose, m)
@@ -49,6 +51,10 @@ PYBIND11_MODULE(_cmoose, m)
     py::class_<ObjId>(m, "_ObjId")
         .def(py::init<>())
         .def_property_readonly("path", &ObjId::path)
+        ;
+
+    py::class_<Neutral>(m, "_Neutral")
+        .def(py::init<>())
         ;
 
     m.def("create", &createIdFromPath);

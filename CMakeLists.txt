@@ -310,7 +310,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/pybind11)
 add_subdirectory(pybind11)
 
 ######################### BUILD PYMOOSE ########################################
-add_subdirectory(pymoose)
+# add_subdirectory(pymoose)
 
 # always override debian default installation directory. It will be installed in
 # site-packages instead of dist-packages.
