@@ -20,13 +20,13 @@ if(APPLE)
 endif(APPLE)
 
 if(APPLE)
-    target_link_libraries( _moose
+    target_link_libraries(_moose PRIVATE
         "-Wl,-all_load"
         ${MOOSE_LIBRARIES}
         ${STATIC_LIBRARIES})
     target_link_libraries(_moose ${SYSTEM_SHARED_LIBS})
 else(APPLE)
-    target_link_libraries(_moose
+    target_link_libraries(_moose PRIVATE
         "-Wl,--whole-archive" 
         ${MOOSE_LIBRARIES} 
         ${STATIC_LIBRARIES} 

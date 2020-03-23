@@ -19,13 +19,7 @@
 
 using namespace std;
 
-// Macro to create the Shell * out of shellId
-#define SHELLPTR (reinterpret_cast<Shell*>(getShell().eref().data()))
-
-
 Id initShell();
-
-Id getShell();
 
 Id createIdFromPath(string path, string type, size_t numData=1);
 

@@ -31,6 +31,8 @@ namespace py = pybind11;
 
 PYBIND11_MODULE(_moose, m)
 {
+    initShell();
+
     m.doc() = R"moosedoc(moose module.
     )moosedoc";
 
@@ -38,30 +40,9 @@ PYBIND11_MODULE(_moose, m)
    //     .def(py::init<>())
    //     ;
 
-   py::class_<Id>(m, "Id")
-       .def(py::init<>())
-       ;
-
-    // Add Shell Class.
-    py::class_<Shell>(m, "Shell")
-        .def(py::init<>())
-        .def("doCreate", &Shell::doCreate)
-        .def("doDelete", &Shell::doDelete)
-        .def("doAddMsg", &Shell::doAddMsg)
-        .def("doQuit", &Shell::doQuit)
-        .def("doStart", &Shell::doStart)
-        .def("doReinit", &Shell::doReinit)
-        .def("doStop", &Shell::doStop)
-        .def("doMove", &Shell::doMove)
-        .def("doCopy", &Shell::doCopy)
-        .def("destroy", &Shell::destroy)
-        .def("doFind", &Shell::doFind)
-        .def("doLoadModel", &Shell::doLoadModel)
-        .def("doSaveModel", &Shell::doSaveModel)
-        .def("handleCreate", &Shell::handleCreate)
-        .def("handleCopy", &Shell::handleCopy)
-        .def("handleQuit", &Shell::handleQuit)
-        ;
+   //py::class_<Id>(m, "Id")
+   //    .def(py::init<>())
+   //    ;
 
     m.def("create", &createIdFromPath);
 

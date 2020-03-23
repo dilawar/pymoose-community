@@ -34,7 +34,7 @@ Id initShell(void)
 
     Id shellId;
 
-    unique_ptr<Element> shelle(new GlobalDataElement(shellId, Shell::initCinfo(), "root", 1 ));
+    Element* shelle = new GlobalDataElement(shellId, Shell::initCinfo(), "/", 1 );
 
     Id clockId = Id::nextId();
     assert( clockId.value() == 1 );
@@ -43,14 +43,14 @@ Id initShell(void)
 
     Shell* s = reinterpret_cast< Shell* >( shellId.eref().data() );
     s->setHardware(1, 1, 0);
-    s->setShellElement( shelle.get() );
+    s->setShellElement( shelle );
 
     /// Sets up the Elements that represent each class of Msg.
     auto numMsg = Msg::initMsgManagers();
 
-    new GlobalDataElement( clockId, Clock::initCinfo(), "clock", 1 );
-    new GlobalDataElement( classMasterId, Neutral::initCinfo(), "classes", 1);
-    new GlobalDataElement( postMasterId, PostMaster::initCinfo(), "postmaster", 1 );
+    new GlobalDataElement(clockId, Clock::initCinfo(), "clock", 1);
+    new GlobalDataElement(classMasterId, Neutral::initCinfo(), "classes", 1);
+    new GlobalDataElement(postMasterId, PostMaster::initCinfo(), "postmaster", 1);
 
     assert ( shellId == Id() );
     assert( clockId == Id( 1 ) );
@@ -67,33 +67,13 @@ Id initShell(void)
 }
 
 
-/* --------------------------------------------------------------------------*/
-/**
- * @Synopsis  getShell.
- *
- * @Param argc
- * @Param argv
- *
- * @Returns   
- */
-/* ----------------------------------------------------------------------------*/
-Id getShell()
-{
-    static bool inited = false;
-    if (inited)
-        return Id(0);
-
-    Id shellId = initShell();
-    inited = true;
-    return shellId;
-} 
-
 /**
    Utility function to create objects from full path, dimensions
    and classname.
 */
 Id createIdFromPath(string path, string type, size_t numData)
 {
+    Shell* pShell = reinterpret_cast<Shell*>(Id().eref().data());
     string parent_path;
     string name;
 
@@ -111,7 +91,7 @@ Id createIdFromPath(string path, string type, size_t numData)
     // handle relative path
     if (trimmed_path[0] != '/')
     {
-        string current_path = SHELLPTR->getCwe().path();
+        string current_path = pShell->getCwe().path();
         if (current_path != "/")
             parent_path = current_path + "/" + parent_path;
         else
@@ -129,7 +109,7 @@ Id createIdFromPath(string path, string type, size_t numData)
         return Id();
     }
 
-    Id nId =  SHELLPTR->doCreate(type,
+    Id nId =  pShell->doCreate(type,
                                  parent_id,
                                  string(name),
                                  numData,
