@@ -477,11 +477,6 @@ Finfo* Cinfo::getLookupFinfo(unsigned int i) const
     return lookupFinfos_[i];
 }
 
-const FinfoWrapper Cinfo::getLookupFinfoWrapper(unsigned int i) const
-{
-    return FinfoWrapper(getLookupFinfo(i));
-}
-
 unsigned int Cinfo::getNumLookupFinfo() const
 {
     if (baseCinfo_)
@@ -503,11 +498,6 @@ Finfo* Cinfo::getSharedFinfo(unsigned int i)
     }
 
     return sharedFinfos_[i];
-}
-
-FinfoWrapper Cinfo::getSharedFinfoWrapper(unsigned int i)
-{
-    return FinfoWrapper(getSharedFinfo(i));
 }
 
 unsigned int Cinfo::getNumSharedFinfo() const
@@ -532,11 +522,6 @@ Finfo* Cinfo::getFieldElementFinfo(unsigned int i) const
     }
 
     return fieldElementFinfos_[i];
-}
-
-const FinfoWrapper Cinfo::getFieldElementFinfoWrapper(unsigned int i) const
-{
-    return FinfoWrapper(getFieldElementFinfo(i));
 }
 
 unsigned int Cinfo::getNumFieldElementFinfo() const

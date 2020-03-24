@@ -8,22 +8,129 @@ import warnings
 import os
 import pydoc
 import io
+import time
 from contextlib import closing
+import moose._cmoose as _cmoose
 
-import moose._cmoose as _moose
+import logging
+logger_ = logging.getLogger('moose')
+
+# String to python classes.
+__classmap__ = {} 
+
+class __MooseClass__:
+    mType = 'Uknown'
+    #  cinfo = None
+    id = None
+
+    # type of MOOSE class. Must be set when defining new class dynamically
+    # using `type(name, bases, dict)`.
+    def __init__(self, path, numData=1, _id=None):
+        assert numData > 0
+        self._ndata = numData
+        self._path = path
+        if _id is None:
+            _id = _cmoose.create(path, self.mType, numData)
+        assert _id
+        print("[INFO ] Path is: %s with id %s" % (self._path, _id))
+        self._id = _id
+
+    def __repr__(self):
+        return "<moose.%s: id=%d, dataIndex=%d, path=%s>" % (
+            self.mType, self.id.value, self._ndata, self._path)
+
+# Turns C++ object to Python objects.
+def __toMooseObject(objid):
+    #  assert isinstance(objid, (_cmoose._ObjId, _cmoose._Id))
+    CLS = __classmap__[objid.type]
+    return CLS(objid.path, _id=objid.id)
+
+def __addFinfos(cls, cinfo):
+    gets, sets, others = set(), set(), set()
+    for x in cinfo.finfoNames:
+        if 'get' == x[:3]:
+            gets.add(x[3:])
+        elif 'set' == x[:3]:
+            sets.add(x)
+        else:
+            others.add(x)
+
+    # Fields common in both sets and gets are setter and gettter.
+    for p in sets & gets:
+        x = p[0].lower() + p[1:]
+        # x=x is necessary in lamdas below because of late binding.
+        # https://stackoverflow.com/questions/10452770/python-lambdas-binding-to-local-values
+        prop = property(lambda obj, x=x: _cmoose.getProperty(obj.id, x)
+                , lambda obj, val, x=x: _cmoose.setProperty(obj.id, x, val))
+        setattr(cls, x, prop)
+
+    for g in gets - sets:
+        x = g[0].lower() + g[1:]
+        prop = property(lambda obj, x=x: _cmoose.getProperty(obj.id, x))
+        setattr(cls, x, prop)
+
+    for s in sets - gets:
+        x = s[0].lower() + s[1:]
+        prop = property(None, lambda obj, val, x=x: _cmoose.setProperty(obj.id, x, val))
+        setattr(cls, x, prop)
+
+
+t0 = time.time()
+for p in _cmoose._wildcardFind('/##[TYPE=Cinfo]'):
+    # create a class.
+    cls = type(p.name, (__MooseClass__,), dict(mType=p.name, id=p.id))
+    # Add this class to module and save them in a map for easy reuse later.
+    __classmap__[p.name] = cls
+    setattr(_cmoose, cls.__name__, cls)
+    
+    # Define Finfos. One can do it here at Python level or use a C++ function.
+
+    # TODO: I am using C++ since that would be more performant.
+    _cmoose.__defineFinfos(cls, p.name)
+
+    # Or use Python version.
+    #  cinfo = _cmoose.getCinfo(p.name)
+    #  __addFinfos(cls, cinfo)
+
+
+logger_.info("Declarting classes took %f sec" % (time.time() - t0))
+
+
+#############################################################################
+#                             API                                           #
+#############################################################################
+def version():
+    # Show user version.
+    return _cmoose.__version__
 
 def about():
     """info: Return some 'about me' information.
     """
     return dict(path=os.path.dirname(__file__),
-                version=_moose.VERSION,
+                version=_cmoose.VERSION,
                 docs='https://moose.readthedocs.io/en/latest/')
 
+def wildcardFind(pattern):
+    """wildcardFind.
 
-# Version
-def version():
-    # Show user version.
-    return _moose.__version__
+    Parameters
+    ----------
+    pattern :
+        pattern
+    """
+    paths = []
+    for p in _cmoose._wildcardFind(pattern):
+        paths.append(__toMooseObject(p))
+    return paths
+
+
+def element(pathOrObject):
+    if isinstance(pathOrObject, str):
+        obj = _cmoose.element(pathOrObject)
+    else:
+        obj = _cmoose.element(pathOrObject.path)
+    return __toMooseObject(obj)
+
 
 def pwe():
     """Print present working element. Convenience function for GENESIS
@@ -33,7 +140,7 @@ def pwe():
     >>> pwe()
     >>> '/'
     """
-    pwe_ = _moose.getCwe()
+    pwe_ = _cmoose.getCwe()
     print(pwe_.path)
     return pwe_
 
@@ -54,12 +161,12 @@ def le(el=None):
 
     """
     if el is None:
-        el = _moose.getCwe()
+        el = _cmoose.getCwe()
     elif isinstance(el, str):
-        if not _moose.exists(el):
+        if not _cmoose.exists(el):
             raise ValueError('no such element')
-        el = _moose.element(el)
-    elif isinstance(el, _moose.vec):
+        el = _cmoose.element(el)
+    elif isinstance(el, _cmoose.vec):
         el = el[0]
     print("Elements under '%s'" % el.path)
     for ch in el.children:
@@ -68,7 +175,7 @@ def le(el=None):
 
 
 # ce is a GENESIS shorthand for change element.
-ce = _moose.setCwe
+ce = _cmoose.setCwe
 
 def syncDataHandler(target):
     """Synchronize data handlers for target.
@@ -92,10 +199,10 @@ def syncDataHandler(target):
         'The implementation is not working for IntFire - goes to invalid objects. \
 First fix that issue with SynBase or something in that line.')
     if isinstance(target, str):
-        if not _moose.exists(target):
+        if not _cmoose.exists(target):
             raise ValueError('%s: element does not exist.' % (target))
-        target = _moose.vec(target)
-        _moose.syncDataHandler(target)
+        target = _cmoose.vec(target)
+        _cmoose.syncDataHandler(target)
 
 
 def showfield(el, field='*', showtype=False):
@@ -120,12 +227,12 @@ def showfield(el, field='*', showtype=False):
 
     """
     if isinstance(el, str):
-        if not _moose.exists(el):
+        if not _cmoose.exists(el):
             raise ValueError('no such element: %s' % el)
-        el = _moose.element(el)
+        el = _cmoose.element(el)
     result = []
     if field == '*':
-        value_field_dict = _moose.getFieldDict(el.className, 'valueFinfo')
+        value_field_dict = _cmoose.getFieldDict(el.className, 'valueFinfo')
         max_type_len = max(len(dtype) for dtype in value_field_dict.values())
         max_field_len = max(len(dtype) for dtype in value_field_dict.keys())
         result.append('\n[' + el.path + ']\n')
@@ -186,7 +293,7 @@ def listmsg(el):
         connections of `el`.
 
     """
-    obj = _moose.element(el)
+    obj = _cmoose.element(el)
     ret = []
     for msg in obj.msgIn:
         ret.append(msg)
@@ -208,7 +315,7 @@ def showmsg(el):
     None
 
     """
-    obj = _moose.element(el)
+    obj = _cmoose.element(el)
     print('INCOMING:')
     for msg in obj.msgIn:
         print(msg.e2.path, msg.destFieldsOnE2, '<---', msg.e1.path,
@@ -248,7 +355,7 @@ def getFieldDoc(tokens, indent=''):
     fieldname = tokens[1]
     while True:
         try:
-            classelement = _moose.element('/classes/' + classname)
+            classelement = _cmoose.element('/classes/' + classname)
             for finfo in classelement.children:
                 for fieldelement in finfo:
                     baseinfo = ''
@@ -274,13 +381,13 @@ def getFieldDoc(tokens, indent=''):
 def _appendFinfoDocs(classname, docstring, indent):
     """Append list of finfos in class name to docstring"""
     try:
-        classElem = _moose.element('/classes/%s' % (classname))
+        classElem = _cmoose.element('/classes/%s' % (classname))
     except ValueError:
         raise NameError('class \'%s\' not defined.' % (classname))
     for ftype, rname in finfotypes:
         docstring.write(u'\n*%s*\n' % (rname.capitalize()))
         try:
-            finfo = _moose.element('%s/%s' % (classElem.path, ftype))
+            finfo = _cmoose.element('%s/%s' % (classElem.path, ftype))
             for field in finfo.vec:
                 docstring.write(u'%s%s: %s\n' %
                                 (indent, field.fieldName, field.type))
@@ -298,7 +405,7 @@ def _getMooseDoc(tokens, inherited=False):
         if not tokens:
             return ""
         try:
-            classElem = _moose.element('/classes/%s' % (tokens[0]))
+            classElem = _cmoose.element('/classes/%s' % (tokens[0]))
         except ValueError:
             raise NameError("Name '%s' not defined." % (tokens[0]))
 
@@ -311,13 +418,13 @@ def _getMooseDoc(tokens, inherited=False):
         if not inherited:
             return docstring.getvalue()
 
-        mro = eval('_moose.%s' % (tokens[0])).mro()
+        mro = eval('_cmoose.%s' % (tokens[0])).mro()
         for class_ in mro[1:]:
-            if class_ == _moose.melement:
+            if class_ == _cmoose.melement:
                 break
             docstring.write(u"\n# Inherited from '%s'\n" % (class_.__name__))
             _appendFinfoDocs(class_.__name__, docstring, indent)
-            if class_ == _moose.Neutral:
+            if class_ == _cmoose.Neutral:
                 break
         return docstring.getvalue()
 
@@ -366,11 +473,11 @@ def doc(arg, inherited=True, paged=True):
     text = ''
     if isinstance(arg, str):
         tokens = arg.split('.')
-        if tokens[0] in ['moose', '_moose']:
+        if tokens[0] in ['moose', '_cmoose']:
             tokens = tokens[1:]
     elif isinstance(arg, type):
         tokens = [arg.__name__]
-    elif isinstance(arg, _moose.melement) or isinstance(arg, _moose.vec):
+    elif isinstance(arg, _cmoose.melement) or isinstance(arg, _cmoose.vec):
         text = '%s: %s\n\n' % (arg.path, arg.className)
         tokens = [arg.className]
     if tokens:

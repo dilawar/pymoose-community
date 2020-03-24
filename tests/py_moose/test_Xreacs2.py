@@ -15,6 +15,8 @@ def test_xreac2():
     mfile = os.path.join( os.path.dirname( __file__), 'OSC_diff_vols.g' )
     runtime = 4000.0
     modelId = moose.loadModel( mfile, 'model', 'ee' )
+    print(modelId)
+
     kin = moose.element( '/model/kinetics' )
     compt1 = moose.element( '/model/compartment_1' )
     compt1.x1 += kin.x1

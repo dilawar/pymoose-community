@@ -60,7 +60,7 @@ class TestFullCell(unittest.TestCase):
         self.lib = moose.Neutral('/library')
         self.filename = 'test_files/NML2_FullCell.nml'
         self.reader.read(self.filename)
-        for ncell in self.reader.nml_to_moose:
+        for ncell in self.reader.nml_to_cmoose:
             if isinstance(ncell, nml.Cell):
                 self.ncell = ncell
                 break
@@ -100,8 +100,8 @@ class TestFullCell(unittest.TestCase):
                 pseg = id_to_seg[seg.parent.segment]
             except AttributeError:
                 continue
-            comp = self.reader.nml_to_moose[seg]
-            pcomp = self.reader.nml_to_moose[pseg]
+            comp = self.reader.nml_to_cmoose[seg]
+            pcomp = self.reader.nml_to_cmoose[pseg]
             
             '''
             TODO: what should this be updated to???
@@ -135,7 +135,7 @@ class TestGran98(unittest.TestCase):
         self.lib = moose.Neutral('/library')
         self.filename = 'test_files/Granule_98/Granule_98.nml'
         self.reader.read(self.filename)
-        for ncell in self.reader.nml_to_moose:
+        for ncell in self.reader.nml_to_cmoose:
             if isinstance(ncell, nml.Cell):
                 self.ncell = ncell
                 break

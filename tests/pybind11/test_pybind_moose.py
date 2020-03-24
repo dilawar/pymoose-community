@@ -16,6 +16,14 @@ def test_sanity_2():
     M.setCwe(a)
     print(M.getCwe().path)
 
+def test_set_get():
+    a = M.CubeMesh('a')
+    print(a.z1)
+    print(dir(a))
+    a.z1 = 1.0
+    assert a.z1 == 1.0, a.z1
+
 if __name__ == '__main__':
     test_sanity_1()
     test_sanity_2()
+    test_set_get()

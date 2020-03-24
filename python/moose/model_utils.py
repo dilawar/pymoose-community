@@ -5,7 +5,7 @@
 from __future__ import absolute_import, print_function, division
 
 import os
-import moose._moose as _moose
+import moose._cmoose as _cmoose
 import moose.utils as mu
 
 import logging
@@ -223,12 +223,12 @@ def loadModel(filename, modelpath, solverclass="gsl"):
 
     extension = os.path.splitext(filename)[1]
     if extension in [".swc", ".p"]:
-        return _moose.loadModelInternal(filename, modelpath, "Neutral" )
+        return _cmoose.loadModelInternal(filename, modelpath, "Neutral" )
 
     if extension in [".g", ".cspace"]:
         # only if genesis or cspace file and method != ee then only
         # mooseAddChemSolver is called.
-        ret = _moose.loadModelInternal(filename, modelpath, "ee")
+        ret = _cmoose.loadModelInternal(filename, modelpath, "ee")
         sc = solverclass.lower()
         if sc in ["gssa","gillespie","stochastic","gsolve"]:
             method = "gssa"
@@ -245,4 +245,3 @@ def loadModel(filename, modelpath, solverclass="gsl"):
     else:
         logger_.error( "Unknown model extenstion '%s'" % extension)
         return None
-

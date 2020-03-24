@@ -56,7 +56,7 @@ class TestPassiveCell(unittest.TestCase):
         self.filename = 'test_files/passiveCell.nml'
         print('Loading: %s'%self.filename)
         self.reader.read(self.filename)
-        for ncell in self.reader.nml_to_moose:
+        for ncell in self.reader.nml_to_cmoose:
             if isinstance(ncell, nml.Cell):
                 self.ncell = ncell
                 break

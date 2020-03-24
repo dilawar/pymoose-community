@@ -58,7 +58,7 @@ Oct 11 : missing group are copied instead of creating one in new path which also
 
 import sys
 import os
-#from . import _moose as moose
+#from . import _cmoose as moose
 import moose
 
 from moose.chemMerge import mtypes

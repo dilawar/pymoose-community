@@ -25,4 +25,11 @@ Id createIdFromPath(string path, string type, size_t numData=1);
 
 Shell* const getShellPtr();
 
+bool exists(const string& path);
+bool exists(const Id& id);
+
+Id element(const string& id);
+
+Id loadModelInternal(const string& fname, const string& modelpath, const string& solverclass);
+
 #endif /* end of include guard: HELPER_H */

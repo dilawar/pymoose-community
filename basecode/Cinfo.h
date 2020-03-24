@@ -123,6 +123,8 @@ public:
      * Returns 0 on failure.
      */
     const Finfo* findFinfo(const string& name) const;
+
+    // This if for python binding.
     const FinfoWrapper findFinfoWrapper(const string& name) const;
 
     /**
@@ -178,7 +180,6 @@ public:
      * Return the specified SrcFinfo
      */
     Finfo* getSrcFinfo(unsigned int i) const;
-    FinfoWrapper getSrcFinfoWrapper(unsigned int i) const;
 
     /**
      * Return number of SrcFinfos
@@ -189,7 +190,6 @@ public:
      * Return the specified DestFinfo
      */
     Finfo* getDestFinfo(unsigned int i) const;
-    FinfoWrapper getDestFinfoWrapper(unsigned int i) const;
 
     /**
      * Return number of DestFinfo
@@ -200,7 +200,6 @@ public:
      * Return the specified ValueFinfo
      */
     Finfo* getValueFinfo(unsigned int i) const;
-    FinfoWrapper getValueFinfoWrapper(unsigned int i) const;
 
     /**
      * Return number of ValueFinfo
@@ -211,7 +210,6 @@ public:
      * Return the specified LookupFinfo
      */
     Finfo* getLookupFinfo(unsigned int i) const;
-    const FinfoWrapper getLookupFinfoWrapper(unsigned int i) const;
 
     /**
      * Return number of LookupFinfo
@@ -222,7 +220,6 @@ public:
      * Return the specified SharedFinfo
      */
     Finfo* getSharedFinfo(unsigned int i);
-    FinfoWrapper getSharedFinfoWrapper(unsigned int i);
 
     /**
      * Return number of SharedFinfos
@@ -233,7 +230,6 @@ public:
      * Return the specified FieldElementFinfo
      */
     Finfo* getFieldElementFinfo(unsigned int i) const;
-    const FinfoWrapper getFieldElementFinfoWrapper(unsigned int i) const;
 
     /**
      * Return number of FieldElementFinfos

@@ -10,7 +10,7 @@ __email__            = "dilawars@ncbs.res.in"
 
 import sys
 import hashlib
-import moose._moose as _moose
+import moose._cmoose as _cmoose
 import re
 
 import logging
@@ -36,7 +36,7 @@ def morphologyToGraphviz(filename=None, pat='/##[TYPE=Compartment]'):
             path = path + '[0]'
         return path
 
-    compList = _moose.wildcardFind(pat)
+    compList = _cmoose.wildcardFind(pat)
     if not compList:
         logger_.warn("No compartment found")
 
@@ -94,7 +94,7 @@ def _fixLabel(name):
 def _addNode(n, nodes, dot):
     node = hashlib.sha224(n.path.encode()).hexdigest()
     nodeType = 'pool'
-    if isinstance(n, _moose.Reac) or isinstance(n, _moose.ZombieReac):
+    if isinstance(n, _cmoose.Reac) or isinstance(n, _cmoose.ZombieReac):
         node = 'r'+node
         nodeType = 'reac'
     else:
@@ -114,8 +114,8 @@ def _addNode(n, nodes, dot):
 
 def _crn(compt):
     nodes = {}
-    reacs = _moose.wildcardFind(compt.path+'/##[TYPE=Reac]')
-    reacs += _moose.wildcardFind(compt.path+'/##[TYPE=ZombieReac]')
+    reacs = _cmoose.wildcardFind(compt.path+'/##[TYPE=Reac]')
+    reacs += _cmoose.wildcardFind(compt.path+'/##[TYPE=ZombieReac]')
     dot = ['digraph %s {\n\t overlap=false' % compt.name ]
     for r in reacs:
         rNode = _addNode(r, nodes, dot)

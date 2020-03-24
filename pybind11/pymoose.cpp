@@ -37,6 +37,38 @@
 using namespace std;
 namespace py = pybind11;
 
+void defineFinfos(py::object& cls, const string& cname)
+{
+    auto pCinfo = Cinfo::find(cname);
+    assert(pCinfo);
+
+    cerr << "\n====================================================== " << endl;
+    cerr << "Adding Finfos to class " << cls << " with name " << cname << endl;
+
+    cerr << "ValueFinfo: ";
+    for(size_t i = 0; i < pCinfo->getNumValueFinfo(); i++)
+    {
+        auto pFinfo = pCinfo->getValueFinfo(i);
+        cerr << pFinfo->name() << " ";
+    }
+    cerr << endl;
+
+    cerr << "FieldElementFinfo: ";
+    for(size_t i = 0; i < pCinfo->getNumFieldElementFinfo(); i++)
+    {
+        auto pFinfo = pCinfo->getFieldElementFinfo(i);
+        cout << pFinfo->name() << " ";
+    }
+    cerr << endl;
+    cerr << "DestFinfos: ";
+    for(size_t i = 0; i < pCinfo->getNumDestFinfo(); i++)
+    {
+        auto pFinfo = pCinfo->getDestFinfo(i);
+        cout << pFinfo->name() << " ";
+    }
+    cerr << endl;
+}
+
 void initModule(py::module& m)
 {
     initShell();
@@ -61,8 +93,15 @@ PYBIND11_MODULE(_cmoose, m)
     m.doc() = R"moosedoc(moose module.
     )moosedoc";
 
-    py::class_<Id>(m, "_Id").def(py::init<>()).def_property_readonly(
-        "value", &Id::value);
+    py::class_<Id>(m, "_Id").def(py::init<>())
+        .def_property_readonly("value", &Id::value)
+        .def_property_readonly("path", [](Id id){return id.path("/"); })
+        // Return self.
+        .def_property_readonly("id", [](Id& id){return id;})
+        .def_property_readonly("type"
+                , [](Id& id){ return id.element()->cinfo()->name(); }
+                )
+        ;
 
     py::class_<ObjId>(m, "_ObjId")
         .def(py::init<>())
@@ -91,6 +130,10 @@ PYBIND11_MODULE(_cmoose, m)
 
     m.def("create", &createIdFromPath);
 
+    m.def("exists", &createIdFromPath);
+
+    m.def("element", &element);
+
     m.def("move", [](Id o, ObjId oid){ getShellPtr()->doMove(o, oid); });
     m.def("copy", [](Id o, ObjId newP, string newName="", size_t n=1, bool toGlobal=false, bool copyExtMsg=false){ 
             if(newName.empty())
@@ -115,6 +158,9 @@ PYBIND11_MODULE(_cmoose, m)
 
     m.def("_wildcardFind", &wildcardFindPybind);
 
+    m.def("loadModelInternal", &loadModelInternal);
+
+
     m.def("getProperty", &getProperty<double>);
     m.def("getProperty", &getProperty<vector<double>>);
     m.def("getProperty", &getProperty<string>);
@@ -128,6 +174,9 @@ PYBIND11_MODULE(_cmoose, m)
     m.def("setProperty", &setProperty<Id>);
     m.def("setProperty", &setProperty<unsigned int>);
     m.def("setProperty", &setProperty<bool>);
+
+    // TODO:
+    m.def("__defineFinfos", &defineFinfos);
 
     m.attr("__version__") = MOOSE_VERSION;
 }
