@@ -143,6 +143,7 @@ public:
      */
     const map<string, Finfo*>& finfoMap() const;
 
+    // Used in python bindings. Also return type of finfo.
     vector<string> getFinfoNames() const;
 
     /**

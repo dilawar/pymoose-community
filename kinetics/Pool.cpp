@@ -33,8 +33,7 @@ const Cinfo* Pool::initCinfo()
     // SharedMsg Definitions: All inherited.
     //////////////////////////////////////////////////////////////
     static Dinfo< Pool > dinfo;
-    static Cinfo poolCinfo (
-        "Pool",
+    static Cinfo poolCinfo ("Pool",
         PoolBase::initCinfo(),
         0,
         0,

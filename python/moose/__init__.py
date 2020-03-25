@@ -11,8 +11,5 @@ from moose.server import *
 # SBML and NML2 support.
 from moose.model_utils import *
 
-# C++ core override
-from moose.wrapper import *
-
 # Import moose test.
 from moose.moose_test import test

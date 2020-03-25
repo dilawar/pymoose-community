@@ -21,15 +21,14 @@ using namespace std;
 
 Id initShell();
 
-Id createIdFromPath(string path, string type, size_t numData=1);
+ObjId createIdFromPath(string path, string type, size_t numData=1);
 
 Shell* const getShellPtr();
 
-bool exists(const string& path);
-bool exists(const Id& id);
+bool doesExist(const string& path);
 
-Id element(const string& id);
+ObjId element(const string& path);
 
-Id loadModelInternal(const string& fname, const string& modelpath, const string& solverclass);
+ObjId loadModelInternal(const string& fname, const string& modelpath, const string& solverclass);
 
 #endif /* end of include guard: HELPER_H */

@@ -25,54 +25,47 @@ class __MooseClass__:
 
     # type of MOOSE class. Must be set when defining new class dynamically
     # using `type(name, bases, dict)`.
-    def __init__(self, path, numData=1, _id=None):
+    def __init__(self, path, numData=1, id=None):
         assert numData > 0
         self._ndata = numData
         self._path = path
-        if _id is None:
-            _id = _cmoose.create(path, self.mType, numData)
-        assert _id
-        print("[INFO ] Path is: %s with id %s" % (self._path, _id))
-        self._id = _id
+        if self.id is None or id is None:
+            self.id = _cmoose.create(path, self.mType, numData)
+        assert self.id is not None
 
     def __repr__(self):
-        return "<moose.%s: id=%d, dataIndex=%d, path=%s>" % (
-            self.mType, self.id.value, self._ndata, self._path)
+        return "<moose.%s: id=%s, dataIndex=%d, path=%s>" % (
+            self.mType, self.id, self._ndata, self._path)
+
+    def __str__(self):
+        return self.__repr__()
 
 # Turns C++ object to Python objects.
 def __toMooseObject(objid):
-    #  assert isinstance(objid, (_cmoose._ObjId, _cmoose._Id))
     CLS = __classmap__[objid.type]
-    return CLS(objid.path, _id=objid.id)
+    return CLS(objid.path, id=objid.id)
+
+
+def __addValueFinfo(x, cls, cinfo):
+    prop = property(lambda obj, x=x: _cmoose.get(obj.id, x)
+            , lambda obj, val, x=x: _cmoose.set(obj.id, x, val))
+    setattr(cls, x, prop)
+
+def __addDestFinfo(x, cls, cinfo):
+    prop = property(lambda obj, x=x: _cmoose.get(obj.id, x)
+            , lambda obj, val, x=x: _cmoose.set(obj.id, x, val))
+    setattr(cls, x, prop)
 
 def __addFinfos(cls, cinfo):
-    gets, sets, others = set(), set(), set()
     for x in cinfo.finfoNames:
-        if 'get' == x[:3]:
-            gets.add(x[3:])
-        elif 'set' == x[:3]:
-            sets.add(x)
+        xtype, xname = x.split(':')
+        if xtype == 'valueFinfo':
+            __addValueFinfo(xname, cls, cinfo)
+        elif xtype == 'destFinfo':
+            __addDestFinfo(xname, cls, cinfo)
         else:
-            others.add(x)
-
-    # Fields common in both sets and gets are setter and gettter.
-    for p in sets & gets:
-        x = p[0].lower() + p[1:]
-        # x=x is necessary in lamdas below because of late binding.
-        # https://stackoverflow.com/questions/10452770/python-lambdas-binding-to-local-values
-        prop = property(lambda obj, x=x: _cmoose.getProperty(obj.id, x)
-                , lambda obj, val, x=x: _cmoose.setProperty(obj.id, x, val))
-        setattr(cls, x, prop)
-
-    for g in gets - sets:
-        x = g[0].lower() + g[1:]
-        prop = property(lambda obj, x=x: _cmoose.getProperty(obj.id, x))
-        setattr(cls, x, prop)
-
-    for s in sets - gets:
-        x = s[0].lower() + s[1:]
-        prop = property(None, lambda obj, val, x=x: _cmoose.setProperty(obj.id, x, val))
-        setattr(cls, x, prop)
+            #  logger_.warning("Not yet defined %s: %s" % (xtype, xname))
+            pass
 
 
 t0 = time.time()
@@ -84,13 +77,8 @@ for p in _cmoose._wildcardFind('/##[TYPE=Cinfo]'):
     setattr(_cmoose, cls.__name__, cls)
     
     # Define Finfos. One can do it here at Python level or use a C++ function.
-
-    # TODO: I am using C++ since that would be more performant.
-    _cmoose.__defineFinfos(cls, p.name)
-
-    # Or use Python version.
-    #  cinfo = _cmoose.getCinfo(p.name)
-    #  __addFinfos(cls, cinfo)
+    cinfo = _cmoose.getCinfo(p.name)
+    __addFinfos(cls, cinfo)
 
 
 logger_.info("Declarting classes took %f sec" % (time.time() - t0))

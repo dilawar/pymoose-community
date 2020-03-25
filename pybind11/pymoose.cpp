@@ -45,7 +45,7 @@ void defineFinfos(py::object& cls, const string& cname)
     cerr << "\n====================================================== " << endl;
     cerr << "Adding Finfos to class " << cls << " with name " << cname << endl;
 
-    cerr << "ValueFinfo: ";
+
     for(size_t i = 0; i < pCinfo->getNumValueFinfo(); i++)
     {
         auto pFinfo = pCinfo->getValueFinfo(i);
@@ -60,12 +60,25 @@ void defineFinfos(py::object& cls, const string& cname)
         cout << pFinfo->name() << " ";
     }
     cerr << endl;
+
     cerr << "DestFinfos: ";
     for(size_t i = 0; i < pCinfo->getNumDestFinfo(); i++)
     {
         auto pFinfo = pCinfo->getDestFinfo(i);
-        cout << pFinfo->name() << " ";
+        string fName = pFinfo->name();
+        if("set" == fName.substr(0, 3))
+        {
+            auto f = fName.substr(3);
+            f[0] = std::tolower(f[0]);
+            cerr << "Setting set: " << f << endl;
+        }
+        else if("get" == fName.substr(0, 3))
+            cerr << "Setting get" << fName << endl;
+        else
+            cerr << "Setting others..." << fName << endl;
     }
+    cerr << endl;
+
     cerr << endl;
 }
 
@@ -74,14 +87,14 @@ void initModule(py::module& m)
     initShell();
 }
 
-template <typename T = double>
-void setProperty(Id id, const string& fname, T val)
+template <typename T=double>
+void setProp(const ObjId& id, const string& fname, T val)
 {
     Field<T>::set(id, fname, val);
 }
 
-template <typename T = double>
-T getProperty(Id id, const string& fname)
+template <typename T=double>
+T getProp(const ObjId& id, const string& fname)
 {
     return Field<T>::get(id, fname);
 }
@@ -90,27 +103,15 @@ PYBIND11_MODULE(_cmoose, m)
 {
     initModule(m);
 
-    m.doc() = R"moosedoc(moose module.
-    )moosedoc";
-
-    py::class_<Id>(m, "_Id").def(py::init<>())
-        .def_property_readonly("value", &Id::value)
-        .def_property_readonly("path", [](Id id){return id.path("/"); })
-        // Return self.
-        .def_property_readonly("id", [](Id& id){return id;})
-        .def_property_readonly("type"
-                , [](Id& id){ return id.element()->cinfo()->name(); }
-                )
-        ;
+    m.doc() = R"moosedoc(moose module.)moosedoc";
 
     py::class_<ObjId>(m, "_ObjId")
         .def(py::init<>())
         .def_property_readonly("path", &ObjId::path)
         .def_property_readonly("name", &ObjId::name)
-        .def_property_readonly("id", [](ObjId& oid) { return oid.id; })
+        .def_property_readonly("id", [](ObjId& oid) { return oid;}, py::return_value_policy::reference)
         .def_property_readonly("type"
-                , [](ObjId& oid){ return oid.element()->cinfo()->name(); }
-                )
+                , [](ObjId& oid){ return oid.element()->cinfo()->name(); })
         ;
 
     py::class_<FinfoWrapper>(m, "_FinfoWrapper")
@@ -118,8 +119,9 @@ PYBIND11_MODULE(_cmoose, m)
         .def_property_readonly("name", &FinfoWrapper::getName)
         .def_property_readonly("doc", &FinfoWrapper::docs)
         .def_property_readonly("type", &FinfoWrapper::type)
-        .def_property_readonly("src", &FinfoWrapper::src)
-        .def_property_readonly("dest", &FinfoWrapper::dest);
+        .def_property_readonly("src", &FinfoWrapper::src, py::return_value_policy::reference)
+        .def_property_readonly("dest", &FinfoWrapper::dest, py::return_value_policy::reference)
+        ;
 
     py::class_<Cinfo>(m, "_Cinfo")
         .def(py::init<>())
@@ -129,19 +131,17 @@ PYBIND11_MODULE(_cmoose, m)
         .def("findFinfo", &Cinfo::findFinfoWrapper);
 
     m.def("create", &createIdFromPath);
-
-    m.def("exists", &createIdFromPath);
-
+    m.def("exists", &doesExist);
     m.def("element", &element);
 
-    m.def("move", [](Id o, ObjId oid){ getShellPtr()->doMove(o, oid); });
-    m.def("copy", [](Id o, ObjId newP, string newName="", size_t n=1, bool toGlobal=false, bool copyExtMsg=false){ 
+    m.def("move", [](ObjId o, ObjId oid){ getShellPtr()->doMove(o, oid); });
+    m.def("copy", [](ObjId o, ObjId newP, string newName="", size_t n=1, bool toGlobal=false, bool copyExtMsg=false){ 
             if(newName.empty())
                 newName = o.element()->getName();
             getShellPtr()->doCopy(o, newP, newName, n, toGlobal, copyExtMsg); 
         });
 
-    m.def("setCwe", [](Id id) { getShellPtr()->setCwe(id); });
+    m.def("setCwe", [](const ObjId& id) { getShellPtr()->setCwe(id); });
     m.def("getCwe", []() { return getShellPtr()->getCwe(); });
     m.def("delete", [](ObjId oid) { return getShellPtr()->doDelete(oid);});
     m.def("reinit", []() { return getShellPtr()->doReinit();});
@@ -160,23 +160,22 @@ PYBIND11_MODULE(_cmoose, m)
 
     m.def("loadModelInternal", &loadModelInternal);
 
+    m.def("get", &getProp<double>);
+    m.def("get", &getProp<vector<double>>);
+    m.def("get", &getProp<string>);
+    m.def("get", &getProp<ObjId>);
+    m.def("get", &getProp<unsigned int>);
+    m.def("get", &getProp<bool>);
 
-    m.def("getProperty", &getProperty<double>);
-    m.def("getProperty", &getProperty<vector<double>>);
-    m.def("getProperty", &getProperty<string>);
-    m.def("getProperty", &getProperty<Id>);
-    m.def("getProperty", &getProperty<unsigned int>);
-    m.def("getProperty", &getProperty<bool>);
-
-    m.def("setProperty", &setProperty<double>);
-    m.def("setProperty", &setProperty<vector<double>>);
-    m.def("setProperty", &setProperty<string>);
-    m.def("setProperty", &setProperty<Id>);
-    m.def("setProperty", &setProperty<unsigned int>);
-    m.def("setProperty", &setProperty<bool>);
+    m.def("set", &setProp<double>);
+    m.def("set", &setProp<vector<double>>);
+    m.def("set", &setProp<string>);
+    m.def("set", &setProp<ObjId>);
+    m.def("set", &setProp<unsigned int>);
+    m.def("set", &setProp<bool>);
 
     // TODO:
-    m.def("__defineFinfos", &defineFinfos);
+    // m.def("__defineFinfos", &defineFinfos);
 
     m.attr("__version__") = MOOSE_VERSION;
 }

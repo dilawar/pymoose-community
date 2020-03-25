@@ -72,7 +72,7 @@ Id initShell(void)
    Utility function to create objects from full path, dimensions
    and classname.
 */
-Id createIdFromPath(string path, string type, size_t numData)
+ObjId createIdFromPath(string path, string type, size_t numData)
 {
     Shell* pShell = reinterpret_cast<Shell*>(Id().eref().data());
     string parent_path;
@@ -104,7 +104,7 @@ Id createIdFromPath(string path, string type, size_t numData)
         return Id();
     }
 
-    Id nId =
+    auto nId =
         pShell->doCreate(type, parent_id, string(name), numData, MooseGlobal);
 
     if (nId == Id() && trimmed_path != "/" && trimmed_path != "/root") {
@@ -120,17 +120,12 @@ Shell* const getShellPtr(void)
     return reinterpret_cast<Shell*>(Id().eref().data());
 }
 
-bool exists(const string& path)
+bool doesExist(const string& path)
 {
     return Id(path) != Id() || path == "/" || path == "/root";
 }
 
-bool exists(const Id& id)
-{
-    return exists(id.path());
-}
-
-Id element(const string& path)
+ObjId element(const string& path)
 {
     ObjId oid;
     unsigned nid = 0, did = 0, fidx = 0;
@@ -147,7 +142,7 @@ Id element(const string& path)
     return oid;
 }
 
-Id loadModelInternal(const string& fname, const string& modelpath,
+ObjId loadModelInternal(const string& fname, const string& modelpath,
                      const string& solverclass = "")
 {
     Id model;
