@@ -46,13 +46,13 @@ Id initModule(py::module& m)
     return initShell();
 }
 
-template <typename T>
+template <typename T=double>
 void setProp(const ObjId& id, const string& fname, T val)
 {
     Field<T>::set(id, fname, val);
 }
 
-template <typename T>
+template <typename T=double>
 T getProp(const ObjId& id, const string& fname)
 {
     return Field<T>::get(id, fname);
@@ -114,11 +114,30 @@ PYBIND11_MODULE(_cmoose, m)
         .def_property_readonly("id", [](ObjId& oid) { return oid.id; })
         .def_property_readonly(
              "type", [](ObjId& oid) { return oid.element()->cinfo()->name(); })
+
+        // Add set and get
+        // Overload of Field::set
+        .def("set", &setProp<double>)
+        .def("set", &setProp<double>)
+        .def("set", &setProp<vector<double>>)
+        .def("set", &setProp<string>)
+        .def("set", &setProp<bool>)
+        // Overload for Field::get
+        .def("get", &getProp<double>)
+        .def("get", &getProp<string>)
+        .def("get", &getProp<unsigned int>)
+        .def("get", &getProp<bool>)
+        .def("getVec", &getPropVec<double>)
+        .def("getNumpy", &getPropNumpy<double>)
+
+        // Representation.
         .def("__repr__", [](const ObjId& oid) {
              return "<" + oid.element()->cinfo()->name() + " id=" +
                     std::to_string(oid.id.value()) + " path=" + oid.path() +
                     ">";
-         });
+                    }
+                )
+        ;
 
     py::class_<FinfoWrapper>(m, "_FinfoWrapper")
         .def(py::init<const Finfo*>())
@@ -181,25 +200,6 @@ PYBIND11_MODULE(_cmoose, m)
     m.def("_wildcardFind", &wildcardFindPybind);
 
     m.def("loadModelInternal", &loadModelInternal);
-
-    // Overload for Field::get
-    m.def("get", &getProp<double>);
-    m.def("get", &getProp<string>);
-    m.def("get", &getProp<unsigned int>);
-    m.def("get", &getProp<bool>);
-
-    m.def("getVec", &getPropVec<double>);
-    m.def("getNumpy", &getPropNumpy<double>);
-
-    // Overload of Field::set
-    m.def("set", &setProp<double>);
-    m.def("set", &setProp<vector<double>>);
-    m.def("set", &setProp<string>);
-    m.def("set", &setProp<unsigned int>);
-    m.def("set", &setProp<bool>);
-
-    // m.def("setVec", &setPropVec<double>);
-    // m.def("getVec", &getPropVec<double>);
 
     m.def("getShell",
           []() { return reinterpret_cast<Shell*>(Id().eref().data()); },
