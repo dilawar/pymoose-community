@@ -20,7 +20,6 @@ __classmap__ = {}
 
 class __MooseClass__:
     mType = 'Uknown'
-    #  cinfo = None
     id = None
 
     # type of MOOSE class. Must be set when defining new class dynamically
@@ -47,8 +46,13 @@ def __toMooseObject(objid):
 
 
 def __addValueFinfo(x, cls, cinfo):
-    prop = property(lambda obj, x=x: _cmoose.get(obj.id, x)
-            , lambda obj, val, x=x: _cmoose.set(obj.id, x, val))
+    finfo = cinfo.findFinfo(x)
+    if 'vector<' in finfo.type:
+        prop = property(lambda obj, x=x: _cmoose.getVec(obj.id, x)
+                , lambda obj, val, x=x: _cmoose.setVec(obj.id, x, val))
+    else:
+        prop = property(lambda obj, x=x: _cmoose.get(obj.id, x)
+                , lambda obj, val, x=x: _cmoose.set(obj.id, x, val))
     setattr(cls, x, prop)
 
 def __addDestFinfo(x, cls, cinfo):
@@ -57,28 +61,45 @@ def __addDestFinfo(x, cls, cinfo):
     setattr(cls, x, prop)
 
 def __addFinfos(cls, cinfo):
+    added = []
     for x in cinfo.finfoNames:
         xtype, xname = x.split(':')
         if xtype == 'valueFinfo':
             __addValueFinfo(xname, cls, cinfo)
+            added.append(xname)
         elif xtype == 'destFinfo':
             __addDestFinfo(xname, cls, cinfo)
+            added.append(xname)
         else:
-            #  logger_.warning("Not yet defined %s: %s" % (xtype, xname))
             pass
+            #  logger_.warning("Not yet defined %s: %s" % (xtype, xname))
+    return added
 
 
 t0 = time.time()
+
+__neutralCinfo = _cmoose.getCinfo("Neutral")
 for p in _cmoose._wildcardFind('/##[TYPE=Cinfo]'):
     # create a class.
     cls = type(p.name, (__MooseClass__,), dict(mType=p.name, id=p.id))
     # Add this class to module and save them in a map for easy reuse later.
     __classmap__[p.name] = cls
     setattr(_cmoose, cls.__name__, cls)
-    
+
     # Define Finfos. One can do it here at Python level or use a C++ function.
     cinfo = _cmoose.getCinfo(p.name)
-    __addFinfos(cls, cinfo)
+    added = __addFinfos(cls, cinfo)
+    
+    # And add Neutral as well.
+    if p.name != "Neutral":
+        added += __addFinfos(cls, __neutralCinfo)
+
+    #  print(cls, added, dir(cls))
+
+    # FIXME: Do we need them here anymore.
+    baseCinfo = cinfo.baseCinfo()
+    if baseCinfo:
+        added += __addFinfos(cls, baseCinfo)
 
 
 logger_.info("Declarting classes took %f sec" % (time.time() - t0))
@@ -119,6 +140,11 @@ def element(pathOrObject):
         obj = _cmoose.element(pathOrObject.path)
     return __toMooseObject(obj)
 
+def getCwe():
+    return __toMooseObject(_cmoose.getCwe())
+
+def exists(path):
+    return _cmoose.exists(path)
 
 def pwe():
     """Print present working element. Convenience function for GENESIS
@@ -128,7 +154,7 @@ def pwe():
     >>> pwe()
     >>> '/'
     """
-    pwe_ = _cmoose.getCwe()
+    pwe_ = getCwe()
     print(pwe_.path)
     return pwe_
 
@@ -149,21 +175,18 @@ def le(el=None):
 
     """
     if el is None:
-        el = _cmoose.getCwe()
+        el = getCwe()
     elif isinstance(el, str):
-        if not _cmoose.exists(el):
+        if not exists(el):
             raise ValueError('no such element')
-        el = _cmoose.element(el)
+        el = element(el)
     elif isinstance(el, _cmoose.vec):
         el = el[0]
-    print("Elements under '%s'" % el.path)
+    print("Elements under '%s'" % el)
     for ch in el.children:
         print(" %s" % ch.path)
     return [child.path for child in el.children]
 
-
-# ce is a GENESIS shorthand for change element.
-ce = _cmoose.setCwe
 
 def syncDataHandler(target):
     """Synchronize data handlers for target.

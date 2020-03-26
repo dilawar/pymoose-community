@@ -35,7 +35,18 @@ def test_sanity_3():
     print(a.concInit)
     print(a)
 
+def test_shell():
+    p0 = M.Neutral('/p')
+    p1 = M.Neutral('/p/q')
+    p2 = M.Neutral('/p/r')
+    p3 = M.Neutral('/p/r/s')
+    print(p0, p1, p2, p3)
+    print(p2.parent)
+    print('Children', p0.children)
+    quit()
+
 if __name__ == '__main__':
+    test_shell()
     test_sanity_1()
     test_sanity_2()
     test_set_get()

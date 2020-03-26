@@ -11,6 +11,8 @@ import moose
 import rdesigneur as rd
 print( "[INFO ] Using moose from %s" % moose.__file__ )
 
+print(dir(moose))
+
 def parseExpr( expr, params, hasCa ):
     if hasCa:
         expr = expr.replace( 'Ca', 'x0' )

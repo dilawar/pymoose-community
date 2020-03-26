@@ -87,16 +87,30 @@ void initModule(py::module& m)
     initShell();
 }
 
-template <typename T=double>
+template <typename T>
 void setProp(const ObjId& id, const string& fname, T val)
 {
     Field<T>::set(id, fname, val);
 }
 
-template <typename T=double>
-T getProp(const ObjId& id, const string& fname)
+template <typename T>
+void setPropVec(const ObjId& id, const string& fname, const vector<T>& val)
+{
+    Field<T>::setVec(id, fname, val);
+}
+
+template <typename T>
+T getProp(ObjId id, const string& fname)
 {
     return Field<T>::get(id, fname);
+}
+
+template <typename T>
+vector<T> getPropVec(ObjId id, const string& fname)
+{
+    vector<T> vals;
+    Field<T>::getVec(id, fname, vals);
+    return vals;
 }
 
 PYBIND11_MODULE(_cmoose, m)
@@ -125,10 +139,13 @@ PYBIND11_MODULE(_cmoose, m)
 
     py::class_<Cinfo>(m, "_Cinfo")
         .def(py::init<>())
+        .def_property_readonly("name", &Cinfo::name)
         .def_property_readonly("finfoMap", &Cinfo::finfoMap,
                                py::return_value_policy::reference)
         .def_property_readonly("finfoNames", &Cinfo::getFinfoNames)
-        .def("findFinfo", &Cinfo::findFinfoWrapper);
+        .def("findFinfo", &Cinfo::findFinfoWrapper)
+        .def("baseCinfo", &Cinfo::baseCinfo, py::return_value_policy::reference)
+        ;
 
     m.def("create", &createIdFromPath);
     m.def("exists", &doesExist);
@@ -160,22 +177,34 @@ PYBIND11_MODULE(_cmoose, m)
 
     m.def("loadModelInternal", &loadModelInternal);
 
+    // Overload for Field::get
     m.def("get", &getProp<double>);
-    m.def("get", &getProp<vector<double>>);
     m.def("get", &getProp<string>);
     m.def("get", &getProp<ObjId>);
+    m.def("get", &getProp<Id>);
     m.def("get", &getProp<unsigned int>);
     m.def("get", &getProp<bool>);
 
+    m.def("getVec", &getPropVec<double>);
+    m.def("getVec", &getPropVec<string>);
+    m.def("getVec", &getPropVec<Id>);
+    m.def("getVec", &getPropVec<unsigned int>);
+    m.def("getVec", &getPropVec<bool>);
+
+    // Overload of Field::set
     m.def("set", &setProp<double>);
-    m.def("set", &setProp<vector<double>>);
     m.def("set", &setProp<string>);
     m.def("set", &setProp<ObjId>);
+    m.def("set", &setProp<Id>);
     m.def("set", &setProp<unsigned int>);
     m.def("set", &setProp<bool>);
 
-    // TODO:
-    // m.def("__defineFinfos", &defineFinfos);
+    m.def("setVec", &setPropVec<double>);
+    m.def("setVec", &setPropVec<string>);
+    m.def("setVec", &setPropVec<Id>);
+    m.def("setVec", &setPropVec<unsigned int>);
+    m.def("setVec", &setPropVec<bool>);
 
+    // Version.
     m.attr("__version__") = MOOSE_VERSION;
 }
