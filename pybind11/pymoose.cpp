@@ -130,18 +130,18 @@ PYBIND11_MODULE(_cmoose, m)
         // Set/Get
         //--------------------------------------------------------------------
         // Overload of Field::set
-        .def("set", &setProp<double>)
-        .def("set", &setProp<double>)
-        .def("set", &setProp<vector<double>>)
-        .def("set", &setProp<string>)
-        .def("set", &setProp<bool>)
+        .def("setField", &setProp<double>)
+        .def("setField", &setProp<double>)
+        .def("setField", &setProp<vector<double>>)
+        .def("setField", &setProp<string>)
+        .def("setField", &setProp<bool>)
         // Overload for Field::get
-        .def("get", &getProp<double>)
-        .def("get", &getProp<string>)
-        .def("get", &getProp<unsigned int>)
-        .def("get", &getProp<bool>)
-        .def("getVec", &getPropVec<double>)
-        .def("getNumpy", &getPropNumpy<double>)
+        .def("getField", &getProp<double>)
+        .def("getField", &getProp<string>)
+        .def("getField", &getProp<unsigned int>)
+        .def("getField", &getProp<bool>)
+        .def("getFieldVec", &getPropVec<double>)
+        .def("getFieldNumpy", &getPropNumpy<double>)
 
         //---------------------------------------------------------------------
         //  Connect
@@ -191,6 +191,8 @@ PYBIND11_MODULE(_cmoose, m)
     m.def("getShell",
           []() { return reinterpret_cast<Shell*>(Id().eref().data()); },
           py::return_value_policy::reference);
+
+    m.def("wildcardFind", &wildcardFind2);
 
     // Attributes.
     m.attr("NA") = NA;

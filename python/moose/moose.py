@@ -9,7 +9,8 @@ import os
 import pydoc
 import io
 import time
-from contextlib import closing
+
+import moose
 import moose._cmoose as _cmoose
 
 import logging
@@ -17,90 +18,48 @@ logger_ = logging.getLogger('moose')
 
 # String to python classes.
 __classmap__ = {} 
+__SHELL__ = _cmoose.getShell()
 
-class __MooseClass__:
-    mType = 'Uknown'
-    id = None
-
-    # type of MOOSE class. Must be set when defining new class dynamically
-    # using `type(name, bases, dict)`.
-    def __init__(self, path, numData=1, id=None):
-        assert numData > 0
-        self._ndata = numData
-        self._path = path
-        if self.id is None or id is None:
-            self.id = _cmoose.create(path, self.mType, numData)
-        assert self.id is not None
-
-    def __repr__(self):
-        return "<moose.%s: id=%s, dataIndex=%d, path=%s>" % (
-            self.mType, self.id, self._ndata, self._path)
-
-    def __str__(self):
-        return self.__repr__()
-
-# Turns C++ object to Python objects.
-def __toMooseObject(objid):
-    CLS = __classmap__[objid.type]
-    return CLS(objid.path, id=objid.id)
-
-
-def __addValueFinfo(x, cls, cinfo):
-    finfo = cinfo.findFinfo(x)
-    if 'vector<' in finfo.type:
-        prop = property(lambda obj, x=x: _cmoose.getVec(obj.id, x)
-                , lambda obj, val, x=x: _cmoose.setVec(obj.id, x, val))
-    else:
-        prop = property(lambda obj, x=x: _cmoose.get(obj.id, x)
-                , lambda obj, val, x=x: _cmoose.set(obj.id, x, val))
-    setattr(cls, x, prop)
-
-def __addDestFinfo(x, cls, cinfo):
-    prop = property(lambda obj, x=x: _cmoose.get(obj.id, x)
-            , lambda obj, val, x=x: _cmoose.set(obj.id, x, val))
-    setattr(cls, x, prop)
-
-def __addFinfos(cls, cinfo):
-    added = []
-    for x in cinfo.finfoNames:
-        xtype, xname = x.split(':')
-        if xtype == 'valueFinfo':
-            __addValueFinfo(xname, cls, cinfo)
-            added.append(xname)
-        elif xtype == 'destFinfo':
-            __addDestFinfo(xname, cls, cinfo)
-            added.append(xname)
-        else:
-            pass
-            #  logger_.warning("Not yet defined %s: %s" % (xtype, xname))
-    return added
-
+def __parent(path):
+    return path.split('/')[-1]
 
 t0 = time.time()
 
-__neutralCinfo = _cmoose.getCinfo("Neutral")
-for p in _cmoose._wildcardFind('/##[TYPE=Cinfo]'):
+class __Neutral__():
+
+    __metaclass__ = None
+    cobj = None
+
+    def __init__(self, path, ndata=1):
+        self.path = path
+        self.ndata = ndata
+        self.parentID = _cmoose._ObjId(self.parent(path))
+        self.cobj = __SHELL__.create(self.__metaclass__
+                , self.parentID, self.name(self.path), ndata)
+
+    def __repr__(self):
+        return self.cobj.__repr__()
+
+    def connect(self, srcField, dest, destField):
+        return self.cobj.connect(srcField, dest.cobj, destField)
+
+    def parent(self, path):
+        p = '/'.join(path.split('/')[:-1])
+        if not p:
+            p = '/'
+        return p
+
+    def name(self, path):
+        return path.split('/')[-1]
+
+
+
+for p in _cmoose.wildcardFind('/##[TYPE=Cinfo]'):
     # create a class.
-    cls = type(p.name, (__MooseClass__,), dict(mType=p.name, id=p.id))
+    cls = type(p.name, (__Neutral__,), dict(__metaclass__=p.name, objid=p.id))
     # Add this class to module and save them in a map for easy reuse later.
     __classmap__[p.name] = cls
-    setattr(_cmoose, cls.__name__, cls)
-
-    # Define Finfos. One can do it here at Python level or use a C++ function.
-    cinfo = _cmoose.getCinfo(p.name)
-    added = __addFinfos(cls, cinfo)
-    
-    # And add Neutral as well.
-    if p.name != "Neutral":
-        added += __addFinfos(cls, __neutralCinfo)
-
-    #  print(cls, added, dir(cls))
-
-    # FIXME: Do we need them here anymore.
-    baseCinfo = cinfo.baseCinfo()
-    if baseCinfo:
-        added += __addFinfos(cls, baseCinfo)
-
+    setattr(moose, cls.__name__, cls)
 
 logger_.info("Declarting classes took %f sec" % (time.time() - t0))
 

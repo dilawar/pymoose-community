@@ -1,3 +1,4 @@
+import moose
 import moose._cmoose as M
 import numpy as np
 import math
@@ -7,32 +8,32 @@ def makereac():
     plotDt = 0.1
     pools = [None]*10
     s = M.getShell()
-    print(dir(s))
-    kin = s.create("CubeMesh", M._ObjId(), "kinetics", 1)
-    tab = s.create("StimulusTable", kin, "tab", 1)
-    pools[0] = T = s.create("BufPool", kin, "T", 1);
-    pools[1] = A = s.create("Pool", kin, "A", 1);
-    pools[2] = B = s.create("Pool", kin, "B", 1);
-    pools[3] = C = s.create("Pool", kin, "C", 1);
-    pools[4] = D = s.create("Pool", kin, "D", 1);
-    pools[5] = E = s.create("Pool", kin, "E", 1);
+    k = moose.CubeMesh("kinetics", 1)
+    t = moose.StimulusTable("/kinetics/StimulusTable")
+    pools[0] = T = moose.BufPool(k.path+"/T")
+    pools[1] = A = moose.Pool(k.path+"/A")
+    pools[2] = B = moose.Pool(k.path + "/B")
+    pools[3] = C = moose.Pool(k.path + "/C")
+    pools[4] = D = moose.Pool(k.path + "/D")
+    pools[5] = E = moose.Pool(k.path + "/E")
 
     # Silly that it has to have this name.
-    pools[6] = tot1 = s.create("BufPool", kin, "tot1", 1);
+    pools[6] = tot1 = moose.BufPool(k.path+"/tot1")
 
-    sum = s.create("Function", tot1, "func", 1);
-    sumInput = M._Id(sum.value + 1);
-    e1Pool = s.create("Pool", kin, "e1Pool", 1);
-    e2Pool = s.create("Pool", kin, "e2Pool", 1);
-    e1 = s.create("Enz", e1Pool, "e1", 1);
-    cplx = s.create("Pool", e1, "cplx", 1);
-    e2 = s.create("MMenz", e2Pool, "e2", 1);
-    r1 = s.create("Reac", kin, "r1", 1);
-    r2 = s.create("Reac", kin, "r2", 1);
-    plots = s.create("Table2", kin, "plots", 7);
+    sum = moose.Function(tot1.path + "/func")
+    # sumInput = M._Id(sum.value + 1);
+
+    e1Pool = moose.Pool(k.path + "/e1Pool")
+    e2Pool = moose.Pool(k.path + "/e2Pool")
+    e1 = moose.Enz(e1Pool.path + "/e1")
+    cplx = moose.Pool(e1.path + "/cplx")
+    e2 = moose.MMenz(e2Pool.path + "/e2")
+    r1 = moose.Reac( k.path + "/r1")
+    r2 = moose.Reac(k.path + "/r2")
+    plots = moose.Table2(k.path + "/plots", 7)
 
     # Connect them up
-    tab.connect("output", T, "setN")
+    t.connect("output", T, "setN")
     r1.connect("sub", T, "reac")
     r1.connect("sub", A, "reac")
     r1.connect("prd", B, "reac")
@@ -85,11 +86,11 @@ def makereac():
     for i in range(100):
         stim.append(vol * M.NA * (1.0 + math.sin(i * 2.0 * M.PI / 100.0)))
 
-    tab.setField("vector", stim);
-    tab.setField("stepSize", 0.0);
-    tab.setField("stopTime", 10.0);
-    tab.setField("loopTime", 10.0);
-    tab.setField("doLoop", True);
+    t.setField("vector", stim);
+    t.setField("stepSize", 0.0);
+    t.setField("stopTime", 10.0);
+    t.setField("loopTime", 10.0);
+    t.setField("doLoop", True);
 
     #  Connect outputs
     for i in range(7):
@@ -99,7 +100,7 @@ def makereac():
     for i in range(11, 18):
         s.setClock(i, simDt);
     s.setClock(18, plotDt);
-    return kin, tab 
+    return kin, t 
 
 def test_ksolve():
     rec, tab = makereac()
