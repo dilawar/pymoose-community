@@ -32,31 +32,30 @@ def makereac():
     plots = s.create("Table2", kin, "plots", 7);
 
     # Connect them up
-    s.addMsg("Single", tab, "output", T, "setN");
-
-    s.addMsg("Single", r1, "sub", T, "reac");
-    s.addMsg("Single", r1, "sub", A, "reac");
-    s.addMsg("Single", r1, "prd", B, "reac");
+    tab.connect("output", T, "setN")
+    r1.connect("sub", T, "reac")
+    r1.connect("sub", A, "reac")
+    r1.connect("prd", B, "reac")
 
     #  Field<unsigned int>::set(sum, "numVars", 2);
     sum.set("numVars", 2)
 
-    s.addMsg("Single", A, "nOut", M._ObjId(sumInput, 0, 0), "input");
-    s.addMsg("Single", B, "nOut", M._ObjId(sumInput, 0, 1), "input");
-    s.addMsg("Single", sum, "valueOut", tot1, "setN");
+    A.connect("nOut", M._ObjId(sumInput, 0, 0), "input")
+    B.connect("nOut", M._ObjId(sumInput, 0, 1), "input")
+    sum.connect("valueOut", tot1, "setN");
 
-    s.addMsg("Single", r2, "sub", B, "reac");
-    s.addMsg("Single", r2, "sub", B, "reac");
-    s.addMsg("Single", r2, "prd", C, "reac");
+    r2.connect("sub", B, "reac")
+    r2.connect("sub", B, "reac")
+    r2.connect("prd", C, "reac")
 
-    s.addMsg("Single", e1, "sub", C, "reac");
-    s.addMsg("Single", e1, "enz", e1Pool, "reac");
-    s.addMsg("Single", e1, "cplx", cplx, "reac");
-    s.addMsg("Single", e1, "prd", D, "reac");
+    e1.connect("sub", C, "reac")
+    e1.connect("enz", e1Pool, "reac")
+    e1.connect("cplx", cplx, "reac")
+    e1.connect("prd", D, "reac")
 
-    s.addMsg("Single", e2, "sub", D, "reac");
-    s.addMsg("Single", e2Pool, "nOut", e2, "enzDest");
-    s.addMsg("Single", e2, "prd", E, "reac");
+    e2.connect("sub", D, "reac")
+    e2Pool.connect("nOut", e2, "enzDest")
+    e2.connect("prd", E, "reac")
 
     # Set parameters.
     A.set("concInit", 2);
@@ -94,7 +93,7 @@ def makereac():
 
     #  Connect outputs
     for i in range(7):
-        s.addMsg("Single", M._ObjId(plots.id, i), "requestOut", pools[i], "getConc");
+        M._ObjId(plots.id, i).connect("requestOut", pools[i], "getConc")
 
     #  Schedule it.
     for i in range(11, 18):
@@ -110,6 +109,7 @@ def test_ksolve():
     print(tab)
     dataN = tab.getNumpy("vector")
     data = np.array(tab.getVec("vector"))
+    print(data)
     assert np.allclose(dataN, data)
     # get data.
     print("Done ksolve")

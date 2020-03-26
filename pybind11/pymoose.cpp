@@ -24,7 +24,8 @@
 #include "../external/pybind11/include/pybind11/stl.h"
 #include "../external/pybind11/include/pybind11/numpy.h"
 
-// See https://pybind11.readthedocs.io/en/stable/advanced/cast/stl.html#binding-stl-containers
+// See
+// https://pybind11.readthedocs.io/en/stable/advanced/cast/stl.html#binding-stl-containers
 // #include "../external/pybind11/include/pybind11/stl_bind.h"
 
 #include "../basecode/header.h"
@@ -46,34 +47,42 @@ Id initModule(py::module& m)
     return initShell();
 }
 
-template <typename T=double>
+template <typename T = double>
 void setProp(const ObjId& id, const string& fname, T val)
 {
     Field<T>::set(id, fname, val);
 }
 
-template <typename T=double>
+template <typename T = double>
 T getProp(const ObjId& id, const string& fname)
 {
     return Field<T>::get(id, fname);
 }
 
-template <typename T=double>
+template <typename T = double>
 vector<T> getPropVec(const ObjId& id, const string& fname)
 {
     vector<T> v = Field<vector<T>>::get(id, fname);
     return v;
-    //return py::array(v.size(), v.data());
+    // return py::array(v.size(), v.data());
 }
 
 // FIXME: Is it most efficient?
 // See discussion here: https://github.com/pybind/pybind11/issues/1042
-template <typename T=double>
+template <typename T = double>
 py::array_t<T> getPropNumpy(const ObjId& id, const string& fname)
 {
     auto v = Field<vector<T>>::get(id, fname);
     return py::array_t<T>(v.size(), v.data());
 }
+
+ObjId connect(const ObjId& src, const string& srcField, const ObjId& tgt,
+             const string& tgtField)
+{
+    auto pShell = getShellPtr();
+    return pShell->doAddMsg("Single", src, srcField, tgt, tgtField);
+}
+
 
 PYBIND11_MODULE(_cmoose, m)
 {
@@ -106,6 +115,9 @@ PYBIND11_MODULE(_cmoose, m)
         .def(py::init<Id, unsigned int>())
         .def(py::init<Id, unsigned int, unsigned int>())
         .def(py::init<const string&>())
+        //---------------------------------------------------------------------
+        //  Readonly properties.
+        //---------------------------------------------------------------------
         .def_property_readonly("value",
                                [](const ObjId oid) { return oid.id.value(); })
         .def_property_readonly("path", &ObjId::path)
@@ -114,8 +126,9 @@ PYBIND11_MODULE(_cmoose, m)
         .def_property_readonly("id", [](ObjId& oid) { return oid.id; })
         .def_property_readonly(
              "type", [](ObjId& oid) { return oid.element()->cinfo()->name(); })
-
-        // Add set and get
+        //--------------------------------------------------------------------
+        // Set/Get
+        //--------------------------------------------------------------------
         // Overload of Field::set
         .def("set", &setProp<double>)
         .def("set", &setProp<double>)
@@ -130,14 +143,19 @@ PYBIND11_MODULE(_cmoose, m)
         .def("getVec", &getPropVec<double>)
         .def("getNumpy", &getPropNumpy<double>)
 
-        // Representation.
+        //---------------------------------------------------------------------
+        //  Connect
+        //---------------------------------------------------------------------
+        .def("connect", &connect)
+
+        //---------------------------------------------------------------------
+        //  Extra
+        //---------------------------------------------------------------------
         .def("__repr__", [](const ObjId& oid) {
              return "<" + oid.element()->cinfo()->name() + " id=" +
                     std::to_string(oid.id.value()) + " path=" + oid.path() +
                     ">";
-                    }
-                )
-        ;
+         });
 
     py::class_<FinfoWrapper>(m, "_FinfoWrapper")
         .def(py::init<const Finfo*>())
@@ -169,38 +187,7 @@ PYBIND11_MODULE(_cmoose, m)
              py::arg("notify") = false)
         .def("quit", &Shell::doQuit);
 
-    m.def("nextId", Id::nextId);
-    m.def("create", &createIdFromPath);
-    m.def("exists", &doesExist);
-    m.def("element", &element);
-
-    m.def("move", [](ObjId o, ObjId oid) { getShellPtr()->doMove(o, oid); });
-    m.def("copy", [](ObjId o, ObjId newP, string newName = "", size_t n = 1,
-                     bool toGlobal = false, bool copyExtMsg = false) {
-        if (newName.empty())
-            newName = o.element()->getName();
-        getShellPtr()->doCopy(o, newP, newName, n, toGlobal, copyExtMsg);
-    });
-
-    m.def("setCwe", [](const ObjId& id) { getShellPtr()->setCwe(id); });
-    m.def("getCwe", []() { return getShellPtr()->getCwe(); });
-    m.def("delete", [](ObjId oid) { return getShellPtr()->doDelete(oid); });
-    m.def("reinit", []() { return getShellPtr()->doReinit(); });
-    m.def("stop", []() { return getShellPtr()->doStop(); });
-
-    m.def("seed", [](int seed) { return moose::setGlobalSeed(seed); });
-
-    m.def("start", [](double runtime, bool notify = false) {
-        getShellPtr()->doStart(runtime, notify);
-    });
-
-    m.def("getCinfo", [](const string& name) { return Cinfo::find(name); },
-          py::return_value_policy::reference);
-
-    m.def("_wildcardFind", &wildcardFindPybind);
-
-    m.def("loadModelInternal", &loadModelInternal);
-
+    // Module functions.
     m.def("getShell",
           []() { return reinterpret_cast<Shell*>(Id().eref().data()); },
           py::return_value_policy::reference);
