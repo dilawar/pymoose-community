@@ -234,6 +234,12 @@ Id Shell::doCreate(string type, ObjId parent, string name, unsigned int numData,
     return Id();
 }
 
+ObjId Shell::create(string type, ObjId parent, string name, unsigned int numData)
+{
+    return ObjId(doCreate(type, parent, name, numData, MooseBlockBalance, 1));
+}
+
+
 bool Shell::doDelete(ObjId oid)
 {
     SetGet1<ObjId>::set(ObjId(), "delete", oid);

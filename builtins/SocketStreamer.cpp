@@ -373,7 +373,7 @@ int SocketStreamer::streamData( )
 bool SocketStreamer::enoughDataToStream(size_t minsize)
 {
     for( size_t i = 0; i < tables_.size(); i++)
-        if(tables_[i]->getVec().size() >= minsize)
+        if(tables_[i]->getVector().size() >= minsize)
             return true;
     return false;
 }

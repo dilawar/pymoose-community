@@ -85,6 +85,9 @@ public:
                  NodePolicy nodePolicy = MooseBlockBalance,
                  unsigned int preferredNode = 1 );
 
+    // Python bindings.
+    ObjId create( string type, ObjId parent, string name, unsigned int numData);
+
     /**
      * Delete specified Element and all its children and all
      * Msgs connected to it. This also works for Msgs, which are

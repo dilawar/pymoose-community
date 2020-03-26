@@ -20,8 +20,8 @@ const Cinfo* TableBase::initCinfo()
     static ValueFinfo< TableBase, vector< double > > vec(
         "vector",
         "vector with all table entries",
-        &TableBase::setVec,
-        &TableBase::getVec
+        &TableBase::setVector,
+        &TableBase::getVector
     );
 
     static ValueFinfo< TableBase, string > plotDump(
@@ -507,12 +507,13 @@ unsigned int TableBase::getVecSize() const
     return vec_.size();
 }
 
-vector< double > TableBase::getVec() const
+vector< double > TableBase::getVector() const
 {
+    cout << "Retuning vector ... " << endl;
     return vec_;
 }
 
-void TableBase::setVec( vector< double >  val )
+void TableBase::setVector( vector< double >  val )
 {
     vec_ = val;
 }

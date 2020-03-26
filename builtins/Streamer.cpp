@@ -418,7 +418,7 @@ void Streamer::zipWithTime( )
     vector< vector< double > > collectedData;
     for( size_t i = 0; i < tables_.size( ); i++ )
     {
-        vector<double> tVec( tables_[i]->getVec( ) );
+        vector<double> tVec( tables_[i]->getVector( ) );
         if( tVec.size( ) <= numEntriesInEachTable )
         {
 #if 0

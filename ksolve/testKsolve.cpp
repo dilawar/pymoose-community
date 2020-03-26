@@ -126,18 +126,6 @@ Id makeReacTest()
     // Schedule it.
     for (unsigned int i = 11; i < 18; ++i) s->doSetClock(i, simDt);
     s->doSetClock(18, plotDt);
-    /*
-    s->doUseClock(
-    "/kinetics/##[ISA=Reac],/kinetics/##[ISA=EnzBase],/kinetics/##[ISA=SumFunc]",
-                                "process", 4 );
-    s->doUseClock( "/kinetics/##[ISA=PoolBase]", "process", 5 );
-    s->doUseClock( "/kinetics/##[ISA=StimulusTable]",
-                                "process", 4 );
-    s->doUseClock( "/kinetics/##[ISA=Table]", "process", 8 );
-    s->doSetClock( 4, simDt );
-    s->doSetClock( 5, simDt );
-    s->doSetClock( 8, plotDt );
-    */
     return kin;
 }
 
