@@ -298,7 +298,6 @@ public:
         fullFieldName[3] = std::toupper(fullFieldName[3]);
 
         const OpFunc* func = SetGet::checkSet(fullFieldName, tgt, fid);
-        cout << dest << " func: " << func->rttiType() << endl;
         const GetOpFuncBase<A>* gof =
             dynamic_cast<const GetOpFuncBase<A>*>(func);
         if (gof) {

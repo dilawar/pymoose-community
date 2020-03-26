@@ -22,6 +22,7 @@
 
 #include "../external/pybind11/include/pybind11/pybind11.h"
 #include "../external/pybind11/include/pybind11/stl.h"
+#include "../external/pybind11/include/pybind11/numpy.h"
 
 // See https://pybind11.readthedocs.io/en/stable/advanced/cast/stl.html#binding-stl-containers
 // #include "../external/pybind11/include/pybind11/stl_bind.h"
@@ -52,26 +53,27 @@ void setProp(const ObjId& id, const string& fname, T val)
 }
 
 template <typename T>
-T getProp(ObjId id, const string& fname)
+T getProp(const ObjId& id, const string& fname)
 {
-    // cerr << "Getting " << fname << " for " << id.path() << endl;
     return Field<T>::get(id, fname);
 }
 
-template <typename T>
-void setPropVec(const ObjId& id, const string& fname, const vector<T>& val)
-{
-    Field<T>::setVec(id, fname, val);
-}
-
-template <typename T>
+template <typename T=double>
 vector<T> getPropVec(const ObjId& id, const string& fname)
 {
-    vector<T> val;
-    Field<T>::getVec(id, fname, val);
-    return val;
+    vector<T> v = Field<vector<T>>::get(id, fname);
+    return v;
+    //return py::array(v.size(), v.data());
 }
 
+// FIXME: Is it most efficient?
+// See discussion here: https://github.com/pybind/pybind11/issues/1042
+template <typename T=double>
+py::array_t<T> getPropNumpy(const ObjId& id, const string& fname)
+{
+    auto v = Field<vector<T>>::get(id, fname);
+    return py::array_t<T>(v.size(), v.data());
+}
 
 PYBIND11_MODULE(_cmoose, m)
 {
@@ -182,10 +184,12 @@ PYBIND11_MODULE(_cmoose, m)
 
     // Overload for Field::get
     m.def("get", &getProp<double>);
-    m.def("get", &getProp<vector<double>>);
     m.def("get", &getProp<string>);
     m.def("get", &getProp<unsigned int>);
     m.def("get", &getProp<bool>);
+
+    m.def("getVec", &getPropVec<double>);
+    m.def("getNumpy", &getPropNumpy<double>);
 
     // Overload of Field::set
     m.def("set", &setProp<double>);

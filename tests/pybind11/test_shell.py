@@ -102,7 +102,7 @@ def test_shell():
     s.reinit()
     s.start(20.0)
     print(tab)
-    data = M.get(tab, "vector")
+    data = M.getNumpy(tab, "vector")
     print(data)
     # get data.
     print("Done ksolve")
