@@ -59,26 +59,26 @@ def makereac():
 
     # Set parameters.
     A.setField("concInit", 2);
-    assert A.getField("concInit") == 2, A.getField("concInit")
+    assert A.getFieldFloat("concInit") == 2, A.getFieldFloat("concInit")
 
     e1Pool.setField("concInit", 1);
-    assert e1Pool.getField("concInit") == 1.0
+    assert e1Pool.getFieldFloat("concInit") == 1.0
 
     e2Pool.setField("concInit", 1);
     sum.setField("expr", "x0+x1");
     r1.setField("Kf", 0.2);
-    assert r1.getField("Kf") == 0.2
+    assert r1.getFieldFloat("Kf") == 0.2
     r1.setField("Kb", 0.1);
     r2.setField("Kf", 0.1);
     r2.setField("Kb", 0.0);
     e1.setField("Km", 5);
-    assert e1.getField("Km") ==  5
+    assert e1.getFieldFloat("Km") ==  5
     e1.setField("kcat", 1);
     e1.setField("ratio", 4);
     e2.setField("Km", 5);
     e2.setField("kcat", 1);
 
-    vol = kin.getField("volume");
+    vol = kin.getFieldFloat("volume");
     print("Volume", vol)
 
     stim = []
@@ -108,7 +108,7 @@ def test_ksolve():
     s.start(20.0)
     print(tab)
     dataN = tab.getFieldNumpy("vector")
-    data = np.array(tab.getFieldVec("vector"))
+    data = np.array(tab.getFieldVector("vector"))
     print(data)
     assert np.allclose(dataN, data)
     # get data.

@@ -139,11 +139,13 @@ PYBIND11_MODULE(_cmoose, m)
         // Overload for Field::get
         // NOTE: Get it tricky to get right.
         // See discussion here: https://github.com/pybind/pybind11/issues/1667
-        .def("getField", &getProp<double>)
-        .def("getField", &getProp<string>)
-        .def("getField", &getProp<unsigned int>)
-        .def("getField", &getProp<bool>)
-        .def("getFieldVec", &getPropVec<double>)
+        // Required c++14 compiler.
+        .def("getFieldDouble", &getProp<double>)
+        .def("getFieldFloat", &getProp<double>)
+        .def("getFieldString", &getProp<string>)
+        .def("getFieldInt", &getProp<unsigned int>)
+        .def("getFieldBool", &getProp<bool>)
+        .def("getFieldVector", &getPropVec<double>)
         .def("getFieldNumpy", &getPropNumpy<double>)
 
         //---------------------------------------------------------------------

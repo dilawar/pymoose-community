@@ -39,7 +39,7 @@ def makereac():
     s.addMsg("Single", r1, "prd", B, "reac");
 
     #  Field<unsigned int>::set(sum, "numVars", 2);
-    sum.set("numVars", 2)
+    sum.setField("numVars", 2)
 
     s.addMsg("Single", A, "nOut", M._ObjId(sumInput, 0, 0), "input");
     s.addMsg("Single", B, "nOut", M._ObjId(sumInput, 0, 1), "input");
@@ -59,38 +59,38 @@ def makereac():
     s.addMsg("Single", e2, "prd", E, "reac");
 
     # Set parameters.
-    A.set("concInit", 2);
-    assert A.get("concInit") == 2, A.get("concInit")
+    A.setField("concInit", 2);
+    assert A.getFieldFloat("concInit") == 2, A.getFieldFloat("concInit")
 
-    e1Pool.set("concInit", 1);
-    assert e1Pool.get("concInit") == 1.0
+    e1Pool.setField("concInit", 1);
+    assert e1Pool.getFieldFloat("concInit") == 1.0
 
-    e2Pool.set("concInit", 1);
-    sum.set("expr", "x0+x1");
-    r1.set("Kf", 0.2);
-    assert r1.get("Kf") == 0.2
-    r1.set("Kb", 0.1);
-    r2.set("Kf", 0.1);
-    r2.set("Kb", 0.0);
-    e1.set("Km", 5);
-    assert e1.get("Km") ==  5
-    e1.set("kcat", 1);
-    e1.set("ratio", 4);
-    e2.set("Km", 5);
-    e2.set("kcat", 1);
+    e2Pool.setField("concInit", 1);
+    sum.setField("expr", "x0+x1");
+    r1.setField("Kf", 0.2);
+    assert r1.getFieldDouble("Kf") == 0.2
+    r1.setField("Kb", 0.1);
+    r2.setField("Kf", 0.1);
+    r2.setField("Kb", 0.0);
+    e1.setField("Km", 5);
+    assert e1.getFieldDouble("Km") ==  5
+    e1.setField("kcat", 1);
+    e1.setField("ratio", 4);
+    e2.setField("Km", 5);
+    e2.setField("kcat", 1);
 
-    vol = kin.get("volume");
+    vol = kin.getFieldFloat("volume");
     print("Volume", vol)
 
     stim = []
     for i in range(100):
         stim.append(vol * M.NA * (1.0 + math.sin(i * 2.0 * M.PI / 100.0)))
 
-    tab.set("vector", stim);
-    tab.set("stepSize", 0.0);
-    tab.set("stopTime", 10.0);
-    tab.set("loopTime", 10.0);
-    tab.set("doLoop", True);
+    tab.setField("vector", stim);
+    tab.setField("stepSize", 0.0);
+    tab.setField("stopTime", 10.0);
+    tab.setField("loopTime", 10.0);
+    tab.setField("doLoop", True);
 
     #  Connect outputs
     for i in range(7):
@@ -108,8 +108,8 @@ def test_ksolve():
     s.reinit()
     s.start(20.0)
     print(tab)
-    dataN = tab.getNumpy("vector")
-    data = np.array(tab.getVec("vector"))
+    dataN = tab.getFieldNumpy("vector")
+    data = np.array(tab.getFieldVector("vector"))
     assert np.allclose(dataN, data)
     # get data.
     print("Done ksolve")

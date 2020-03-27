@@ -429,7 +429,8 @@ endforeach( )
 set(PYMOOSE_ISSUES_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/devel/issues)
 file(GLOB PY_ISSUES_SCRIPTS "${PYMOOSE_ISSUES_DIRECTORY}/*.py" )
 foreach(_test_script ${PY_ISSUES_SCRIPTS})
-    get_filename_component( _test_name ${_test_script} NAME_WE)
+    get_filename_component(_file_name ${_test_script} NAME_WE)
+    set(_test_name "issue_${_file_name}")
     add_test(NAME ${_test_name}
         COMMAND ${PYTHON_EXECUTABLE} ${_test_script}
 	CONFIGURATIONS Devel
@@ -447,8 +448,8 @@ set(PYTEST_TEST_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 file(GLOB_RECURSE PYTEST_TEST_SCRIPTS ${PYTEST_TEST_DIRECTORY}/test_*.py)
 
 foreach(_test_script ${PYTEST_TEST_SCRIPTS})
-    get_filename_component(_name_we ${_test_script} NAME_WE)
-    set(_test_name "pytest_${_name_we}")
+    file(SHA1 ${_test_script} _test_hash)
+    set(_test_name "coverage_${_test_hash}")
     # message(STATUS "Adding test ${_test_name}")
     add_custom_target(${_test_name}
         # We collect coverage data but do not show report during each test.
@@ -460,7 +461,7 @@ foreach(_test_script ${PYTEST_TEST_SCRIPTS})
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMENT "Executing ${_test_script} using pytest"
         VERBATIM)
-    add_dependencies(coverage  ${_test_name})
+    add_dependencies(coverage ${_test_name})
 endforeach()
 
 # Generate report at the end.
