@@ -354,6 +354,7 @@ void testKsolve()
     testSetupReac();
     testBuildStoich();
     testRunKsolve();
+    testRunKsolveWithLSODA();
     testRunGsolve();
     testFuncTerm();
 }
