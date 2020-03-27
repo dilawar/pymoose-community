@@ -21,7 +21,7 @@ def makereac():
     pools[6] = tot1 = moose.BufPool(k.path+"/tot1")
 
     sum = moose.Function(tot1.path + "/func")
-    # sumInput = M._Id(sum.value + 1);
+    sum.cobj.setField("expr", "x0+x1")
 
     e1Pool = moose.Pool(k.path + "/e1Pool")
     e2Pool = moose.Pool(k.path + "/e2Pool")
@@ -38,11 +38,10 @@ def makereac():
     r1.connect("sub", A, "reac")
     r1.connect("prd", B, "reac")
 
-    #  Field<unsigned int>::set(sum, "numVars", 2);
-    sum.setField("numVars", 2)
+    sum.cobj.setField("numVars", 2)
 
-    A.connect("nOut", M._ObjId(sumInput, 0, 0), "input")
-    B.connect("nOut", M._ObjId(sumInput, 0, 1), "input")
+    A.connect("nOut", sum.cobj.x[0], "input")
+    B.connect("nOut", sum.cobj.x[1], "input")
     sum.connect("valueOut", tot1, "setN");
 
     r2.connect("sub", B, "reac")

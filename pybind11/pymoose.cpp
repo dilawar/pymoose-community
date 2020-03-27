@@ -133,9 +133,12 @@ PYBIND11_MODULE(_cmoose, m)
         .def("setField", &setProp<double>)
         .def("setField", &setProp<double>)
         .def("setField", &setProp<vector<double>>)
-        .def("setField", &setProp<string>)
+        .def("setField", &setProp<std::string>)
         .def("setField", &setProp<bool>)
+
         // Overload for Field::get
+        // NOTE: Get it tricky to get right.
+        // See discussion here: https://github.com/pybind/pybind11/issues/1667
         .def("getField", &getProp<double>)
         .def("getField", &getProp<string>)
         .def("getField", &getProp<unsigned int>)
