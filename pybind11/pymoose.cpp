@@ -62,13 +62,23 @@ T getProp(const ObjId& id, const string& fname)
 // FIXME: Is it most efficient?
 // See discussion here: https://github.com/pybind/pybind11/issues/1042
 template <typename T = double>
-py::array_t<T> getPropNumpy(const ObjId& id, const string& fname)
+py::array_t<T> getFieldNumpy(const ObjId& id, const string& fname)
 {
     auto v = Field<vector<T>>::get(id, fname);
     return py::array_t<T>(v.size(), v.data());
 }
 
-py::object getPropGeneric(const ObjId& oid, const string& fname)
+py::object getFieldElement(const ObjId& oid, const string& fname)
+{
+    auto cinfo = oid.element()->cinfo();
+    auto finfo = cinfo->findFinfo(fname);
+    if (!finfo) {
+        py::print("Field " + fname + " is not found on " + oid.path());
+        return pybind11::none();
+    }
+}
+
+py::object getFieldGeneric(const ObjId& oid, const string& fname)
 {
     auto cinfo = oid.element()->cinfo();
     auto finfo = cinfo->findFinfo(fname);
@@ -100,8 +110,9 @@ py::object getPropGeneric(const ObjId& oid, const string& fname)
         return py::cast(getProp<Id>(oid, fname));
     else if (ftype == "ObjId")
         return py::cast(getProp<ObjId>(oid, fname));
-
-    py::print("Unsupported type " + ftype);
+    else if (ftype == typeid(Variable).name())
+        return py::cast(getProp<Variable>(oid, fname));
+    py::print("pymoose::getFieldGeneric::Warning: Unsupported type " + ftype);
     return pybind11::none();
 }
 
@@ -168,8 +179,9 @@ PYBIND11_MODULE(_cmoose, m)
         // NOTE: Get it tricky to get right.
         // See discussion here: https://github.com/pybind/pybind11/issues/1667
         // Required c++14 compiler.
-        .def("getField", &getPropGeneric)
-        .def("getNumpy", &getPropNumpy<double>)
+        .def("getField", &getFieldGeneric)
+        .def("getFieldElement", &getFieldElement)
+        .def("getNumpy", &getFieldNumpy<double>)
 
         //---------------------------------------------------------------------
         //  Connect

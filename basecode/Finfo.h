@@ -151,8 +151,7 @@ private:
 class FinfoWrapper
 {
 public:
-    FinfoWrapper( const Finfo* other )
-        : f_( other )
+    FinfoWrapper( const Finfo* other ):f_( other )
     {
         ;
     }

@@ -102,6 +102,8 @@ template< class T > class Conv
                 return "ObjId";
             if ( typeid( T ) == typeid( vector<double> ) )
                 return "vector<double>";
+            if ( typeid( T ) == typeid( vector<Variable> ) )
+                return "Variable";
             return typeid( T ).name(); // this is not portable but may be more useful than "bad"
         }
 

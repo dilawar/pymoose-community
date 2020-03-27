@@ -184,6 +184,8 @@ void testSetupReac()
     s->doStart(20.0);
 
     vector<ObjId> tables;
+
+#if  0     /* ----- #if 0 : If0Label_1 ----- */
     wildcardFind("/##[TYPE=Table2]", tables);
     for(auto & t: tables) {
         vector<double> v = Field<vector<double>>::get(t, "vector");
@@ -191,6 +193,7 @@ void testSetupReac()
         double s = res.sum();
         std::cout << "Plot is " << t.path() << ": " << res << " sum=" << s << std::endl;
     }
+#endif     /* ----- #if 0 : If0Label_1 ----- */
 
     s->doDelete(kin);
     cout << "." << flush;

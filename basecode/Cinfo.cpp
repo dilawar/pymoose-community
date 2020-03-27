@@ -232,23 +232,18 @@ const FinfoWrapper Cinfo::findFinfoWrapper(const string& name) const
 vector<string> Cinfo::getFinfoNames() const
 {
     vector<string> res;
-    for( auto& f : srcFinfos_)
-        res.push_back("srcFinfos:"+f->name());
+    for (auto& f : srcFinfos_) res.push_back("srcFinfos:" + f->name());
 
-    for( auto& f : destFinfos_)
-        res.push_back("destFinfo:"+f->name());
+    for (auto& f : destFinfos_) res.push_back("destFinfo:" + f->name());
 
-    for( auto& f : valueFinfos_)
-        res.push_back("valueFinfo:"+f->name());
+    for (auto& f : valueFinfos_) res.push_back("valueFinfo:" + f->name());
 
-    for( auto& f : lookupFinfos_)
-        res.push_back("lookupFinfo:"+f->name());
+    for (auto& f : lookupFinfos_) res.push_back("lookupFinfo:" + f->name());
 
-    for( auto& f : sharedFinfos_)
-        res.push_back("sharedFinfo:"+f->name());
+    for (auto& f : sharedFinfos_) res.push_back("sharedFinfo:" + f->name());
 
-    for( auto& f : fieldElementFinfos_)
-        res.push_back("fieldElement:"+f->name());
+    for (auto& f : fieldElementFinfos_)
+        res.push_back("fieldElement:" + f->name());
 
     return res;
 }

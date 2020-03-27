@@ -584,7 +584,7 @@ public:
     {
         vec.resize(0);
         ObjId tgt(dest);
-        FuncId fid;
+       FuncId fid;
         string fullFieldName = "get" + field;
         fullFieldName[3] = std::toupper(fullFieldName[3]);
         const OpFunc* func = SetGet::checkSet(fullFieldName, tgt, fid);
