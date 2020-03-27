@@ -2,7 +2,7 @@ import moose._cmoose as M
 import numpy as np
 import math
 
-def makereac():
+def makereac_shell():
     pools = [None]*10
     s = M.getShell()
     print(dir(s))
@@ -105,7 +105,7 @@ def makereac():
 def test_ksolve():
     import matplotlib.pyplot as plt
     s = M.getShell()
-    makereac()
+    kin = makereac_shell()
     s.reinit()
     s.start(20.0)
     for tab in M.wildcardFind('/##[TYPE=Table2]'):
@@ -116,6 +116,7 @@ def test_ksolve():
         print("====", tab.path, dataN.sum(), dataN.mean(), dataN.shape)
         plt.plot(dataN)
         #  print(data)
+    s.delete(kin)
     plt.savefig(__file__+".test_ksolve.png")
     print("Done ksolve")
 

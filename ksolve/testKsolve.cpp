@@ -44,8 +44,6 @@
  */
 Id makeReacTest()
 {
-    double simDt = 0.1;
-    double plotDt = 0.1;
     Shell* s = reinterpret_cast<Shell*>(Id().eref().data());
 
     Id pools[10];
@@ -62,8 +60,8 @@ Id makeReacTest()
     Id tot1 = pools[6] = s->doCreate("BufPool", kin, "tot1", 1);
 
     // Silly that it has to have this name.
-    Id sum = s->doCreate("Function", tot1, "func", 1);
-    Id sumInput(sum.value() + 1);
+    Id funcSum = s->doCreate("Function", tot1, "func", 1);
+    Id sumInput(funcSum.value() + 1);
     Id e1Pool = s->doCreate("Pool", kin, "e1Pool", 1);
     Id e2Pool = s->doCreate("Pool", kin, "e2Pool", 1);
     Id e1 = s->doCreate("Enz", e1Pool, "e1", 1);
@@ -80,10 +78,10 @@ Id makeReacTest()
     s->doAddMsg("Single", r1, "sub", A, "reac");
     s->doAddMsg("Single", r1, "prd", B, "reac");
 
-    Field<unsigned int>::set(sum, "numVars", 2);
+    Field<unsigned int>::set(funcSum, "numVars", 2);
     s->doAddMsg("Single", A, "nOut", ObjId(sumInput, 0, 0), "input");
     s->doAddMsg("Single", B, "nOut", ObjId(sumInput, 0, 1), "input");
-    s->doAddMsg("Single", sum, "valueOut", tot1, "setN");
+    s->doAddMsg("Single", funcSum, "valueOut", tot1, "setN");
 
     s->doAddMsg("Single", r2, "sub", B, "reac");
     s->doAddMsg("Single", r2, "sub", B, "reac");
@@ -102,7 +100,7 @@ Id makeReacTest()
     Field<double>::set(A, "concInit", 2);
     Field<double>::set(e1Pool, "concInit", 1);
     Field<double>::set(e2Pool, "concInit", 1);
-    Field<string>::set(sum, "expr", "x0+x1");
+    Field<string>::set(funcSum, "expr", "x0+x1");
     Field<double>::set(r1, "Kf", 0.2);
     Field<double>::set(r1, "Kb", 0.1);
     Field<double>::set(r2, "Kf", 0.1);
@@ -191,8 +189,7 @@ void testSetupReac()
         vector<double> v = Field<vector<double>>::get(t, "vector");
         valarray<double> res(v.data(), v.size());
         double s = res.sum();
-        std::cout << "Plot is " << t.path() << ": " << res
-                  << " sum=" << s << std::endl;
+        std::cout << "Plot is " << t.path() << ": " << res << " sum=" << s << std::endl;
     }
 
     s->doDelete(kin);

@@ -211,6 +211,7 @@ PYBIND11_MODULE(_cmoose, m)
         .def("addMsg", &Shell::doAddMsg)
         .def("setClock", &Shell::doSetClock)
         .def("reinit", &Shell::doReinit)
+        .def("delete", &Shell::doDelete)
         .def("start", &Shell::doStart, py::arg("runtime"),
              py::arg("notify") = false)
         .def("quit", &Shell::doQuit);
