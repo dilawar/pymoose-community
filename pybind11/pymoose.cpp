@@ -72,8 +72,10 @@ py::object getFieldElement(const ObjId& oid, const string& fname)
 {
     auto cinfo = oid.element()->cinfo();
     auto finfo = cinfo->findFinfo(fname);
-    if (!finfo) {
-        py::print("Field " + fname + " is not found on " + oid.path());
+    if (! finfo) {
+        py::object avl = py::cast(cinfo->getFinfoNameAndType());
+        py::print("Field " + fname + " is not found on '" + oid.path()
+                + "'. Available: ",  avl);
         return pybind11::none();
     }
 }
@@ -212,7 +214,6 @@ PYBIND11_MODULE(_cmoose, m)
         .def_property_readonly("name", &Cinfo::name)
         .def_property_readonly("finfoMap", &Cinfo::finfoMap,
                                py::return_value_policy::reference)
-        .def_property_readonly("finfoNames", &Cinfo::getFinfoNames)
         .def("findFinfo", &Cinfo::findFinfoWrapper)
         .def("baseCinfo", &Cinfo::baseCinfo,
              py::return_value_policy::reference);

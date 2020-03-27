@@ -230,7 +230,7 @@ def makereac2():
 
     sum.cobj.setField("numVars", 2)
 
-    print('xxx', sum.cobj.getField('x'))
+    print('xxx', sum.cobj.getFieldElement('x'))
     quit()
 
     A.connect("nOut", sum.cobj.getField("x"), "input")

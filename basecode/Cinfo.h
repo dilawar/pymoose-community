@@ -144,7 +144,7 @@ public:
     const map<string, Finfo*>& finfoMap() const;
 
     // Used in python bindings. Also return type of finfo.
-    vector<string> getFinfoNames() const;
+    std::vector<std::pair<string,string>> getFinfoNameAndType() const;
 
     /**
      * Returns the Dinfo, which manages creation and destruction

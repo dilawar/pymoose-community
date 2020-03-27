@@ -218,7 +218,7 @@ const Cinfo* Cinfo::baseCinfo() const
  */
 const Finfo* Cinfo::findFinfo(const string& name) const
 {
-    map<string, Finfo*>::const_iterator i = finfoMap_.find(name);
+    auto i = finfoMap_.find(name);
     if (i != finfoMap_.end())
         return i->second;
     return 0;
@@ -229,21 +229,21 @@ const FinfoWrapper Cinfo::findFinfoWrapper(const string& name) const
     return FinfoWrapper(findFinfo(name));
 }
 
-vector<string> Cinfo::getFinfoNames() const
+std::vector<pair<string, string>> Cinfo::getFinfoNameAndType() const
 {
-    vector<string> res;
-    for (auto& f : srcFinfos_) res.push_back("srcFinfos:" + f->name());
+    vector<pair<string, string>> res;
+    for (auto& f : srcFinfos_) res.push_back({"srcFinfos", f->name()});
 
-    for (auto& f : destFinfos_) res.push_back("destFinfo:" + f->name());
+    for (auto& f : destFinfos_) res.push_back({"destFinfo", f->name()});
 
-    for (auto& f : valueFinfos_) res.push_back("valueFinfo:" + f->name());
+    for (auto& f : valueFinfos_) res.push_back({"valueFinfo", f->name()});
 
-    for (auto& f : lookupFinfos_) res.push_back("lookupFinfo:" + f->name());
+    for (auto& f : lookupFinfos_) res.push_back({"lookupFinfo",  f->name()});
 
-    for (auto& f : sharedFinfos_) res.push_back("sharedFinfo:" + f->name());
+    for (auto& f : sharedFinfos_) res.push_back({"sharedFinfo",  f->name()});
 
     for (auto& f : fieldElementFinfos_)
-        res.push_back("fieldElement:" + f->name());
+        res.push_back({"fieldElement", f->name()});
 
     return res;
 }
