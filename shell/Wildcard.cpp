@@ -155,7 +155,7 @@ int wildcardFind(const string& path, vector<ObjId>& ret, bool clear)
     return ret.size();
 }
 
-vector<ObjId> wildcardFindPybind(const string& path)
+vector<ObjId> wildcardFind2(const char* path)
 {
     vector<ObjId> ret;
     simpleWildcardFind(path, ret);

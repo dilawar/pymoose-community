@@ -24,6 +24,7 @@ extern DestFinfo* receiveGet();
 //extern SrcFinfo2< unsigned int, unsigned int >* ack(); // Not currently used.
 
 enum NodePolicy { MooseGlobal, MooseBlockBalance, MooseSingleNode };
+
 class NodeBalance
 {
 public:
@@ -499,8 +500,6 @@ public:
      */
     static bool chopPath( const string& path, vector< string >& ret,
                           vector< unsigned int >& index );
-
-    // static void wildcard( const string& path, vector< Id >& list );
 
     /**
      * Cleans up all Elements except /root itself, /clock, /classes,

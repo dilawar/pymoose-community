@@ -509,7 +509,6 @@ unsigned int TableBase::getVecSize() const
 
 vector< double > TableBase::getVector() const
 {
-    cout << "Retuning vector ... " << endl;
     return vec_;
 }
 
