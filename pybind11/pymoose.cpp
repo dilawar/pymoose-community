@@ -59,14 +59,6 @@ T getProp(const ObjId& id, const string& fname)
     return Field<T>::get(id, fname);
 }
 
-template <typename T = double>
-vector<T> getPropVec(const ObjId& id, const string& fname)
-{
-    vector<T> v = Field<vector<T>>::get(id, fname);
-    return v;
-    // return py::array(v.size(), v.data());
-}
-
 // FIXME: Is it most efficient?
 // See discussion here: https://github.com/pybind/pybind11/issues/1042
 template <typename T = double>
@@ -76,13 +68,49 @@ py::array_t<T> getPropNumpy(const ObjId& id, const string& fname)
     return py::array_t<T>(v.size(), v.data());
 }
 
+py::object getPropGeneric(const ObjId& oid, const string& fname)
+{
+    auto cinfo = oid.element()->cinfo();
+    auto finfo = cinfo->findFinfo(fname);
+    if (!finfo) {
+        py::print("Field " + fname + " is not found on " + oid.path());
+        return pybind11::none();
+    }
+
+    string ftype = finfo->rttiType();
+    if (ftype == "double")
+        return pybind11::float_(getProp<double>(oid, fname));
+    else if (ftype == "float")
+        return pybind11::float_(getProp<double>(oid, fname));
+    else if (ftype == "vector<double>")
+        return py::cast(getProp<vector<double>>(oid, fname));
+    else if (ftype == "string")
+        return pybind11::str(getProp<string>(oid, fname));
+    else if (ftype == "char")
+        return pybind11::str(getProp<string>(oid, fname));
+    else if (ftype == "int")
+        return pybind11::int_(getProp<int>(oid, fname));
+    else if (ftype == "unsigned long")
+        return pybind11::int_(getProp<unsigned long>(oid, fname));
+    else if (ftype == "unsigned int")
+        return pybind11::int_(getProp<unsigned int>(oid, fname));
+    else if (ftype == "bool")
+        return pybind11::bool_(getProp<bool>(oid, fname));
+    else if (ftype == "Id")
+        return py::cast(getProp<Id>(oid, fname));
+    else if (ftype == "ObjId")
+        return py::cast(getProp<ObjId>(oid, fname));
+
+    py::print("Unsupported type " + ftype);
+    return pybind11::none();
+}
+
 ObjId connect(const ObjId& src, const string& srcField, const ObjId& tgt,
-             const string& tgtField)
+              const string& tgtField)
 {
     auto pShell = getShellPtr();
     return pShell->doAddMsg("Single", src, srcField, tgt, tgtField);
 }
-
 
 PYBIND11_MODULE(_cmoose, m)
 {
@@ -140,13 +168,8 @@ PYBIND11_MODULE(_cmoose, m)
         // NOTE: Get it tricky to get right.
         // See discussion here: https://github.com/pybind/pybind11/issues/1667
         // Required c++14 compiler.
-        .def("getFieldDouble", &getProp<double>)
-        .def("getFieldFloat", &getProp<double>)
-        .def("getFieldString", &getProp<string>)
-        .def("getFieldInt", &getProp<unsigned int>)
-        .def("getFieldBool", &getProp<bool>)
-        .def("getFieldVector", &getPropVec<double>)
-        .def("getFieldNumpy", &getPropNumpy<double>)
+        .def("getField", &getPropGeneric)
+        .def("getNumpy", &getPropNumpy<double>)
 
         //---------------------------------------------------------------------
         //  Connect

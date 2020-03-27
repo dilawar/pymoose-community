@@ -24,6 +24,12 @@
 #include "../builtins/MooseParser.h"
 #include "../utility/testing_macros.hpp"
 
+#include "../shell/Wildcard.h"
+
+#include "../external/prettyprint.hpp"
+
+#include <valarray>
+
 /**
  * Tab controlled by table
  * A + Tab <===> B
@@ -47,13 +53,13 @@ Id makeReacTest()
     // Make the objects.
     Id kin = s->doCreate("CubeMesh", Id(), "kinetics", 1);
     Id tab = s->doCreate("StimulusTable", kin, "tab", 1);
-    Id T = pools[i++] = s->doCreate("BufPool", kin, "T", 1);
-    Id A = pools[i++] = s->doCreate("Pool", kin, "A", 1);
-    Id B = pools[i++] = s->doCreate("Pool", kin, "B", 1);
-    Id C = pools[i++] = s->doCreate("Pool", kin, "C", 1);
-    Id D = pools[i++] = s->doCreate("Pool", kin, "D", 1);
-    Id E = pools[i++] = s->doCreate("Pool", kin, "E", 1);
-    Id tot1 = pools[i++] = s->doCreate("BufPool", kin, "tot1", 1);
+    Id T = pools[0] = s->doCreate("BufPool", kin, "T", 1);
+    Id A = pools[1] = s->doCreate("Pool", kin, "A", 1);
+    Id B = pools[2] = s->doCreate("Pool", kin, "B", 1);
+    Id C = pools[3] = s->doCreate("Pool", kin, "C", 1);
+    Id D = pools[4] = s->doCreate("Pool", kin, "D", 1);
+    Id E = pools[5] = s->doCreate("Pool", kin, "E", 1);
+    Id tot1 = pools[6] = s->doCreate("BufPool", kin, "tot1", 1);
 
     // Silly that it has to have this name.
     Id sum = s->doCreate("Function", tot1, "func", 1);
@@ -106,11 +112,53 @@ Id makeReacTest()
     Field<double>::set(e1, "ratio", 4);
     Field<double>::set(e2, "Km", 5);
     Field<double>::set(e2, "kcat", 1);
-    vector<double> stim(100, 0.0);
-    double vol = Field<double>::get(kin, "volume");
 
+    double vol = Field<double>::get(kin, "volume");
+    assert(doubleEq(1e-15, vol));
+
+    vector<double> stimTestVals = {
+        602214150.0000002,  640027489.3464042,  677691596.7176793,
+        715057829.089125,   751978719.0125793,  788308556.6030641,
+        823903964.5891339,  858624464.1574627,  892333029.3585418,
+        924896627.885501,   956186746.0918477,  986079896.1761163,
+        1014458103.5318056, 1041209372.3392525, 1066228127.561966,
+        1089415631.6030643, 1110680373.9774597, 1129938432.4619377,
+        1147113804.2978299, 1162138706.1391807, 1174953841.5626476,
+        1185508635.0833921, 1193761431.7534146, 1199679661.5546026,
+        1203239967.937713,  1204428300.0000005, 1203239967.937713,
+        1199679661.5546026, 1193761431.7534146, 1185508635.0833921,
+        1174953841.5626476, 1162138706.1391807, 1147113804.2978299,
+        1129938432.4619377, 1110680373.9774597, 1089415631.6030643,
+        1066228127.561966,  1041209372.3392524, 1014458103.5318056,
+        986079896.1761163,  956186746.0918478,  924896627.8855013,
+        892333029.3585418,  858624464.1574628,  823903964.589134,
+        788308556.6030641,  751978719.0125796,  715057829.089125,
+        677691596.7176794,  640027489.3464042,  602214150.0000004,
+        564400810.6535964,  526736703.2823213,  489370470.9108753,
+        452449580.98742133, 416119743.39693654, 380524335.4108666,
+        345803835.842538,   312095270.6414586,  279531672.1144995,
+        248241553.90815312, 218348403.82388425, 189970196.46819502,
+        163218927.660748,   138200172.43803442, 115012668.39693636,
+        93747926.02254057,  74489867.53806275,  57314495.702170506,
+        42289593.86081967,  29474458.437352978, 18919664.916608337,
+        10666868.246585846, 4748638.445397892,  1188332.0622876077,
+        0.0,                1188332.0622876077, 4748638.445397825,
+        10666868.246585846, 18919664.916608404, 29474458.43735291,
+        42289593.8608196,   57314495.70217044,  74489867.53806289,
+        93747926.02254078,  115012668.39693622, 138200172.4380343,
+        163218927.66074768, 189970196.4681947,  218348403.82388425,
+        248241553.9081527,  279531672.1144991,  312095270.64145815,
+        345803835.8425375,  380524335.4108666,  416119743.3969363,
+        452449580.9874209,  489370470.9108754,  526736703.282321,
+        564400810.6535964};
+
+    // Stim.
+    vector<double> stim(100, 0.0);
     for (unsigned int i = 0; i < 100; ++i)
+    {
         stim[i] = vol * NA * (1.0 + sin(i * 2.0 * PI / 100.0));
+        assert(doubleEq(stim[i], stimTestVals[i]));
+    }
 
     Field<vector<double>>::set(tab, "vector", stim);
     Field<double>::set(tab, "stepSize", 0.0);
@@ -124,8 +172,9 @@ Id makeReacTest()
                     "getConc");
 
     // Schedule it.
-    for (unsigned int i = 11; i < 18; ++i) s->doSetClock(i, simDt);
-    s->doSetClock(18, plotDt);
+    for(unsigned int i = 11; i < 18; ++i) s->doSetClock(i, 0.1);
+    s->doSetClock(18, 0.1);
+
     return kin;
 }
 
@@ -135,15 +184,17 @@ void testSetupReac()
     Id kin = makeReacTest();
     s->doReinit();
     s->doStart(20.0);
-    Id plots("/kinetics/plots");
-    /*
-    for ( unsigned int i = 0; i < 7; ++i ) {
-        stringstream ss;
-        ss << "plot." << i;
-        SetGet2< string, string >::set( ObjId( plots, i ), "xplot",
-                                        "tsr.plot", ss.str() );
+
+    vector<ObjId> tables;
+    wildcardFind("/##[TYPE=Table2]", tables);
+    for(auto & t: tables) {
+        vector<double> v = Field<vector<double>>::get(t, "vector");
+        valarray<double> res(v.data(), v.size());
+        double s = res.sum();
+        std::cout << "Plot is " << t.path() << ": " << res
+                  << " sum=" << s << std::endl;
     }
-    */
+
     s->doDelete(kin);
     cout << "." << flush;
 }

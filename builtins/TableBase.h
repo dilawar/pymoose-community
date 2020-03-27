@@ -25,6 +25,7 @@ public:
      *  Functions related to field assignment.
      *-----------------------------------------------------------------------------*/
     vector< double > getVector() const;
+
     const vector< double >& data( );
 
     void setVector( vector< double > val );

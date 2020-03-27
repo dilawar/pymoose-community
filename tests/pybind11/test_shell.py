@@ -3,8 +3,6 @@ import numpy as np
 import math
 
 def makereac():
-    simDt = 0.1
-    plotDt = 0.1
     pools = [None]*10
     s = M.getShell()
     print(dir(s))
@@ -60,31 +58,33 @@ def makereac():
 
     # Set parameters.
     A.setField("concInit", 2);
-    assert A.getFieldFloat("concInit") == 2, A.getFieldFloat("concInit")
+    assert A.getField("concInit") == 2, A.getField("concInit")
 
     e1Pool.setField("concInit", 1);
-    assert e1Pool.getFieldFloat("concInit") == 1.0
+    assert e1Pool.getField("concInit") == 1.0
 
     e2Pool.setField("concInit", 1);
     sum.setField("expr", "x0+x1");
     r1.setField("Kf", 0.2);
-    assert r1.getFieldDouble("Kf") == 0.2
+    assert r1.getField("Kf") == 0.2
     r1.setField("Kb", 0.1);
     r2.setField("Kf", 0.1);
     r2.setField("Kb", 0.0);
     e1.setField("Km", 5);
-    assert e1.getFieldDouble("Km") ==  5
+    assert e1.getField("Km") ==  5
     e1.setField("kcat", 1);
     e1.setField("ratio", 4);
     e2.setField("Km", 5);
     e2.setField("kcat", 1);
 
-    vol = kin.getFieldFloat("volume");
+    vol = kin.getField("volume");
+    assert np.isclose(vol, 1e-15), vol
     print("Volume", vol)
 
     stim = []
     for i in range(100):
         stim.append(vol * M.NA * (1.0 + math.sin(i * 2.0 * M.PI / 100.0)))
+    print(stim)
 
     tab.setField("vector", stim);
     tab.setField("stepSize", 0.0);
@@ -98,20 +98,25 @@ def makereac():
 
     #  Schedule it.
     for i in range(11, 18):
-        s.setClock(i, simDt);
-    s.setClock(18, plotDt);
-    return kin, tab 
+        s.setClock(i, 0.1);
+    s.setClock(18, 0.1);
+    return kin 
 
 def test_ksolve():
-    rec, tab = makereac()
+    import matplotlib.pyplot as plt
     s = M.getShell()
+    makereac()
     s.reinit()
     s.start(20.0)
-    print(tab)
-    dataN = tab.getFieldNumpy("vector")
-    data = np.array(tab.getFieldVector("vector"))
-    assert np.allclose(dataN, data)
-    # get data.
+    for tab in M.wildcardFind('/##[TYPE=Table2]'):
+        dataN = tab.getNumpy("vector")
+        data = tab.getField("vector")
+        assert np.allclose(dataN, data)
+        # get data.
+        print("====", tab.path, dataN.sum(), dataN.mean(), dataN.shape)
+        plt.plot(dataN)
+        #  print(data)
+    plt.savefig(__file__+".test_ksolve.png")
     print("Done ksolve")
 
 def main():
