@@ -35,6 +35,7 @@
 #include "../shell/Shell.h"
 #include "../shell/Wildcard.h"
 #include "../shell/Neutral.h"
+#include "../builtins/Variable.h"
 
 #include "helper.h"
 #include "pymoose.h"
@@ -78,6 +79,9 @@ py::object getFieldElement(const ObjId& oid, const string& fname)
                 + "'. Available: ",  avl);
         return pybind11::none();
     }
+    // FIXME: I am here.
+    Variable res = LookupField<unsigned int, Variable>::get(oid, fname, 0);
+    return py::cast(res);
 }
 
 py::object getFieldGeneric(const ObjId& oid, const string& fname)
@@ -112,7 +116,7 @@ py::object getFieldGeneric(const ObjId& oid, const string& fname)
         return py::cast(getProp<Id>(oid, fname));
     else if (ftype == "ObjId")
         return py::cast(getProp<ObjId>(oid, fname));
-    else if (ftype == typeid(Variable).name())
+    else if (ftype == "Variable")
         return py::cast(getProp<Variable>(oid, fname));
     py::print("pymoose::getFieldGeneric::Warning: Unsupported type " + ftype);
     return pybind11::none();
@@ -199,15 +203,9 @@ PYBIND11_MODULE(_cmoose, m)
                     ">";
          });
 
-    py::class_<FinfoWrapper>(m, "_FinfoWrapper")
-        .def(py::init<const Finfo*>())
-        .def_property_readonly("name", &FinfoWrapper::getName)
-        .def_property_readonly("doc", &FinfoWrapper::docs)
-        .def_property_readonly("type", &FinfoWrapper::type)
-        .def_property_readonly("src", &FinfoWrapper::src,
-                               py::return_value_policy::reference)
-        .def_property_readonly("dest", &FinfoWrapper::dest,
-                               py::return_value_policy::reference);
+    py::class_<Variable>(m, "_Variable")
+        .def(py::init<>())
+        ;
 
     py::class_<Cinfo>(m, "_Cinfo")
         .def(py::init<>())

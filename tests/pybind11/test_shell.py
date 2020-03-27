@@ -229,7 +229,6 @@ def makereac2():
     r1.connect("prd", B, "reac")
 
     sum.cobj.setField("numVars", 2)
-
     print('xxx', sum.cobj.getFieldElement('x'))
     quit()
 
@@ -336,8 +335,8 @@ def test_ksolve2():
 
 
 def main():
-    test_ksolve0()
-    test_ksolve1()
+    #test_ksolve0()
+    #test_ksolve1()
     test_ksolve2()
 
 if __name__ == '__main__':

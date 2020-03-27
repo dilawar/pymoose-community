@@ -197,7 +197,7 @@ const Cinfo * Function::initCinfo()
         "x",
         "Input variables (indexed) to the function. These can be passed via messages.",
         Variable::initCinfo(),
-        &Function::getVar,
+        &Function::getX,
         &Function::setNumVar,
         &Function::getNumVar
     );
@@ -716,7 +716,7 @@ void Function::setVar(unsigned int index, double value)
     MOOSE_WARN("Function: index " << index << " out of bounds.");
 }
 
-Variable* Function::getVar(unsigned int ii) 
+Variable* Function::getX(unsigned int ii) 
 {
     static Variable dummy("DUMMY");
     if(ii >= xs_.size())

@@ -24,7 +24,7 @@ if(APPLE)
         "-Wl,-all_load"
         ${MOOSE_LIBRARIES}
         ${STATIC_LIBRARIES})
-    target_link_libraries(_cmoose ${SYSTEM_SHARED_LIBS})
+    target_link_libraries(_cmoose PRIVATE ${SYSTEM_SHARED_LIBS})
 else(APPLE)
     target_link_libraries(_cmoose PRIVATE
         "-Wl,--whole-archive" 

@@ -22,7 +22,7 @@ build:
     - python3 -c "import moose; moose.test()"
 
   except:
-      - pybind11
+      - pybind11*
       - devel
       - temp
 
