@@ -25,9 +25,14 @@ class __Neutral__(_cmoose._ObjId):
 
     __metaclass__ = None
 
-    def __init__(self, path, ndata=1):
-        obj = _cmoose.create(self.__metaclass__, path, ndata)
+    def __init__(self, path, ndata=1, obj=None):
+        if obj is None:
+            obj = _cmoose.create(self.__metaclass__, path, ndata) 
         super(__Neutral__, self).__init__(obj.id)
+
+    @classmethod
+    def fromObjId(cls, obj):
+        return cls(path=obj.path, obj=obj)
 
     def __setattr__(self, attr, val):
         self.setField(attr, val)
@@ -70,7 +75,7 @@ def wildcardFind(pattern):
     return paths
 
 def delete(a):
-    return moose._cmoose.delete(a)
+    return _cmoose.delete(a)
 
 def element(pathOrObject):
     if isinstance(pathOrObject, str):
@@ -79,11 +84,12 @@ def element(pathOrObject):
         obj = _cmoose.element(pathOrObject.path)
     return obj
 
-def getCwe():
-    return _cmoose.getShell().getCwe()
-
 def exists(path):
     return _cmoose.exists(path)
+
+
+def getCwe():
+    return __Neutral__.fromObjId(_cmoose.getCwe())
 
 def pwe():
     """Print present working element. Convenience function for GENESIS
@@ -119,8 +125,8 @@ def le(el=None):
         if not exists(el):
             raise ValueError('no such element')
         el = element(el)
-    elif isinstance(el, _cmoose.vec):
-        el = el[0]
+    #elif isinstance(el, _cmoose.vec):
+    #    el = el[0]
     print("Elements under '%s'" % el)
     for ch in el.children:
         print(" %s" % ch.path)

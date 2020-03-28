@@ -17,6 +17,7 @@
 #ifndef HELPER_H
 #define HELPER_H
 
+namespace py = pybind11;
 using namespace std;
 
 Id initShell();
@@ -27,8 +28,24 @@ Shell* getShellPtr();
 
 bool doesExist(const string& path);
 
-ObjId element(const string& path);
+ObjId mooseElement(const string& path);
 
 ObjId loadModelInternal(const string& fname, const string& modelpath, const string& solverclass);
 
+ObjId getElementField(const ObjId objid, const string& fname);
+
+ObjId getElementFieldItem(const ObjId& objid, const string& fname, unsigned int index);
+
+py::object getFieldGeneric(const ObjId& oid, const string& fname);
+
+ObjId connect(const ObjId& src, const string& srcField, const ObjId& tgt, const string& tgtField);
+
+void mooseDelete(const ObjId& oid);
+
+ObjId mooseCreate(const string type, const string& path, size_t numdata=1);
+
+py::object mooseGetCwe();
+
+void mooseSetClock(const size_t clockId, double dt);
+ 
 #endif /* end of include guard: HELPER_H */

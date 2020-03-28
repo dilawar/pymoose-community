@@ -71,39 +71,6 @@ py::array_t<T> getFieldNumpy(const ObjId& id, const string& fname)
     return py::array_t<T>(v.size(), v.data());
 }
 
-inline ObjId getElementField(const ObjId objid, const string& fname)
-{
-    return ObjId(objid.path() + '/' + fname);
-}
-
-ObjId getElementFieldItem(const ObjId& objid, const string& fname,
-                          unsigned int index)
-{
-    ObjId oid = getElementField(objid, fname);
-
-    auto len = Field<unsigned int>::get(oid, "numField");
-    assert(len >= 0);
-
-    if (index >= len) {
-        throw runtime_error(
-            "ElementField.getItem: index out of bounds. "
-            "Total elements=" +
-            to_string(len) + ".");
-        return ObjId();
-    }
-
-    // Negative indexing. Thanks Subha for hint.
-    if (index < 0) {
-        index += len;
-    }
-    if (index < 0) {
-        throw runtime_error("ElementField.getItem: invalid index: " +
-                            to_string(index) + ".");
-        return ObjId();
-    }
-    return ObjId(oid.id, oid.dataIndex, index);
-}
-
 py::object getFieldGeneric(const ObjId& oid, const string& fname)
 {
     auto cinfo = oid.element()->cinfo();
@@ -145,29 +112,6 @@ py::object getFieldGeneric(const ObjId& oid, const string& fname)
 
     py::print("Warning: pymoose::getFieldGeneric::Warning: Unsupported type " + ftype);
     return pybind11::none();
-}
-
-ObjId connect(const ObjId& src, const string& srcField, const ObjId& tgt,
-              const string& tgtField)
-{
-    auto pShell = getShellPtr();
-    return pShell->doAddMsg("Single", src, srcField, tgt, tgtField);
-}
-
-inline void mooseDelete(const ObjId& oid)
-{
-    getShellPtr()->doDelete(oid);
-}
-
-inline ObjId mooseCreate(const string type, const string& path, size_t numdata=1)
-{
-    auto p = moose::splitPath(path);
-    return getShellPtr()->doCreate2(type, ObjId(p.first), p.second, numdata);
-}
-
-inline void mooseSetClock(const size_t clockId, double dt)
-{
-    getShellPtr()->doSetClock(clockId, dt);
 }
 
 PYBIND11_MODULE(_cmoose, m)
@@ -276,6 +220,9 @@ PYBIND11_MODULE(_cmoose, m)
     m.def("wildcardFind", &wildcardFind2);
     m.def("delete", &mooseDelete);
     m.def("create", &mooseCreate);
+    m.def("element", &mooseElement);
+    m.def("exists", &doesExist);
+    m.def("getCwe", &mooseGetCwe);
     m.def("setClock", &mooseSetClock);
 
     // Attributes.

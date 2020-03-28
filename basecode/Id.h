@@ -76,7 +76,7 @@ public:
     /**
      * Returns the full pathname of the object on the id.
      */
-    std::string path( const std::string& separator = "/" ) const;
+    std::string path() const;
 
 
     /**

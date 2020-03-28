@@ -17,14 +17,36 @@
 #include <stdexcept>
 #include <memory>
 
+#include "../external/pybind11/include/pybind11/pybind11.h"
+#include "../external/pybind11/include/pybind11/stl.h"
+#include "../external/pybind11/include/pybind11/numpy.h"
+
+// See
+// https://pybind11.readthedocs.io/en/stable/advanced/cast/stl.html#binding-stl-containers
+// #include "../external/pybind11/include/pybind11/stl_bind.h"
+
 #include "../basecode/header.h"
-// #include "../basecode/global.h"
+#include "../basecode/global.h"
+#include "../basecode/Cinfo.h"
+
+
 #include "../shell/Shell.h"
+#include "../shell/Wildcard.h"
+#include "../shell/Neutral.h"
+
 #include "../scheduling/Clock.h"
 #include "../mpi/PostMaster.h"
+
+#include "../builtins/Variable.h"
+
 #include "../utility/strutil.h"
 
 #include "helper.h"
+#include "pymoose.h"
+
+using namespace std;
+
+namespace py = pybind11;
 
 using namespace std;
 
@@ -125,7 +147,7 @@ bool doesExist(const string& path)
     return Id(path) != Id() || path == "/" || path == "/root";
 }
 
-ObjId element(const string& path)
+ObjId mooseElement(const string& path)
 {
     ObjId oid;
     unsigned nid = 0, did = 0, fidx = 0;
@@ -158,3 +180,71 @@ ObjId loadModelInternal(const string& fname, const string& modelpath,
     }
     return ObjId(model);
 }
+
+ObjId getElementField(const ObjId objid, const string& fname)
+{
+    return ObjId(objid.path() + '/' + fname);
+}
+
+ObjId getElementFieldItem(const ObjId& objid, const string& fname, unsigned int index)
+{
+    ObjId oid = getElementField(objid, fname);
+
+    auto len = Field<unsigned int>::get(oid, "numField");
+    assert(len >= 0);
+
+    if (index >= len) {
+        throw runtime_error(
+            "ElementField.getItem: index out of bounds. "
+            "Total elements=" +
+            to_string(len) + ".");
+        return ObjId();
+    }
+
+    // Negative indexing. Thanks Subha for hint.
+    if (index < 0) {
+        index += len;
+    }
+    if (index < 0) {
+        throw runtime_error("ElementField.getItem: invalid index: " +
+                            to_string(index) + ".");
+        return ObjId();
+    }
+    return ObjId(oid.id, oid.dataIndex, index);
+}
+
+
+ObjId connect(const ObjId& src, const string& srcField, const ObjId& tgt, const string& tgtField)
+{
+    auto pShell = getShellPtr();
+    return pShell->doAddMsg("Single", src, srcField, tgt, tgtField);
+}
+
+void mooseDelete(const ObjId& oid)
+{
+    getShellPtr()->doDelete(oid);
+}
+
+ObjId mooseCreate(const string type, const string& path, size_t numdata)
+{
+    auto p = moose::splitPath(path);
+    return getShellPtr()->doCreate2(type, ObjId(p.first), p.second, numdata);
+}
+
+void mooseSetClock(const size_t clockId, double dt)
+{
+    getShellPtr()->doSetClock(clockId, dt);
+}
+
+/* --------------------------------------------------------------------------*/
+/**
+ * @Synopsis  Current Working Element.
+ *
+ * @Returns  cwe.
+ */
+/* ----------------------------------------------------------------------------*/
+py::object mooseGetCwe()
+{
+    return py::cast(getShellPtr()->getCwe());
+}
+

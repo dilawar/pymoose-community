@@ -8,11 +8,17 @@ import moose
 def test_children():
     a1 = moose.Neutral('/a')
     a2 = moose.Neutral('/a/b')
-    moose.Neutral('/a/b/c1')
+    a3 = moose.Neutral('/a/b/c1')
     moose.Neutral('/a/b/c2')
     assert len(a1.children) == 1
     assert len(a2.children) == 2
-    print(a1, a2)
+    print(type(a1), a1)
+    moose.le(a1)
+    moose.le(a2)
+    moose.le(a3)
+
+    s = moose.getCwe()
+    print(type(s), s)
 
 def main():
     test_children()
