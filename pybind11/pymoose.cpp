@@ -69,19 +69,37 @@ py::array_t<T> getFieldNumpy(const ObjId& id, const string& fname)
     return py::array_t<T>(v.size(), v.data());
 }
 
-py::object getFieldElement(const ObjId& oid, const string& fname)
+inline ObjId getElementField(const ObjId objid, const string& fname)
 {
-    auto cinfo = oid.element()->cinfo();
-    auto finfo = cinfo->findFinfo(fname);
-    if (! finfo) {
-        py::object avl = py::cast(cinfo->getFinfoNameAndType());
-        py::print("Field " + fname + " is not found on '" + oid.path()
-                + "'. Available: ",  avl);
-        return pybind11::none();
+    return ObjId(objid.path() + '/' + fname);
+}
+
+ObjId getElementFieldItem(const ObjId& objid, const string& fname,
+                          unsigned int index)
+{
+    ObjId oid = getElementField(objid, fname);
+
+    auto len = Field<unsigned int>::get(oid, "numField");
+    assert(len >= 0);
+
+    if (index >= len) {
+        throw runtime_error(
+            "ElementField.getItem: index out of bounds. "
+            "Total elements=" +
+            to_string(len) + ".");
+        return ObjId();
     }
-    // FIXME: I am here.
-    Variable res = LookupField<unsigned int, Variable>::get(oid, fname, 0);
-    return py::cast(res);
+
+    // Negative indexing. Thanks Subha for hint.
+    if (index < 0) {
+        index += len;
+    }
+    if (index < 0) {
+        throw runtime_error("ElementField.getItem: invalid index: " +
+                            to_string(index) + ".");
+        return ObjId();
+    }
+    return ObjId(oid.id, oid.dataIndex, index);
 }
 
 py::object getFieldGeneric(const ObjId& oid, const string& fname)
@@ -128,6 +146,7 @@ ObjId connect(const ObjId& src, const string& srcField, const ObjId& tgt,
     auto pShell = getShellPtr();
     return pShell->doAddMsg("Single", src, srcField, tgt, tgtField);
 }
+
 
 PYBIND11_MODULE(_cmoose, m)
 {
@@ -186,7 +205,8 @@ PYBIND11_MODULE(_cmoose, m)
         // See discussion here: https://github.com/pybind/pybind11/issues/1667
         // Required c++14 compiler.
         .def("getField", &getFieldGeneric)
-        .def("getFieldElement", &getFieldElement)
+        .def("getElementField", &getElementField)
+        .def("getElementFieldItem", &getElementFieldItem)
         .def("getNumpy", &getFieldNumpy<double>)
 
         //---------------------------------------------------------------------
@@ -203,9 +223,7 @@ PYBIND11_MODULE(_cmoose, m)
                     ">";
          });
 
-    py::class_<Variable>(m, "_Variable")
-        .def(py::init<>())
-        ;
+    py::class_<Variable>(m, "_Variable").def(py::init<>());
 
     py::class_<Cinfo>(m, "_Cinfo")
         .def(py::init<>())

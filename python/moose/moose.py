@@ -41,7 +41,9 @@ class __Neutral__():
         return self.cobj.__repr__()
 
     def connect(self, srcField, dest, destField):
-        return self.cobj.connect(srcField, dest.cobj, destField)
+        if hasattr(dest, 'cobj'):
+            dest = dest.cobj
+        return self.cobj.connect(srcField, dest, destField)
 
     def parent(self, path):
         p = '/'.join(path.split('/')[:-1])

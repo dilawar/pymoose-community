@@ -228,12 +228,8 @@ def makereac2():
     r1.connect("sub", A, "reac")
     r1.connect("prd", B, "reac")
 
-    sum.cobj.setField("numVars", 2)
-    print('xxx', sum.cobj.getFieldElement('x'))
-    quit()
-
-    A.connect("nOut", sum.cobj.getField("x"), "input")
-    B.connect("nOut", sum.cobj.x[1], "input")
+    A.connect("nOut", sum.cobj.getElementFieldItem("x", 0), "input")
+    B.connect("nOut", sum.cobj.getElementFieldItem("x", 1), "input")
     sum.connect("valueOut", tot1, "setN");
 
     r2.connect("sub", B, "reac")
@@ -250,42 +246,41 @@ def makereac2():
     e2.connect("prd", E, "reac")
 
     # Set parameters.
-    A.setField("concInit", 2);
-    assert A.getField("concInit") == 2, A.getField("concInit")
+    A.cobj.setField("concInit", 2);
+    assert A.cobj.getField("concInit") == 2, A.cobj.getField("concInit")
 
-    e1Pool.setField("concInit", 1);
-    assert e1Pool.getField("concInit") == 1.0
+    e1Pool.cobj.setField("concInit", 1);
+    assert e1Pool.cobj.getField("concInit") == 1.0
 
-    e2Pool.setField("concInit", 1);
-    sum.setField("expr", "x0+x1");
-    r1.setField("Kf", 0.2);
-    assert r1.getField("Kf") == 0.2
-    r1.setField("Kb", 0.1);
-    r2.setField("Kf", 0.1);
-    r2.setField("Kb", 0.0);
-    e1.setField("Km", 5);
-    assert e1.getField("Km") ==  5
-    e1.setField("kcat", 1);
-    e1.setField("ratio", 4);
-    e2.setField("Km", 5);
-    e2.setField("kcat", 1);
+    e2Pool.cobj.setField("concInit", 1);
+    r1.cobj.setField("Kf", 0.2);
+    assert r1.cobj.getField("Kf") == 0.2
+    r1.cobj.setField("Kb", 0.1);
+    r2.cobj.setField("Kf", 0.1);
+    r2.cobj.setField("Kb", 0.0);
+    e1.cobj.setField("Km", 5);
+    assert e1.cobj.getField("Km") ==  5
+    e1.cobj.setField("kcat", 1);
+    e1.cobj.setField("ratio", 4);
+    e2.cobj.setField("Km", 5);
+    e2.cobj.setField("kcat", 1);
 
-    vol = kin.getField("volume");
-    assert vol == 1e-15, vol
+    vol = kin.cobj.getField("volume");
+    assert np.isclose(vol, 1e-15), vol
 
     stim = []
     for i in range(100):
         stim.append(vol * M.NA * (1.0 + math.sin(i * 2.0 * M.PI / 100.0)))
 
-    t.setField("vector", stim);
-    t.setField("stepSize", 0.0);
-    t.setField("stopTime", 10.0);
-    t.setField("loopTime", 10.0);
-    t.setField("doLoop", True);
+    t.cobj.setField("vector", stim);
+    t.cobj.setField("stepSize", 0.0);
+    t.cobj.setField("stopTime", 10.0);
+    t.cobj.setField("loopTime", 10.0);
+    t.cobj.setField("doLoop", True);
 
     #  Connect outputs
     for i in range(7):
-        M._ObjId(plots.id, i).connect("requestOut", pools[i], "getConc")
+        M._ObjId(plots.cobj.id, i).connect("requestOut", pools[i].cobj, "getConc")
 
     #  Schedule it.
     for i in range(11, 18):
@@ -317,7 +312,7 @@ def run_and_assert(kin, outfile):
     assert np.allclose(expected, np.array(got)), "Expected %s but got %s" % ( 
             expected, got)
     # get data.
-    s.delete(kin)
+    s.delete(kin.cobj)
     plt.savefig(outfile)
     print("Done ksolve: Saved to %s" % outfile)
 
