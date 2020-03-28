@@ -40,6 +40,10 @@ class __Neutral__():
     def __repr__(self):
         return self.cobj.__repr__()
 
+    def __del__(self):
+        __SHELL__.delete(self.cobj)
+        del self
+
     def connect(self, srcField, dest, destField):
         if hasattr(dest, 'cobj'):
             dest = dest.cobj
@@ -53,7 +57,6 @@ class __Neutral__():
 
     def name(self, path):
         return path.split('/')[-1]
-
 
 
 for p in _cmoose.wildcardFind('/##[TYPE=Cinfo]'):
@@ -93,6 +96,9 @@ def wildcardFind(pattern):
         paths.append(__toMooseObject(p))
     return paths
 
+def delete(a):
+    moose._cmoose.delete(a.cobj)
+    del a
 
 def element(pathOrObject):
     if isinstance(pathOrObject, str):

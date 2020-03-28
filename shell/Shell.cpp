@@ -234,7 +234,7 @@ Id Shell::doCreate(string type, ObjId parent, string name, unsigned int numData,
     return Id();
 }
 
-ObjId Shell::create(string type, ObjId parent, string name, unsigned int numData)
+ObjId Shell::doCreate2(string type, ObjId parent, string name, unsigned int numData)
 {
     return ObjId(doCreate(type, parent, name, numData, MooseBlockBalance, 1));
 }

@@ -87,7 +87,7 @@ public:
                  unsigned int preferredNode = 1 );
 
     // Python bindings.
-    ObjId create( string type, ObjId parent, string name, unsigned int numData);
+    ObjId doCreate2( string type, ObjId parent, string name, unsigned int numData);
 
     /**
      * Delete specified Element and all its children and all

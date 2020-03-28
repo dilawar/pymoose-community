@@ -147,6 +147,11 @@ ObjId connect(const ObjId& src, const string& srcField, const ObjId& tgt,
     return pShell->doAddMsg("Single", src, srcField, tgt, tgtField);
 }
 
+inline void mooseDelete(const ObjId& oid)
+{
+    getShellPtr()->doDelete(oid);
+}
+
 
 PYBIND11_MODULE(_cmoose, m)
 {
@@ -236,7 +241,7 @@ PYBIND11_MODULE(_cmoose, m)
 
     py::class_<Shell>(m, "_Shell")
         .def(py::init<>())
-        .def("create", &Shell::create)
+        .def("create", &Shell::doCreate2)
         .def("addMsg", &Shell::doAddMsg)
         .def("setClock", &Shell::doSetClock)
         .def("reinit", &Shell::doReinit)
@@ -251,6 +256,8 @@ PYBIND11_MODULE(_cmoose, m)
           py::return_value_policy::reference);
 
     m.def("wildcardFind", &wildcardFind2);
+
+    m.def("delete", &mooseDelete);
 
     // Attributes.
     m.attr("NA") = NA;
