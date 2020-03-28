@@ -229,23 +229,14 @@ const FinfoWrapper Cinfo::findFinfoWrapper(const string& name) const
     return FinfoWrapper(findFinfo(name));
 }
 
-std::vector<pair<string, string>> Cinfo::getFinfoNameAndType() const
+void Cinfo::getFinfoWithType(std::vector<pair<string, Finfo*>>& res) const
 {
-    vector<pair<string, string>> res;
-    for (auto& f : srcFinfos_) res.push_back({"srcFinfos", f->name()});
-
-    for (auto& f : destFinfos_) res.push_back({"destFinfo", f->name()});
-
-    for (auto& f : valueFinfos_) res.push_back({"valueFinfo", f->name()});
-
-    for (auto& f : lookupFinfos_) res.push_back({"lookupFinfo",  f->name()});
-
-    for (auto& f : sharedFinfos_) res.push_back({"sharedFinfo",  f->name()});
-
-    for (auto& f : fieldElementFinfos_)
-        res.push_back({"fieldElement", f->name()});
-
-    return res;
+    for (auto f : srcFinfos_) res.push_back({"srcFinfos", f});
+    for (auto f : destFinfos_) res.push_back({"destFinfo", f});
+    for (auto f : valueFinfos_) res.push_back({"valueFinfo", f});
+    for (auto f : lookupFinfos_) res.push_back({"lookupFinfo", f});
+    for (auto f : sharedFinfos_) res.push_back({"sharedFinfo", f});
+    for (auto f : fieldElementFinfos_) res.push_back({"fieldElement", f});
 }
 
 bool Cinfo::banCreation() const

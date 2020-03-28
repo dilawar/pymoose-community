@@ -2,7 +2,7 @@
 //
 //       Filename:  helper.h
 //
-//    Description:  
+//    Description:
 //
 //        Version:  1.0
 //        Created:  03/22/2020 09:06:16 PM
@@ -22,7 +22,7 @@ using namespace std;
 
 Id initShell();
 
-ObjId createIdFromPath(string path, string type, size_t numData=1);
+ObjId createIdFromPath(string path, string type, size_t numData = 1);
 
 Shell* getShellPtr();
 
@@ -30,22 +30,32 @@ bool doesExist(const string& path);
 
 ObjId mooseElement(const string& path);
 
-ObjId loadModelInternal(const string& fname, const string& modelpath, const string& solverclass);
+ObjId loadModelInternal(const string& fname, const string& modelpath,
+                        const string& solverclass);
 
 ObjId getElementField(const ObjId objid, const string& fname);
 
-ObjId getElementFieldItem(const ObjId& objid, const string& fname, unsigned int index);
+ObjId getElementFieldItem(const ObjId& objid, const string& fname,
+                          unsigned int index);
 
 py::object getFieldGeneric(const ObjId& oid, const string& fname);
 
-ObjId connect(const ObjId& src, const string& srcField, const ObjId& tgt, const string& tgtField);
+ObjId connect(const ObjId& src, const string& srcField, const ObjId& tgt,
+              const string& tgtField);
 
 void mooseDelete(const ObjId& oid);
 
-ObjId mooseCreate(const string type, const string& path, size_t numdata=1);
+ObjId mooseCreate(const string type, const string& path, size_t numdata = 1);
 
 py::object mooseGetCwe();
 
 void mooseSetClock(const size_t clockId, double dt);
- 
+
+map<string, string> mooseGetFieldDict(const string& className,
+                                      const string& finfoType);
+
+void mooseReinit();
+void mooseStart(double runtime, bool notify);
+
+
 #endif /* end of include guard: HELPER_H */

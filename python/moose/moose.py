@@ -71,7 +71,7 @@ def wildcardFind(pattern):
     """
     paths = []
     for p in _cmoose.wildcardFind(pattern):
-        paths.append(p)
+        paths.append(__Neutral__.fromObjId(p))
     return paths
 
 def delete(a):
@@ -82,7 +82,7 @@ def element(pathOrObject):
         obj = _cmoose.element(pathOrObject)
     else:
         obj = _cmoose.element(pathOrObject.path)
-    return obj
+    return __Neutral__.fromObjId(obj)
 
 def exists(path):
     return _cmoose.exists(path)
@@ -311,8 +311,8 @@ def getFieldDoc(tokens, indent=''):
     fieldname = tokens[1]
     while True:
         try:
-            classelement = _cmoose.element('/classes/' + classname)
-            for finfo in classelement.children:
+            classelement = element('/classes/' + classname)
+            for fieldelement in classelement.children:
                 for fieldelement in finfo:
                     baseinfo = ''
                     if classname != tokens[0]:

@@ -152,7 +152,7 @@ PYBIND11_MODULE(_cmoose, m)
                                [](const ObjId oid) { return oid.id.value(); })
         .def_property_readonly("path", &ObjId::path)
         .def_property_readonly("name", &ObjId::name)
-        .def_property_readonly("name", &ObjId::name)
+        .def_property_readonly("className", [](const ObjId& oid){ return oid.element()->cinfo()->name(); })
         .def_property_readonly("id", [](ObjId& oid) { return oid.id; })
         .def_property_readonly(
              "type", [](ObjId& oid) { return oid.element()->cinfo()->name(); })
@@ -208,8 +208,8 @@ PYBIND11_MODULE(_cmoose, m)
         .def("setClock", &Shell::doSetClock)
         .def("reinit", &Shell::doReinit)
         .def("delete", &Shell::doDelete)
-        .def("start", &Shell::doStart, py::arg("runtime"),
-             py::arg("notify") = false)
+        .def("start", &Shell::doStart
+                , py::arg("runtime"), py::arg("notify") = false)
         .def("quit", &Shell::doQuit);
 
     // Module functions.
@@ -220,10 +220,14 @@ PYBIND11_MODULE(_cmoose, m)
     m.def("wildcardFind", &wildcardFind2);
     m.def("delete", &mooseDelete);
     m.def("create", &mooseCreate);
+    m.def("reinit", &mooseReinit);
+    m.def("start", &mooseStart, py::arg("runtime"), py::arg("notify") = false);
     m.def("element", &mooseElement);
     m.def("exists", &doesExist);
     m.def("getCwe", &mooseGetCwe);
     m.def("setClock", &mooseSetClock);
+    m.def("loadModelInternal", &loadModelInternal);
+    m.def("getFieldDict", &mooseGetFieldDict, py::arg("className"), py::arg("finfoType")="");
 
     // Attributes.
     m.attr("NA") = NA;

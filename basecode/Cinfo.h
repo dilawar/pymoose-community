@@ -20,8 +20,7 @@ public:
     /**
      * The Cinfo intializer is used for static initialization
      * of all the MOOSE Cinfos. Each MOOSE class must set up
-     * a function to build its Cinfo. This function must be
-     * called statically in the MOOSE class .cpp file.
+     * a function to build its Cinfo. This function must be * called statically in the MOOSE class .cpp file.
      * Note how it takes the base *Cinfo as an argument. This
      * lets us call the base Cinfo initializer when making
      * each Cinfo class, thus ensuring the correct static
@@ -143,8 +142,8 @@ public:
      */
     const map<string, Finfo*>& finfoMap() const;
 
-    // Used in python bindings. Also return type of finfo.
-    std::vector<std::pair<string,string>> getFinfoNameAndType() const;
+    // Used in python bindings.
+    void getFinfoWithType(std::vector<pair<string, Finfo*>>& res) const;
 
     /**
      * Returns the Dinfo, which manages creation and destruction
@@ -321,12 +320,8 @@ private:
     // Useful to know in case we have transient OpFuncs made and
     // destroyed.
     static unsigned int numCoreOpFunc_;
-    //			map< string, FuncId > opFuncNames_;
 
     static map<string, Cinfo*>& cinfoMap();
-
-    // Many opfuncs share same FuncId
-    // static map< OpFunc*, FuncId >& funcMap();
 };
 
 #endif  // _CINFO_H

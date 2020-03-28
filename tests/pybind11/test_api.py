@@ -16,13 +16,18 @@ def test_children():
     moose.le(a1)
     moose.le(a2)
     moose.le(a3)
-
     s = moose.getCwe()
     print(type(s), s)
 
+def test_other():
+    a1 = moose.Pool('/ada')
+    print('classname', a1.className)
+    finfo = moose.getFieldDict(a1.className)
+    print(finfo)
+
 def main():
     test_children()
+    test_other()
 
 if __name__ == '__main__':
     main()
-

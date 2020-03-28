@@ -29,7 +29,6 @@
 #include "../basecode/global.h"
 #include "../basecode/Cinfo.h"
 
-
 #include "../shell/Shell.h"
 #include "../shell/Wildcard.h"
 #include "../shell/Neutral.h"
@@ -165,7 +164,7 @@ ObjId mooseElement(const string& path)
 }
 
 ObjId loadModelInternal(const string& fname, const string& modelpath,
-                     const string& solverclass = "")
+                        const string& solverclass = "")
 {
     Id model;
     if (solverclass.empty()) {
@@ -186,7 +185,8 @@ ObjId getElementField(const ObjId objid, const string& fname)
     return ObjId(objid.path() + '/' + fname);
 }
 
-ObjId getElementFieldItem(const ObjId& objid, const string& fname, unsigned int index)
+ObjId getElementFieldItem(const ObjId& objid, const string& fname,
+                          unsigned int index)
 {
     ObjId oid = getElementField(objid, fname);
 
@@ -213,8 +213,8 @@ ObjId getElementFieldItem(const ObjId& objid, const string& fname, unsigned int 
     return ObjId(oid.id, oid.dataIndex, index);
 }
 
-
-ObjId connect(const ObjId& src, const string& srcField, const ObjId& tgt, const string& tgtField)
+ObjId connect(const ObjId& src, const string& srcField, const ObjId& tgt,
+              const string& tgtField)
 {
     auto pShell = getShellPtr();
     return pShell->doAddMsg("Single", src, srcField, tgt, tgtField);
@@ -248,3 +248,67 @@ py::object mooseGetCwe()
     return py::cast(getShellPtr()->getCwe());
 }
 
+map<string, string> mooseGetFieldDict(const string& className,
+                                      const string& finfoType = "")
+{
+    const Cinfo* cinfo = Cinfo::find(className);
+    if (! cinfo) {
+        cout << "Warning: Invalid class " << className << endl;
+        return {};
+    }
+
+    map<string, string> fieldDict;
+    if(finfoType == "")
+    {
+        auto finfos = cinfo->finfoMap();
+        for (auto& v : finfos)
+            fieldDict[v.first] = v.second->rttiType();
+        return fieldDict;
+    }
+
+    // Now the specific one.
+    // FIXME: Fix the typeids  or remove the 'get' and 'set'
+    if (finfoType == "valueFinfo" || finfoType == "value") {
+        for (unsigned int ii = 0; ii < cinfo->getNumValueFinfo(); ++ii) {
+            auto *finfo = cinfo->getValueFinfo(ii);
+            fieldDict[finfo->name()] = finfo->rttiType();
+        }
+    } else if (finfoType == "srcFinfo" || finfoType == "src") {
+        for (unsigned int ii = 0; ii < cinfo->getNumSrcFinfo(); ++ii) {
+            auto *finfo = cinfo->getSrcFinfo(ii);
+            fieldDict[finfo->name()] = finfo->rttiType();
+        }
+    } else if (finfoType == "destFinfo" || finfoType == "dest") {
+        for (unsigned int ii = 0; ii < cinfo->getNumDestFinfo(); ++ii) {
+            auto *finfo = cinfo->getDestFinfo(ii);
+            fieldDict[finfo->name()] = finfo->rttiType();
+        }
+    } else if (finfoType == "lookupFinfo" || finfoType == "lookup") {
+        for (unsigned int ii = 0; ii < cinfo->getNumLookupFinfo(); ++ii) {
+            auto *finfo = cinfo->getLookupFinfo(ii);
+            fieldDict[finfo->name()] = finfo->rttiType();
+        }
+    } else if (finfoType == "sharedFinfo" || finfoType == "shared") {
+        for (unsigned int ii = 0; ii < cinfo->getNumSrcFinfo(); ++ii) {
+            auto *finfo = cinfo->getSrcFinfo(ii);
+            fieldDict[finfo->name()] = finfo->rttiType();
+        }
+    } else if (finfoType == "fieldElementFinfo" || finfoType == "field" ||
+               finfoType == "fieldElement") {
+        for (unsigned int ii = 0; ii < cinfo->getNumFieldElementFinfo(); ++ii) {
+            auto *finfo = cinfo->getFieldElementFinfo(ii);
+            fieldDict[finfo->name()] = finfo->rttiType();
+        }
+    }
+    return fieldDict;
+}
+
+void mooseReinit()
+{
+    getShellPtr()->doReinit();
+}
+
+void mooseStart(double runtime, bool notify=false)
+{
+    getShellPtr()->doStart(runtime, notify);
+}
