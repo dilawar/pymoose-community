@@ -75,6 +75,7 @@ py::object getFieldGeneric(const ObjId& oid, const string& fname)
 {
     auto cinfo = oid.element()->cinfo();
     auto finfo = cinfo->findFinfo(fname);
+
     if (!finfo) {
         py::print("Field " + fname + " is not found on " + oid.path());
         return pybind11::none();
@@ -167,9 +168,6 @@ PYBIND11_MODULE(_cmoose, m)
         .def("setField", &setProp<bool>)
 
         // Overload for Field::get
-        // NOTE: Get it tricky to get right.
-        // See discussion here: https://github.com/pybind/pybind11/issues/1667
-        // Required c++14 compiler.
         .def("getField", &getFieldGeneric)
         .def("getElementField", &getElementField)
         .def("getElementFieldItem", &getElementFieldItem)

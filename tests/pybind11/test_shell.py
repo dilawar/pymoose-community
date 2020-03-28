@@ -17,7 +17,6 @@ def makereac0():
 
     # Silly that it has to have this name.
     pools[6] = tot1 = s.create("BufPool", kin, "tot1", 1);
-
     sum = s.create("Function", tot1, "func", 1);
     sumInput = M._Id(sum.value + 1);
     e1Pool = s.create("Pool", kin, "e1Pool", 1);
@@ -330,10 +329,18 @@ def test_ksolve2():
     kin = makereac2()
     run_and_assert(kin, "ksolve1_test2.png")
 
+def test_ksolve3():
+    a = moose.Neutral('x')
+    a = moose.Neutral('x/x')
+    isA = a.getElementField('isA')
+    print(a, isA)
+    print(a.isA)
+
 def main():
     test_ksolve0()
     test_ksolve1()
     test_ksolve2()
+    test_ksolve3()
 
 if __name__ == '__main__':
     main()

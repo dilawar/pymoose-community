@@ -25,14 +25,14 @@ class __Neutral__(_cmoose._ObjId):
 
     __metaclass__ = None
 
-    def __init__(self, path, ndata=1, obj=None):
-        if obj is None:
-            obj = _cmoose.create(self.__metaclass__, path, ndata) 
+    def __init__(self, x, ndata=1):
+        if isinstance(x, str):
+            obj = _cmoose.create(self.__metaclass__, x, ndata) 
+        elif isinstance(x, _cmoose._ObjId):
+            obj = x
+        else:
+            raise RuntimeError("%s is not supported" % x)
         super(__Neutral__, self).__init__(obj.id)
-
-    @classmethod
-    def fromObjId(cls, obj):
-        return cls(path=obj.path, obj=obj)
 
     def __setattr__(self, attr, val):
         self.setField(attr, val)
@@ -71,7 +71,7 @@ def wildcardFind(pattern):
     """
     paths = []
     for p in _cmoose.wildcardFind(pattern):
-        paths.append(__Neutral__.fromObjId(p))
+        paths.append(__Neutral__(p))
     return paths
 
 def delete(a):
@@ -82,14 +82,14 @@ def element(pathOrObject):
         obj = _cmoose.element(pathOrObject)
     else:
         obj = _cmoose.element(pathOrObject.path)
-    return __Neutral__.fromObjId(obj)
+    return __Neutral__(obj)
 
 def exists(path):
     return _cmoose.exists(path)
 
 
 def getCwe():
-    return __Neutral__.fromObjId(_cmoose.getCwe())
+    return __Neutral__(_cmoose.getCwe())
 
 def pwe():
     """Print present working element. Convenience function for GENESIS
