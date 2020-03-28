@@ -37,6 +37,12 @@ class __Neutral__(_cmoose._ObjId):
     def __repr__(self):
         return self.__repr__()
 
+    def __setattr__(self, attr, val):
+        self.setField(attr, val)
+
+    def __getattr__(self, attr):
+        return super(__Neutral__, self).getField(attr)
+
 
 for p in _cmoose.wildcardFind('/##[TYPE=Cinfo]'):
     # create a class.
@@ -75,8 +81,6 @@ def wildcardFind(pattern):
     return paths
 
 def delete(a):
-    if hasattr(a, 'cobj'):
-        return moose._cmoose.delete(a.cobj)
     return moose._cmoose.delete(a)
 
 def element(pathOrObject):
