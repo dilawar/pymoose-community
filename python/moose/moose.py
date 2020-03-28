@@ -25,17 +25,16 @@ def __parent(path):
 
 t0 = time.time()
 
-class __Neutral__():
+class __Neutral__(object):
 
     __metaclass__ = None
-    cobj = None
+    __cobj__ = None
 
     def __init__(self, path, ndata=1):
         self.path = path
-        self.ndata = ndata
-        self.parentID = _cmoose._ObjId(self.parent(path))
-        self.cobj = __SHELL__.create(self.__metaclass__
-                , self.parentID, self.name(self.path), ndata)
+        self.cobj = _cmoose.create(self.__metaclass__, path, ndata)
+        #  super(__Neutral__, self).__setattr__("cobj", cobj)
+        #  super(__Neutral__, self).__setattr__("path", path)
 
     def __repr__(self):
         return self.cobj.__repr__()
@@ -44,15 +43,6 @@ class __Neutral__():
         if hasattr(dest, 'cobj'):
             dest = dest.cobj
         return self.cobj.connect(srcField, dest, destField)
-
-    def parent(self, path):
-        p = '/'.join(path.split('/')[:-1])
-        if not p:
-            p = '/'
-        return p
-
-    def name(self, path):
-        return path.split('/')[-1]
 
 
 for p in _cmoose.wildcardFind('/##[TYPE=Cinfo]'):

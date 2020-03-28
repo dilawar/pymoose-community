@@ -210,7 +210,8 @@ def makereac2():
     pools[6] = tot1 = moose.BufPool(kin.path+"/tot1")
 
     sum = moose.Function(tot1.path + "/func")
-    sum.cobj.setField("expr", "x0+x1")
+    #sum.expr = "x0+x1"
+     sum.cobj.setField("expr", "x0+x1")
 
     e1Pool = moose.Pool(kin.path + "/e1Pool")
     e2Pool = moose.Pool(kin.path + "/e2Pool")

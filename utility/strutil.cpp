@@ -204,4 +204,25 @@ bool isPrefix(const string& a, const string& b)
     return (b.find(a, 0) == 0);
 }
 
+/* --------------------------------------------------------------------------*/
+/**
+ * @Synopsis  Split a given path into (parent, name). The behaviour of this
+ * function is akin to unix'; dirname and basepath.
+ *
+ * @Param path
+ *
+ * @Returns A pair of strings <parent, name>
+ */
+/* ----------------------------------------------------------------------------*/
+std::pair<std::string, std::string> splitPath(const std::string& path)
+{
+    string p(path);
+    if(p[0] != '/')
+        p = '/'+path;
+
+    auto i = p.find_last_of('/');
+    auto parentPath = i>0?p.substr(0, i):"/";
+    return std::make_pair(parentPath, p.substr(i+1));
+}
+
 }

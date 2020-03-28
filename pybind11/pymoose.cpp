@@ -37,6 +37,8 @@
 #include "../shell/Neutral.h"
 #include "../builtins/Variable.h"
 
+#include "../utility/strutil.h"
+
 #include "helper.h"
 #include "pymoose.h"
 
@@ -152,6 +154,12 @@ inline void mooseDelete(const ObjId& oid)
     getShellPtr()->doDelete(oid);
 }
 
+inline ObjId mooseCreate(const string type, const string& path, size_t numdata=1)
+{
+    auto p = moose::splitPath(path);
+    return getShellPtr()->doCreate2(type, ObjId(p.first), p.second, numdata);
+}
+
 inline void mooseSetClock(const size_t clockId, double dt)
 {
     getShellPtr()->doSetClock(clockId, dt);
@@ -261,6 +269,7 @@ PYBIND11_MODULE(_cmoose, m)
 
     m.def("wildcardFind", &wildcardFind2);
     m.def("delete", &mooseDelete);
+    m.def("create", &mooseCreate);
     m.def("setClock", &mooseSetClock);
 
     // Attributes.
