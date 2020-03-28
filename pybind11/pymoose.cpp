@@ -138,7 +138,12 @@ py::object getFieldGeneric(const ObjId& oid, const string& fname)
         return py::cast(getProp<ObjId>(oid, fname));
     else if (ftype == "Variable")
         return py::cast(getProp<Variable>(oid, fname));
-    py::print("pymoose::getFieldGeneric::Warning: Unsupported type " + ftype);
+    else if (ftype == "vector<Id>")
+        return py::cast(getProp<vector<Id>>(oid, fname));
+    else if (ftype == "vector<ObjId>")
+        return py::cast(getProp<vector<ObjId>>(oid, fname));
+
+    py::print("Warning: pymoose::getFieldGeneric::Warning: Unsupported type " + ftype);
     return pybind11::none();
 }
 
@@ -255,6 +260,7 @@ PYBIND11_MODULE(_cmoose, m)
         .def(py::init<>())
         .def("create", &Shell::doCreate2)
         .def("addMsg", &Shell::doAddMsg)
+        .def("getCwe", &Shell::getCwe)
         .def("setClock", &Shell::doSetClock)
         .def("reinit", &Shell::doReinit)
         .def("delete", &Shell::doDelete)
@@ -277,6 +283,5 @@ PYBIND11_MODULE(_cmoose, m)
     m.attr("PI") = PI;
     m.attr("FaradayConst") = FaradayConst;
     m.attr("GasConst") = GasConst;
-
     m.attr("__version__") = MOOSE_VERSION;
 }

@@ -7,10 +7,10 @@ from moose._cmoose import *
 # some C++ here.
 from moose.moose import *
 
-#  from moose.server import *
+from moose.server import *
 
 # SBML and NML2 support.
-#  from moose.model_utils import *
+from moose.model_utils import *
 
 # Import moose test.
-#  from moose.moose_test import test
+from moose.moose_test import test

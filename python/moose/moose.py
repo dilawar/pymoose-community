@@ -16,10 +16,6 @@ import moose._cmoose as _cmoose
 import logging
 logger_ = logging.getLogger('moose')
 
-# String to python classes.
-__classmap__ = {} 
-__SHELL__ = _cmoose.getShell()
-
 def __parent(path):
     return path.split('/')[-1]
 
@@ -33,9 +29,6 @@ class __Neutral__(_cmoose._ObjId):
         obj = _cmoose.create(self.__metaclass__, path, ndata)
         super(__Neutral__, self).__init__(obj.id)
 
-    def __repr__(self):
-        return self.__repr__()
-
     def __setattr__(self, attr, val):
         self.setField(attr, val)
 
@@ -45,8 +38,6 @@ class __Neutral__(_cmoose._ObjId):
 for p in _cmoose.wildcardFind('/##[TYPE=Cinfo]'):
     # create a class.
     cls = type(p.name, (__Neutral__,), dict(__metaclass__=p.name, objid=p.id))
-    # Add this class to module and save them in a map for easy reuse later.
-    __classmap__[p.name] = cls
     setattr(moose, cls.__name__, cls)
 
 logger_.info("Declarting classes took %f sec" % (time.time() - t0))
@@ -74,7 +65,7 @@ def wildcardFind(pattern):
         pattern
     """
     paths = []
-    for p in _cmoose._wildcardFind(pattern):
+    for p in _cmoose.wildcardFind(pattern):
         paths.append(p)
     return paths
 
@@ -86,10 +77,10 @@ def element(pathOrObject):
         obj = _cmoose.element(pathOrObject)
     else:
         obj = _cmoose.element(pathOrObject.path)
-    return __toMooseObject(obj)
+    return obj
 
 def getCwe():
-    return __toMooseObject(_cmoose.getCwe())
+    return _cmoose.getShell().getCwe()
 
 def exists(path):
     return _cmoose.exists(path)
@@ -447,5 +438,3 @@ def doc(arg, inherited=True, paged=True):
         __pager(text)
     else:
         print(text)
-
-
