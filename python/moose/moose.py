@@ -25,24 +25,17 @@ def __parent(path):
 
 t0 = time.time()
 
-class __Neutral__(object):
+class __Neutral__(_cmoose._ObjId):
 
     __metaclass__ = None
-    __cobj__ = None
 
     def __init__(self, path, ndata=1):
-        self.path = path
-        self.cobj = _cmoose.create(self.__metaclass__, path, ndata)
-        #  super(__Neutral__, self).__setattr__("cobj", cobj)
-        #  super(__Neutral__, self).__setattr__("path", path)
+        obj = _cmoose.create(self.__metaclass__, path, ndata)
+        super(__Neutral__, self).__init__(obj.id)
+        # In python3, I could just say super().__init__(obj.id) which is bit nicer
 
     def __repr__(self):
-        return self.cobj.__repr__()
-
-    def connect(self, srcField, dest, destField):
-        if hasattr(dest, 'cobj'):
-            dest = dest.cobj
-        return self.cobj.connect(srcField, dest, destField)
+        return self.__repr__()
 
 
 for p in _cmoose.wildcardFind('/##[TYPE=Cinfo]'):
