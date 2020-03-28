@@ -115,7 +115,7 @@ ObjId createIdFromPath(string path, string type, size_t numData)
     return nId;
 }
 
-inline Shell* const getShellPtr(void)
+Shell* getShellPtr(void)
 {
     return reinterpret_cast<Shell*>(Id().eref().data());
 }

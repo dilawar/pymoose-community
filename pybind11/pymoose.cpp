@@ -152,6 +152,10 @@ inline void mooseDelete(const ObjId& oid)
     getShellPtr()->doDelete(oid);
 }
 
+inline void mooseSetClock(const size_t clockId, double dt)
+{
+    getShellPtr()->doSetClock(clockId, dt);
+}
 
 PYBIND11_MODULE(_cmoose, m)
 {
@@ -256,8 +260,8 @@ PYBIND11_MODULE(_cmoose, m)
           py::return_value_policy::reference);
 
     m.def("wildcardFind", &wildcardFind2);
-
     m.def("delete", &mooseDelete);
+    m.def("setClock", &mooseSetClock);
 
     // Attributes.
     m.attr("NA") = NA;

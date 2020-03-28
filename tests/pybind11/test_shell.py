@@ -197,9 +197,8 @@ def makereac1():
 
 def makereac2():
     pools = [None]*10
-    s = M.getShell()
     kin = moose.CubeMesh("kinetics", 1)
-    t = moose.StimulusTable("/kinetics/StimulusTable")
+    t = moose.StimulusTable("kinetics/StimulusTable")
     pools[0] = T = moose.BufPool(kin.path+"/T")
     pools[1] = A = moose.Pool(kin.path+"/A")
     pools[2] = B = moose.Pool(kin.path + "/B")
@@ -284,8 +283,8 @@ def makereac2():
 
     #  Schedule it.
     for i in range(11, 18):
-        s.setClock(i, 0.1);
-    s.setClock(18, 0.1);
+        moose.setClock(i, 0.1);
+    moose.setClock(18, 0.1);
     return kin
 
 def run_and_assert(kin, outfile):
@@ -312,8 +311,9 @@ def run_and_assert(kin, outfile):
     assert np.allclose(expected, np.array(got)), "Expected %s but got %s" % ( 
             expected, got)
     # get data.
-    s.delete(kin.cobj)
+    moose.delete(kin)
     plt.savefig(outfile)
+    plt.close()
     print("Done ksolve: Saved to %s" % outfile)
 
 def test_ksolve0():
@@ -325,13 +325,13 @@ def test_ksolve1():
     run_and_assert(kin, "ksolve1_test1.png")
 
 def test_ksolve2():
+    print("[INFO ] test 3")
     kin = makereac2()
-    run_and_assert(kin, "ksolve1_test1.png")
-
+    run_and_assert(kin, "ksolve1_test2.png")
 
 def main():
-    #test_ksolve0()
-    #test_ksolve1()
+    test_ksolve0()
+    test_ksolve1()
     test_ksolve2()
 
 if __name__ == '__main__':

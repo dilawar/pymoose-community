@@ -23,7 +23,7 @@ Id initShell();
 
 ObjId createIdFromPath(string path, string type, size_t numData=1);
 
-Shell* const getShellPtr();
+Shell* getShellPtr();
 
 bool doesExist(const string& path);
 

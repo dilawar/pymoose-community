@@ -40,10 +40,6 @@ class __Neutral__():
     def __repr__(self):
         return self.cobj.__repr__()
 
-    def __del__(self):
-        __SHELL__.delete(self.cobj)
-        del self
-
     def connect(self, srcField, dest, destField):
         if hasattr(dest, 'cobj'):
             dest = dest.cobj
@@ -67,7 +63,6 @@ for p in _cmoose.wildcardFind('/##[TYPE=Cinfo]'):
     setattr(moose, cls.__name__, cls)
 
 logger_.info("Declarting classes took %f sec" % (time.time() - t0))
-
 
 #############################################################################
 #                             API                                           #
@@ -93,12 +88,13 @@ def wildcardFind(pattern):
     """
     paths = []
     for p in _cmoose._wildcardFind(pattern):
-        paths.append(__toMooseObject(p))
+        paths.append(p)
     return paths
 
 def delete(a):
-    moose._cmoose.delete(a.cobj)
-    del a
+    if hasattr(a, 'cobj'):
+        return moose._cmoose.delete(a.cobj)
+    return moose._cmoose.delete(a)
 
 def element(pathOrObject):
     if isinstance(pathOrObject, str):
