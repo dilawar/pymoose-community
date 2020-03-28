@@ -246,37 +246,37 @@ def makereac2():
     e2.connect("prd", E, "reac")
 
     # Set parameters.
-    A.setField("concInit", 2);
-    assert A.getField("concInit") == 2, A.getField("concInit")
+    A.concInit = 2
+    assert A.concInit == 2, A.concIinit
 
-    e1Pool.setField("concInit", 1);
-    assert e1Pool.getField("concInit") == 1.0
+    e1Pool.concInit = 1
+    assert e1Pool.concInit == 1.0, e1Pool.concInit
 
-    e2Pool.setField("concInit", 1);
-    r1.setField("Kf", 0.2);
-    assert r1.getField("Kf") == 0.2
-    r1.setField("Kb", 0.1);
-    r2.setField("Kf", 0.1);
-    r2.setField("Kb", 0.0);
-    e1.setField("Km", 5);
-    assert e1.getField("Km") ==  5
-    e1.setField("kcat", 1);
-    e1.setField("ratio", 4);
-    e2.setField("Km", 5);
-    e2.setField("kcat", 1);
+    e2Pool.concInit = 1
+    r1.Kf = 0.2
+    assert r1.Kf == 0.2
+    r1.Kb = 0.1
+    r2.Kf = 0.1
+    r2.Kb = 0.0
+    e1.Km = 5
+    assert e1.Km ==  5
+    e1.kcat = 1
+    e1.ratio = 4
+    e2.Km = 5
+    e2.kcat = 1
 
-    vol = kin.getField("volume");
+    vol = kin.volume
     assert np.isclose(vol, 1e-15), vol
 
     stim = []
     for i in range(100):
         stim.append(vol * M.NA * (1.0 + math.sin(i * 2.0 * M.PI / 100.0)))
 
-    t.setField("vector", stim);
-    t.setField("stepSize", 0.0);
-    t.setField("stopTime", 10.0);
-    t.setField("loopTime", 10.0);
-    t.setField("doLoop", True);
+    t.vector = stim
+    t.stepSize = 0.0
+    t.stopTime = 10.0
+    t.loopTime = 10.0
+    t.doLoop = True
 
     #  Connect outputs
     for i in range(7):

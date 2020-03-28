@@ -32,7 +32,6 @@ class __Neutral__(_cmoose._ObjId):
     def __init__(self, path, ndata=1):
         obj = _cmoose.create(self.__metaclass__, path, ndata)
         super(__Neutral__, self).__init__(obj.id)
-        # In python3, I could just say super().__init__(obj.id) which is bit nicer
 
     def __repr__(self):
         return self.__repr__()
@@ -42,7 +41,6 @@ class __Neutral__(_cmoose._ObjId):
 
     def __getattr__(self, attr):
         return super(__Neutral__, self).getField(attr)
-
 
 for p in _cmoose.wildcardFind('/##[TYPE=Cinfo]'):
     # create a class.
