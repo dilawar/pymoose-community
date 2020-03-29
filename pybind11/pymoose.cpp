@@ -106,30 +106,17 @@ py::object getPropertyValueFinfo(const ObjId& oid, const string& fname, const st
     return py::none();
 }
 
-py::list getPropertyElementFinfo(const ObjId& objid, const string& fname)
+py::object getElementFinfo(const ObjId& objid, const string& fname, const size_t i)
 {
     auto oid =  ObjId(objid.path() + '/' + fname);
     auto len = Field<unsigned int>::get(oid, "numField");
     assert(len >= 0);
-    vector<ObjId> res(len);
-    for (size_t i = 0; i < len; i++) 
-        res[i] = ObjId(oid.path(), oid.dataIndex, i);
-    return py::cast(res);
+    return py::cast(ObjId(oid.path(), oid.dataIndex, i));
 }
 
-template<typename A, typename L>
 py::object getLookValueFinfo(const ObjId& oid, const string& fname, const string& key)
 {
-    return py::cast(LookupField<A, L>::get(oid, fname, key));
-}
-
-py::dict getPropertyLookValueFinfo(const ObjId& oid, const string& fname)
-{
-    py::dict res;
-    auto v = [oid, fname](const string& key){
-        return LookupField<string, bool>::get(oid, fname, key);
-    };
-    return res;
+    return py::cast(LookupField<string, bool>::get(oid, fname, key));
 }
 
 py::object getProperty(const ObjId& oid, const string& fname)
@@ -147,10 +134,18 @@ py::object getProperty(const ObjId& oid, const string& fname)
 
     if(finfoType == "ValueFinfo") 
         return getPropertyValueFinfo(oid, fname, rttType);
-    else if(finfoType == "FieldElementFinfo")
-        return getPropertyElementFinfo(oid, fname);
-    else if(finfoType == "LookupValueFinfo")
-        return getPropertyLookValueFinfo(oid, fname);
+    else if(finfoType == "FieldElementFinfo") {
+        std::function<py::object(size_t)> f = [oid, fname](const size_t& i) {
+            return getElementFinfo(oid, fname, i);
+        };
+        return py::cast(f);
+    }
+    else if(finfoType == "LookupValueFinfo") {
+        std::function<py::object(const string&)> f = [oid, fname](const string& k) {
+            return getLookValueFinfo(oid, fname, k);
+        };
+        return py::cast(f);
+    }
 
     cout << "Searching for " << fname << " with rttType "
         << rttType << " and type: " << finfoType << endl;

@@ -40,6 +40,7 @@ class __Neutral__(_cmoose._ObjId):
     def __getattr__(self, attr):
         return super(__Neutral__, self).getField(attr)
 
+
 for p in _cmoose.wildcardFind('/##[TYPE=Cinfo]'):
     # create a class.
     cls = type(p.name, (__Neutral__,), dict(__metaclass__=p.name, objid=p.id))

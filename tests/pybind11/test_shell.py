@@ -248,7 +248,7 @@ def makereac2():
 
     # Set parameters.
     A.concInit = 2
-    assert A.concInit == 2, A.concIinit
+    assert A.concInit == 2, A.concInit
 
     e1Pool.concInit = 1
     assert e1Pool.concInit == 1.0, e1Pool.concInit
