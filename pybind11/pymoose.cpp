@@ -117,19 +117,33 @@ py::list getPropertyElementFinfo(const ObjId& objid, const string& fname)
     return py::cast(res);
 }
 
-template<typename A, typename L>
-py::object getLookValueFinfo(const ObjId& oid, const string& fname, const string& key)
+py::object getLookValueFinfo(const ObjId& oid, const string& fname, const string& rttType, const string& key)
 {
-    return py::cast(LookupField<A, L>::get(oid, fname, key));
+    cout << "\t" << fname << " " << rttType << endl;
+
+    vector<string> twoTypes;
+    moose::tokenize(rttType, ",", twoTypes);
+
+    using L = string;
+    if(twoTypes[0] == "string")
+        using L = string;
+    else
+        cerr << "Warning: NotImplented" << twoTypes[0];
+
+    using A = bool;
+
+    if(twoTypes[1] == "bool")
+        using A = bool;
+    else
+        cerr << "Warning: NotImplented" << twoTypes[1] << endl;
+
+    auto v = LookupField<L, A>::get(oid, fname, key);
+    return py::cast(v);
 }
 
-py::dict getPropertyLookValueFinfo(const ObjId& oid, const string& fname)
+py::object getPropertyLookValueFinfo(const ObjId& oid, const string& fname)
 {
-    py::dict res;
-    auto v = [oid, fname](const string& key){
-        return LookupField<string, bool>::get(oid, fname, key);
-    };
-    return res;
+    return py::cast(ObjId(oid.path()));
 }
 
 py::object getProperty(const ObjId& oid, const string& fname)
@@ -149,12 +163,15 @@ py::object getProperty(const ObjId& oid, const string& fname)
         return getPropertyValueFinfo(oid, fname, rttType);
     else if(finfoType == "FieldElementFinfo")
         return getPropertyElementFinfo(oid, fname);
-    else if(finfoType == "LookupValueFinfo")
-        return getPropertyLookValueFinfo(oid, fname);
+    else if(finfoType == "LookupValueFinfo") {
+        std::function<py::object(string)> f = [oid, fname, rttType](string k){ 
+            return getLookValueFinfo(oid, fname, rttType, k); 
+        };
+        return py::cast(f);
+    }
 
     cout << "Searching for " << fname << " with rttType "
         << rttType << " and type: " << finfoType << endl;
-
 
     py::print("Warning: pymoose::getProperty::Warning: Unsupported type " + rttType);
     return pybind11::none();
@@ -193,6 +210,13 @@ PYBIND11_MODULE(_cmoose, m)
         .def(py::init<Id, unsigned int>())
         .def(py::init<Id, unsigned int, unsigned int>())
         .def(py::init<const string&>())
+
+        //--------------------------------------------------------------------
+        // Override.
+        //--------------------------------------------------------------------
+        .def("__getitem__", [](const ObjId& oid, const string& keyAndType) {
+                cout << "Accessing " << keyAndType << " for " << oid.path() << endl;
+                })
         //---------------------------------------------------------------------
         //  Readonly properties.
         //---------------------------------------------------------------------
@@ -204,6 +228,10 @@ PYBIND11_MODULE(_cmoose, m)
         .def_property_readonly("id", [](ObjId& oid) { return oid.id; })
         .def_property_readonly(
              "type", [](ObjId& oid) { return oid.element()->cinfo()->name(); })
+        // 
+        .def("isA", [](ObjId& oid, const string& child) { 
+                return oid.element()->cinfo()->isA(child); 
+                })
         //--------------------------------------------------------------------
         // Set/Get
         //--------------------------------------------------------------------
@@ -244,8 +272,10 @@ PYBIND11_MODULE(_cmoose, m)
         .def_property_readonly("finfoMap", &Cinfo::finfoMap,
                                py::return_value_policy::reference)
         .def("findFinfo", &Cinfo::findFinfoWrapper)
-        .def("baseCinfo", &Cinfo::baseCinfo,
-             py::return_value_policy::reference);
+        .def("baseCinfo", &Cinfo::baseCinfo, py::return_value_policy::reference)
+        .def("isA", &Cinfo::isA)
+        ;
+    
 
     py::class_<Shell>(m, "_Shell")
         .def(py::init<>())

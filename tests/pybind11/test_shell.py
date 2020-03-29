@@ -334,8 +334,10 @@ def test_ksolve2():
 def test_ksolve3():
     a = moose.Neutral('x')
     a = moose.Neutral('x/x')
+    print(a.isA('Compartment'))
     print(a.isA)
-    print(a.isA['Compartment'])
+    print(a.isA[ 'Compartment' ])
+    print(a.isA)
 
 def main():
     test_ksolve0()
