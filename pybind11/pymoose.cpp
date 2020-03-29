@@ -72,38 +72,43 @@ py::array_t<T> getFieldNumpy(const ObjId& id, const string& fname)
     return py::array_t<T>(v.size(), v.data());
 }
 
-py::object getPropertyValueFinfo(const ObjId& oid, const string& fname, const string& rttType)
+py::object getValueFinfo(const ObjId& oid, const string& fname, const string& rttType)
 {
+    py::object r = py::none();
     if (rttType == "double")
-        return pybind11::float_(getProp<double>(oid, fname));
+        r = pybind11::float_(getProp<double>(oid, fname));
     else if (rttType == "float")
-        return pybind11::float_(getProp<double>(oid, fname));
+        r = pybind11::float_(getProp<double>(oid, fname));
     else if (rttType == "vector<double>")
-        return py::cast(getProp<vector<double>>(oid, fname));
+        r = py::cast(getProp<vector<double>>(oid, fname));
     else if (rttType == "string")
-        return pybind11::str(getProp<string>(oid, fname));
+        r = pybind11::str(getProp<string>(oid, fname));
     else if (rttType == "char")
-        return pybind11::str(getProp<string>(oid, fname));
+        r = pybind11::str(getProp<string>(oid, fname));
     else if (rttType == "int")
-        return pybind11::int_(getProp<int>(oid, fname));
+        r = pybind11::int_(getProp<int>(oid, fname));
     else if (rttType == "unsigned long")
-        return pybind11::int_(getProp<unsigned long>(oid, fname));
+        r = pybind11::int_(getProp<unsigned long>(oid, fname));
     else if (rttType == "unsigned int")
-        return pybind11::int_(getProp<unsigned int>(oid, fname));
+        r = pybind11::int_(getProp<unsigned int>(oid, fname));
     else if (rttType == "bool")
-        return pybind11::bool_(getProp<bool>(oid, fname));
+        r = pybind11::bool_(getProp<bool>(oid, fname));
     else if (rttType == "Id")
-        return py::cast(getProp<Id>(oid, fname));
+        r = py::cast(getProp<Id>(oid, fname));
     else if (rttType == "ObjId")
-        return py::cast(getProp<ObjId>(oid, fname));
+        r = py::cast(getProp<ObjId>(oid, fname));
     else if (rttType == "Variable")
-        return py::cast(getProp<Variable>(oid, fname));
+        r = py::cast(getProp<Variable>(oid, fname));
     else if (rttType == "vector<Id>")
-        return py::cast(getProp<vector<Id>>(oid, fname));
+        r = py::cast(getProp<vector<Id>>(oid, fname));
     else if (rttType == "vector<ObjId>")
-        return py::cast(getProp<vector<ObjId>>(oid, fname));
-    py::print("Warning: pymoose::getProperty::Warning: Unsupported type " + rttType);
-    return py::none();
+        r = py::cast(getProp<vector<ObjId>>(oid, fname));
+    else
+    {
+        py::print("Warning: pymoose::getProperty::Warning: Unsupported type " + rttType);
+        r = py::none();
+    }
+    return r;
 }
 
 py::object getElementFinfo(const ObjId& objid, const string& fname, const size_t i)
@@ -133,7 +138,7 @@ py::object getProperty(const ObjId& oid, const string& fname)
     string finfoType = cinfo->getFinfoType(finfo);
 
     if(finfoType == "ValueFinfo") 
-        return getPropertyValueFinfo(oid, fname, rttType);
+        return getValueFinfo(oid, fname, rttType);
     else if(finfoType == "FieldElementFinfo") {
         std::function<py::object(size_t)> f = [oid, fname](const size_t& i) {
             return getElementFinfo(oid, fname, i);
@@ -188,6 +193,7 @@ PYBIND11_MODULE(_cmoose, m)
         .def(py::init<Id, unsigned int>())
         .def(py::init<Id, unsigned int, unsigned int>())
         .def(py::init<const string&>())
+
         //---------------------------------------------------------------------
         //  Readonly properties.
         //---------------------------------------------------------------------
