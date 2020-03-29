@@ -14,42 +14,36 @@
 //
 // =====================================================================================
 
-#include <vector>
-#include <utility>
-#include <typeinfo>
-#include <typeindex>
 #include <map>
+#include <typeindex>
+#include <typeinfo>
+#include <utility>
+#include <vector>
 
+#include "../external/pybind11/include/pybind11/functional.h"
+#include "../external/pybind11/include/pybind11/numpy.h"
 #include "../external/pybind11/include/pybind11/pybind11.h"
 #include "../external/pybind11/include/pybind11/stl.h"
-#include "../external/pybind11/include/pybind11/numpy.h"
-#include "../external/pybind11/include/pybind11/functional.h"
 
 // See
 // https://pybind11.readthedocs.io/en/stable/advanced/cast/stl.html#binding-stl-containers
 // #include "../external/pybind11/include/pybind11/stl_bind.h"
 
-#include "../basecode/header.h"
 #include "../basecode/global.h"
+#include "../basecode/header.h"
 #include "../basecode/Cinfo.h"
-
+#include "../builtins/Variable.h"
+#include "../shell/Neutral.h"
 #include "../shell/Shell.h"
 #include "../shell/Wildcard.h"
-#include "../shell/Neutral.h"
-#include "../builtins/Variable.h"
-
 #include "../utility/strutil.h"
-
 #include "helper.h"
 #include "pymoose.h"
 
 using namespace std;
 namespace py = pybind11;
 
-Id initModule(py::module& m)
-{
-    return initShell();
-}
+Id initModule(py::module& m) { return initShell(); }
 
 template <typename T = double>
 void setProperty(const ObjId& id, const string& fname, T val)
@@ -72,7 +66,8 @@ py::array_t<T> getFieldNumpy(const ObjId& id, const string& fname)
     return py::array_t<T>(v.size(), v.data());
 }
 
-py::object getValueFinfo(const ObjId& oid, const string& fname, const string& rttType)
+py::object getValueFinfo(const ObjId& oid, const string& fname,
+                         const string& rttType)
 {
     py::object r = py::none();
     if (rttType == "double")
@@ -103,9 +98,9 @@ py::object getValueFinfo(const ObjId& oid, const string& fname, const string& rt
         r = py::cast(getProp<vector<Id>>(oid, fname));
     else if (rttType == "vector<ObjId>")
         r = py::cast(getProp<vector<ObjId>>(oid, fname));
-    else
-    {
-        py::print("Warning: pymoose::getProperty::Warning: Unsupported type " + rttType);
+    else {
+        py::print("Warning: pymoose::getProperty::Warning: Unsupported type " +
+                  rttType);
         r = py::none();
     }
     return r;
@@ -116,27 +111,41 @@ inline ObjId getElementFinfoItem(const ObjId& oid, const size_t& i)
     return ObjId(oid.path(), oid.dataIndex, i);
 }
 
-py::list getElementFinfo(const ObjId& objid, const string& fname)
+py::list getElementFinfo(const ObjId& objid, const string& fname,
+                         const string& rttType)
 {
-    auto oid =  ObjId(objid.path() + '/' + fname);
+    auto oid = ObjId(objid.path() + '/' + fname);
     auto len = Field<unsigned int>::get(oid, "numField");
     vector<ObjId> res(len);
-    for(size_t i = 0; i < len; i++)
+    for (size_t i = 0; i < len; i++)
         res[i] = ObjId(oid.path(), oid.dataIndex, i);
     return py::cast(res);
 }
 
-py::object getLookupValueFinfoItem(const ObjId& oid, const string& fname, const string& k)
+py::object getLookupValueFinfoItem(const ObjId& oid, const string& fname,
+                                   const string& k, const string& rttType)
 {
+    vector<string> srcDestType;
+    moose::tokenize(rttType, ",", srcDestType);
+    string srcType = srcDestType[0];
+    string tgtType = srcDestType[1];
+
     py::object r;
-    r = py::cast(LookupField<string, bool>::get(oid, fname, k));
+    if(tgtType == "bool")
+        r = py::cast(LookupField<string, bool>::get(oid, fname, k));
+    else if(tgtType == "vector<Id>")
+        r = py::cast(LookupField<string, vector<Id>>::get(oid, fname, k));
+    else
+        cerr << "Unsupported types: " << rttType << endl;
     return r;
 }
 
-py::function getLookupValueFinfo(const ObjId& oid, const string& fname)
+py::function getLookupValueFinfo(const ObjId& oid, const string& fname,
+                                 const string& rttType)
 {
-    std::function<py::object(const string&)> f = [oid, fname](const string& key) {
-        return getLookupValueFinfoItem(oid, fname, key);
+    std::function<py::object(const string&)> f = [oid, fname,
+                                                  rttType](const string& key) {
+        return getLookupValueFinfoItem(oid, fname, key, rttType);
     };
     return py::cast(f);
 }
@@ -154,27 +163,25 @@ py::object getProperty(const ObjId& oid, const string& fname)
     string rttType = finfo->rttiType();
     string finfoType = cinfo->getFinfoType(finfo);
 
-    if(finfoType == "ValueFinfo") 
+    if (finfoType == "ValueFinfo")
         // return value.
         return getValueFinfo(oid, fname, rttType);
-    else if(finfoType == "FieldElementFinfo") {
+    else if (finfoType == "FieldElementFinfo") {
         // Return list.
-        return getElementFinfo(oid, fname);
+        return getElementFinfo(oid, fname, rttType);
     }
-    else if(finfoType == "LookupValueFinfo") {
+    else if (finfoType == "LookupValueFinfo") {
         // Return function.
-        return getLookupValueFinfo(oid, fname);
+        return getLookupValueFinfo(oid, fname, rttType);
     }
 
-    cout << "Searching for " << fname << " with rttType "
-        << rttType << " and type: " << finfoType << endl;
+    cout << "Searching for " << fname << " with rttType " << rttType
+         << " and type: " << finfoType << endl;
 
-
-    py::print("Warning: pymoose::getProperty::Warning: Unsupported type " + rttType);
+    py::print("Warning: pymoose::getProperty::Warning: Unsupported type " +
+              rttType);
     return pybind11::none();
 }
-
-
 
 PYBIND11_MODULE(_cmoose, m)
 {
@@ -191,15 +198,16 @@ PYBIND11_MODULE(_cmoose, m)
         .def_property_readonly("numIds", &Id::numIds)
         .def_property_readonly("path", &Id::path)
         .def_property_readonly("id", &Id::value)
-        .def_property_readonly("cinfo",
-                               [](Id& id) { return id.element()->cinfo(); },
-                               py::return_value_policy::reference)
         .def_property_readonly(
-             "type", [](Id& id) { return id.element()->cinfo()->name(); })
+            "cinfo", [](Id& id) { return id.element()->cinfo(); },
+            py::return_value_policy::reference)
+        .def_property_readonly(
+            "type", [](Id& id) { return id.element()->cinfo()->name(); })
         .def("__repr__", [](const Id& id) {
-             return "<Id id=" + std::to_string(id.value()) + " path=" +
-                    id.path() + " class=" + id.element()->cinfo()->name() + ">";
-         });
+            return "<Id id=" + std::to_string(id.value()) +
+                   " path=" + id.path() +
+                   " class=" + id.element()->cinfo()->name() + ">";
+        });
 
     py::class_<ObjId>(m, "_ObjId")
         .def(py::init<>())
@@ -215,10 +223,12 @@ PYBIND11_MODULE(_cmoose, m)
                                [](const ObjId oid) { return oid.id.value(); })
         .def_property_readonly("path", &ObjId::path)
         .def_property_readonly("name", &ObjId::name)
-        .def_property_readonly("className", [](const ObjId& oid){ return oid.element()->cinfo()->name(); })
+        .def_property_readonly(
+            "className",
+            [](const ObjId& oid) { return oid.element()->cinfo()->name(); })
         .def_property_readonly("id", [](ObjId& oid) { return oid.id; })
         .def_property_readonly(
-             "type", [](ObjId& oid) { return oid.element()->cinfo()->name(); })
+            "type", [](ObjId& oid) { return oid.element()->cinfo()->name(); })
         //--------------------------------------------------------------------
         // Set/Get
         //--------------------------------------------------------------------
@@ -236,7 +246,6 @@ PYBIND11_MODULE(_cmoose, m)
         .def("getElementFieldItem", &getElementFieldItem)
         .def("getNumpy", &getFieldNumpy<double>)
 
-
         //---------------------------------------------------------------------
         //  Connect
         //---------------------------------------------------------------------
@@ -246,10 +255,10 @@ PYBIND11_MODULE(_cmoose, m)
         //  Extra
         //---------------------------------------------------------------------
         .def("__repr__", [](const ObjId& oid) {
-             return "<" + oid.element()->cinfo()->name() + " id=" +
-                    std::to_string(oid.id.value()) + " path=" + oid.path() +
-                    ">";
-         });
+            return "<" + oid.element()->cinfo()->name() +
+                   " id=" + std::to_string(oid.id.value()) +
+                   " path=" + oid.path() + ">";
+        });
 
     py::class_<Variable>(m, "_Variable").def(py::init<>());
 
@@ -270,14 +279,15 @@ PYBIND11_MODULE(_cmoose, m)
         .def("setClock", &Shell::doSetClock)
         .def("reinit", &Shell::doReinit)
         .def("delete", &Shell::doDelete)
-        .def("start", &Shell::doStart
-                , py::arg("runtime"), py::arg("notify") = false)
+        .def("start", &Shell::doStart, py::arg("runtime"),
+             py::arg("notify") = false)
         .def("quit", &Shell::doQuit);
 
     // Module functions.
-    m.def("getShell",
-          []() { return reinterpret_cast<Shell*>(Id().eref().data()); },
-          py::return_value_policy::reference);
+    m.def(
+        "getShell",
+        []() { return reinterpret_cast<Shell*>(Id().eref().data()); },
+        py::return_value_policy::reference);
 
     m.def("wildcardFind", &wildcardFind2);
     m.def("delete", &mooseDelete);
@@ -289,7 +299,8 @@ PYBIND11_MODULE(_cmoose, m)
     m.def("getCwe", &mooseGetCwe);
     m.def("setClock", &mooseSetClock);
     m.def("loadModelInternal", &loadModelInternal);
-    m.def("getFieldDict", &mooseGetFieldDict, py::arg("className"), py::arg("finfoType")="");
+    m.def("getFieldDict", &mooseGetFieldDict, py::arg("className"),
+          py::arg("finfoType") = "");
 
     // Attributes.
     m.attr("NA") = NA;

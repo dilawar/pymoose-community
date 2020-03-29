@@ -31,7 +31,7 @@ public:
           Finfo** finfoArray,                  // Field information array
           unsigned int nFinfos, DinfoBase* d,  // A handle to lots of utility
                                                // functions for the Data class.
-          const string* doc = 0, unsigned int numDoc = 0,
+          const std::string* doc = 0, unsigned int numDoc = 0,
           bool banCreation = false);
 
     /**
