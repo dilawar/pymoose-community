@@ -107,6 +107,11 @@ public:
     const std::string& name() const;
 
     /**
+     * Returns the type of Finfo.
+     */
+    string getFinfoType(const Finfo* finfo) const;
+
+    /**
      * Finds the Cinfo with the specified name.
      */
     static const Cinfo* find(const std::string& name);
@@ -141,9 +146,6 @@ public:
      * Returns the map between name and field info
      */
     const map<string, Finfo*>& finfoMap() const;
-
-    // Used in python bindings.
-    void getFinfoWithType(std::vector<pair<string, Finfo*>>& res) const;
 
     /**
      * Returns the Dinfo, which manages creation and destruction

@@ -137,6 +137,34 @@ void Cinfo::registerFinfo(Finfo* f)
     }
 }
 
+/* --------------------------------------------------------------------------*/
+/**
+ * @Synopsis  The runtime type of Finfo. Use dynamic_cast to figure it out. Use
+ * RTTI to check if downcast is correct. This is not so costly when used in Python interface.
+ *
+ * @Param f const Finfo*
+ *
+ * @Returns String representing the polymorphic type of Finfo.
+ */
+/* ----------------------------------------------------------------------------*/
+string Cinfo::getFinfoType(const Finfo* f) const
+{
+    if (dynamic_cast<const DestFinfo*>(f)) {
+        return "DestInfo";
+    } else if (dynamic_cast<const SrcFinfo*>(f)) {
+        return "SrcFinfo";
+    } else if (dynamic_cast<const ValueFinfoBase*>(f)) {
+        return "ValueFinfo";
+    } else if (dynamic_cast<const LookupValueFinfoBase*>(f)) {
+        return "LookupValueFinfo";
+    } else if (dynamic_cast<const SharedFinfo*>(f)) {
+        return "SharedFinfo";
+    } else if (dynamic_cast<const FieldElementFinfoBase*>(f)) {
+        return "FieldElementFinfo";
+    }
+    return "";
+}
+
 void Cinfo::registerPostCreationFinfo(const Finfo* f)
 {
     postCreationFinfos_.push_back(f);
@@ -229,16 +257,6 @@ const FinfoWrapper Cinfo::findFinfoWrapper(const string& name) const
     return FinfoWrapper(findFinfo(name));
 }
 
-void Cinfo::getFinfoWithType(std::vector<pair<string, Finfo*>>& res) const
-{
-    for (auto f : srcFinfos_) res.push_back({"srcFinfos", f});
-    for (auto f : destFinfos_) res.push_back({"destFinfo", f});
-    for (auto f : valueFinfos_) res.push_back({"valueFinfo", f});
-    for (auto f : lookupFinfos_) res.push_back({"lookupFinfo", f});
-    for (auto f : sharedFinfos_) res.push_back({"sharedFinfo", f});
-    for (auto f : fieldElementFinfos_) res.push_back({"fieldElement", f});
-}
-
 bool Cinfo::banCreation() const
 {
     return banCreation_;
@@ -291,14 +309,14 @@ const DinfoBase* Cinfo::dinfo() const
 bool Cinfo::isA(const string& ancestor) const
 {
     if (ancestor == "Neutral")
-        return 1;
+        return true;
     const Cinfo* base = this;
     while (base && base != Neutral::initCinfo()) {
         if (ancestor == base->name_)
-            return 1;
+            return true;
         base = base->baseCinfo_;
     }
-    return 0;
+    return false;
 }
 
 void Cinfo::reportFids() const

@@ -23,6 +23,7 @@
 #include "../external/pybind11/include/pybind11/pybind11.h"
 #include "../external/pybind11/include/pybind11/stl.h"
 #include "../external/pybind11/include/pybind11/numpy.h"
+#include "../external/pybind11/include/pybind11/functional.h"
 
 // See
 // https://pybind11.readthedocs.io/en/stable/advanced/cast/stl.html#binding-stl-containers
@@ -51,7 +52,7 @@ Id initModule(py::module& m)
 }
 
 template <typename T = double>
-void setProp(const ObjId& id, const string& fname, T val)
+void setProperty(const ObjId& id, const string& fname, T val)
 {
     Field<T>::set(id, fname, val);
 }
@@ -71,7 +72,67 @@ py::array_t<T> getFieldNumpy(const ObjId& id, const string& fname)
     return py::array_t<T>(v.size(), v.data());
 }
 
-py::object getFieldGeneric(const ObjId& oid, const string& fname)
+py::object getPropertyValueFinfo(const ObjId& oid, const string& fname, const string& rttType)
+{
+    if (rttType == "double")
+        return pybind11::float_(getProp<double>(oid, fname));
+    else if (rttType == "float")
+        return pybind11::float_(getProp<double>(oid, fname));
+    else if (rttType == "vector<double>")
+        return py::cast(getProp<vector<double>>(oid, fname));
+    else if (rttType == "string")
+        return pybind11::str(getProp<string>(oid, fname));
+    else if (rttType == "char")
+        return pybind11::str(getProp<string>(oid, fname));
+    else if (rttType == "int")
+        return pybind11::int_(getProp<int>(oid, fname));
+    else if (rttType == "unsigned long")
+        return pybind11::int_(getProp<unsigned long>(oid, fname));
+    else if (rttType == "unsigned int")
+        return pybind11::int_(getProp<unsigned int>(oid, fname));
+    else if (rttType == "bool")
+        return pybind11::bool_(getProp<bool>(oid, fname));
+    else if (rttType == "Id")
+        return py::cast(getProp<Id>(oid, fname));
+    else if (rttType == "ObjId")
+        return py::cast(getProp<ObjId>(oid, fname));
+    else if (rttType == "Variable")
+        return py::cast(getProp<Variable>(oid, fname));
+    else if (rttType == "vector<Id>")
+        return py::cast(getProp<vector<Id>>(oid, fname));
+    else if (rttType == "vector<ObjId>")
+        return py::cast(getProp<vector<ObjId>>(oid, fname));
+    py::print("Warning: pymoose::getProperty::Warning: Unsupported type " + rttType);
+    return py::none();
+}
+
+py::list getPropertyElementFinfo(const ObjId& objid, const string& fname)
+{
+    auto oid =  ObjId(objid.path() + '/' + fname);
+    auto len = Field<unsigned int>::get(oid, "numField");
+    assert(len >= 0);
+    vector<ObjId> res(len);
+    for (size_t i = 0; i < len; i++) 
+        res[i] = ObjId(oid.path(), oid.dataIndex, i);
+    return py::cast(res);
+}
+
+template<typename A, typename L>
+py::object getLookValueFinfo(const ObjId& oid, const string& fname, const string& key)
+{
+    return py::cast(LookupField<A, L>::get(oid, fname, key));
+}
+
+py::dict getPropertyLookValueFinfo(const ObjId& oid, const string& fname)
+{
+    py::dict res;
+    auto v = [oid, fname](const string& key){
+        return LookupField<string, bool>::get(oid, fname, key);
+    };
+    return res;
+}
+
+py::object getProperty(const ObjId& oid, const string& fname)
 {
     auto cinfo = oid.element()->cinfo();
     auto finfo = cinfo->findFinfo(fname);
@@ -81,39 +142,25 @@ py::object getFieldGeneric(const ObjId& oid, const string& fname)
         return pybind11::none();
     }
 
-    string ftype = finfo->rttiType();
-    if (ftype == "double")
-        return pybind11::float_(getProp<double>(oid, fname));
-    else if (ftype == "float")
-        return pybind11::float_(getProp<double>(oid, fname));
-    else if (ftype == "vector<double>")
-        return py::cast(getProp<vector<double>>(oid, fname));
-    else if (ftype == "string")
-        return pybind11::str(getProp<string>(oid, fname));
-    else if (ftype == "char")
-        return pybind11::str(getProp<string>(oid, fname));
-    else if (ftype == "int")
-        return pybind11::int_(getProp<int>(oid, fname));
-    else if (ftype == "unsigned long")
-        return pybind11::int_(getProp<unsigned long>(oid, fname));
-    else if (ftype == "unsigned int")
-        return pybind11::int_(getProp<unsigned int>(oid, fname));
-    else if (ftype == "bool")
-        return pybind11::bool_(getProp<bool>(oid, fname));
-    else if (ftype == "Id")
-        return py::cast(getProp<Id>(oid, fname));
-    else if (ftype == "ObjId")
-        return py::cast(getProp<ObjId>(oid, fname));
-    else if (ftype == "Variable")
-        return py::cast(getProp<Variable>(oid, fname));
-    else if (ftype == "vector<Id>")
-        return py::cast(getProp<vector<Id>>(oid, fname));
-    else if (ftype == "vector<ObjId>")
-        return py::cast(getProp<vector<ObjId>>(oid, fname));
+    string rttType = finfo->rttiType();
+    string finfoType = cinfo->getFinfoType(finfo);
 
-    py::print("Warning: pymoose::getFieldGeneric::Warning: Unsupported type " + ftype);
+    if(finfoType == "ValueFinfo") 
+        return getPropertyValueFinfo(oid, fname, rttType);
+    else if(finfoType == "FieldElementFinfo")
+        return getPropertyElementFinfo(oid, fname);
+    else if(finfoType == "LookupValueFinfo")
+        return getPropertyLookValueFinfo(oid, fname);
+
+    cout << "Searching for " << fname << " with rttType "
+        << rttType << " and type: " << finfoType << endl;
+
+
+    py::print("Warning: pymoose::getProperty::Warning: Unsupported type " + rttType);
     return pybind11::none();
 }
+
+
 
 PYBIND11_MODULE(_cmoose, m)
 {
@@ -161,17 +208,19 @@ PYBIND11_MODULE(_cmoose, m)
         // Set/Get
         //--------------------------------------------------------------------
         // Overload of Field::set
-        .def("setField", &setProp<double>)
-        .def("setField", &setProp<double>)
-        .def("setField", &setProp<vector<double>>)
-        .def("setField", &setProp<std::string>)
-        .def("setField", &setProp<bool>)
+        .def("setField", &setProperty<double>)
+        .def("setField", &setProperty<double>)
+        .def("setField", &setProperty<vector<double>>)
+        .def("setField", &setProperty<std::string>)
+        .def("setField", &setProperty<bool>)
 
         // Overload for Field::get
-        .def("getField", &getFieldGeneric)
+        .def("getField", &getProperty)
+
         .def("getElementField", &getElementField)
         .def("getElementFieldItem", &getElementFieldItem)
         .def("getNumpy", &getFieldNumpy<double>)
+
 
         //---------------------------------------------------------------------
         //  Connect

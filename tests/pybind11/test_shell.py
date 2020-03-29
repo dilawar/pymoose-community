@@ -227,7 +227,9 @@ def makereac2():
     r1.connect("sub", A, "reac")
     r1.connect("prd", B, "reac")
 
-    A.connect("nOut", sum.getElementFieldItem("x", 0), "input")
+    # A.connect("nOut", sum.getElementFieldItem("x", 0), "input")
+    print("xxx", sum.x[0])
+    A.connect("nOut", sum.x[0], "input")
     B.connect("nOut", sum.getElementFieldItem("x", 1), "input")
     sum.connect("valueOut", tot1, "setN");
 
@@ -332,9 +334,8 @@ def test_ksolve2():
 def test_ksolve3():
     a = moose.Neutral('x')
     a = moose.Neutral('x/x')
-    isA = a.getElementField('isA')
-    print(a, isA)
     print(a.isA)
+    print(a.isA['Compartment'])
 
 def main():
     test_ksolve0()
