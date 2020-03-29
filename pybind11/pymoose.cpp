@@ -111,17 +111,34 @@ py::object getValueFinfo(const ObjId& oid, const string& fname, const string& rt
     return r;
 }
 
-py::object getElementFinfo(const ObjId& objid, const string& fname, const size_t i)
+inline ObjId getElementFinfoItem(const ObjId& oid, const size_t& i)
+{
+    return ObjId(oid.path(), oid.dataIndex, i);
+}
+
+py::list getElementFinfo(const ObjId& objid, const string& fname)
 {
     auto oid =  ObjId(objid.path() + '/' + fname);
     auto len = Field<unsigned int>::get(oid, "numField");
-    assert(len >= 0);
-    return py::cast(ObjId(oid.path(), oid.dataIndex, i));
+    vector<ObjId> res(len);
+    for(size_t i = 0; i < len; i++)
+        res[i] = ObjId(oid.path(), oid.dataIndex, i);
+    return py::cast(res);
 }
 
-py::object getLookValueFinfo(const ObjId& oid, const string& fname, const string& key)
+py::object getLookupValueFinfoItem(const ObjId& oid, const string& fname, const string& k)
 {
-    return py::cast(LookupField<string, bool>::get(oid, fname, key));
+    py::object r;
+    r = py::cast(LookupField<string, bool>::get(oid, fname, k));
+    return r;
+}
+
+py::object getLookupValueFinfo(const ObjId& oid, const string& fname)
+{
+    std::function<py::object(const string&)> f = [oid, fname](const string& key) {
+        return getLookupValueFinfoItem(oid, fname, key);
+    };
+    return py::cast(f);
 }
 
 py::object getProperty(const ObjId& oid, const string& fname)
@@ -138,18 +155,15 @@ py::object getProperty(const ObjId& oid, const string& fname)
     string finfoType = cinfo->getFinfoType(finfo);
 
     if(finfoType == "ValueFinfo") 
+        // return value.
         return getValueFinfo(oid, fname, rttType);
     else if(finfoType == "FieldElementFinfo") {
-        std::function<py::object(size_t)> f = [oid, fname](const size_t& i) {
-            return getElementFinfo(oid, fname, i);
-        };
-        return py::cast(f);
+        // Return list.
+        return getElementFinfo(oid, fname);
     }
     else if(finfoType == "LookupValueFinfo") {
-        std::function<py::object(const string&)> f = [oid, fname](const string& k) {
-            return getLookValueFinfo(oid, fname, k);
-        };
-        return py::cast(f);
+        // Return function.
+        return getLookupValueFinfo(oid, fname);
     }
 
     cout << "Searching for " << fname << " with rttType "
