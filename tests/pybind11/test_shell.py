@@ -332,11 +332,11 @@ def test_ksolve2():
     run_and_assert(kin, "ksolve1_test2.png")
 
 def test_ksolve3():
-    a = moose.Neutral('x')
+    moose.Neutral('x')
     a = moose.Neutral('x/x')
     print(a.isA)
     print(a.isA('Compartment'))
-    #print(a.isA['Compartment'])
+    print(a.isA['Compartment'])
 
 def main():
     test_ksolve0()

@@ -133,7 +133,7 @@ py::object getLookupValueFinfoItem(const ObjId& oid, const string& fname, const 
     return r;
 }
 
-py::object getLookupValueFinfo(const ObjId& oid, const string& fname)
+py::function getLookupValueFinfo(const ObjId& oid, const string& fname)
 {
     std::function<py::object(const string&)> f = [oid, fname](const string& key) {
         return getLookupValueFinfoItem(oid, fname, key);

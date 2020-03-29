@@ -21,6 +21,18 @@ def __parent(path):
 
 t0 = time.time()
 
+# Hack:
+class __Finfo__(object):
+    def __init__(self, finfo):
+        super().__init__()
+        self.finfo = finfo
+
+    def __getitem__(self, k):
+        return self.finfo(k)
+
+    def __call__(self, k):
+        self.finfo(k)
+
 class __Neutral__(_cmoose._ObjId):
 
     __metaclass__ = None
@@ -38,7 +50,11 @@ class __Neutral__(_cmoose._ObjId):
         self.setField(attr, val)
 
     def __getattr__(self, attr):
-        return super(__Neutral__, self).getField(attr)
+        x = super(__Neutral__, self).getField(attr)
+        if not callable(x):
+            return x
+        # else return a dict.
+        return __Finfo__(x)
 
 
 for p in _cmoose.wildcardFind('/##[TYPE=Cinfo]'):
