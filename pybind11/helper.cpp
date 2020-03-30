@@ -325,13 +325,11 @@ void mooseStart(double runtime, bool notify = false)
 //    return ObjId(id);
 //}
 
-ObjId mooseCopy(const ObjId& orig, ObjId newParent, string newName,
+ObjId mooseCopy(const Id& orig, ObjId newParent, string newName,
                 unsigned int n = 1, bool toGlobal = false,
                 bool copyExtMsgs = false)
 {
-    auto id = getShellPtr()->doCopy(orig, newParent, newName, n, toGlobal,
-                                    copyExtMsgs);
-    return ObjId(id);
+    return ObjId(getShellPtr()->doCopy(orig, newParent, newName, n, toGlobal, copyExtMsgs));
 }
 
 py::object getValueFinfo(const ObjId& oid, const string& fname, const Finfo* f)

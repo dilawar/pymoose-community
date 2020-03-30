@@ -91,7 +91,7 @@ PYBIND11_MODULE(_cmoose, m)
         .def("__repr__", [](const Id& id) {
              return "<Id id=" + std::to_string(id.value()) + " path=" +
                     id.path() + " class=" + id.element()->cinfo()->name() + ">";
-         });
+                    });
 
     py::class_<ObjId>(m, "_ObjId")
         .def(py::init<>())

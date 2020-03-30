@@ -49,11 +49,7 @@ bool mooseDelete(const string& path);
 
 ObjId mooseCreate(const string type, const string& path, size_t numdata = 1);
 
-// ObjId mooseCopy(const ObjId& orig, ObjId newParent, string newName, unsigned
-// int n,
-//              bool toGlobal, bool copyExtMsgs);
-
-ObjId mooseCopy(const ObjId& orig, ObjId newParent, string newName,
+ObjId mooseCopy(const Id& orig, ObjId newParent, string newName,
                 unsigned int n, bool toGlobal, bool copyExtMsgs);
 
 py::object mooseGetCwe();
