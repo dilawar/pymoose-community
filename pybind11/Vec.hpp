@@ -28,7 +28,7 @@ public:
         }
         else {
             objs_.clear();
-            auto o = Id(path);
+            auto o = ObjId(path);
             for (size_t i = 0; i < o.element()->numData(); i++) 
                 objs_.push_back(ObjId(o, i));
         }
@@ -38,6 +38,11 @@ public:
     size_t len()
     {
         return objs_.size();
+    }
+
+    ObjId getElem(const size_t i)
+    {
+        return objs_[i];
     }
 
 private:

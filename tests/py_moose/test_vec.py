@@ -5,6 +5,8 @@ def test_vec():
     foo = moose.Pool('/foo1', 500)
     bar = moose.vec('/foo1')
     assert len(bar) == 500, len(bar)
+    for i in range(len(bar)):
+        print(bar[i])
 
 def test_vec2():
     iaf = moose.vec('/iaf', n=10, dtype='IntFire')

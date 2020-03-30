@@ -287,6 +287,7 @@ PYBIND11_MODULE(_cmoose, m)
         .def(py::init<const string&, size_t, const string&>(), 
                 "path"_a, "n"_a = 1, "dtype"_a = "Neutral") // Default 
         .def("__len__", &MooseVec::len)
+        .def("__getitem__", &MooseVec::getElem)
         ;
 
     // Module functions.
