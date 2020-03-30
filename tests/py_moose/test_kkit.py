@@ -27,9 +27,8 @@ def test_kkit():
 
     vals = x.vector
     stats = [vals.min(), vals.max(), vals.mean(), vals.std()]
-    expected = [0.0, 0.00040464, 0.0001444, 0.00013177]
-    assert numpy.allclose(stats, expected,
-                          rtol=1e-4), 'Got %s expected %s' % (stats, expected)
+    expected = [0.0, 0.00040324746614066575, 0.0001433307666099328, 0.0001313134713700798]
+    assert numpy.allclose(stats, expected), 'Got %s expected %s' % (stats, expected)
 
 def main():
     test_kkit()

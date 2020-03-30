@@ -77,8 +77,10 @@ py::object getValueFinfo(const ObjId& oid, const string& fname, const Finfo* f)
         r = pybind11::float_(getProp<double>(oid, fname));
     else if (rttType == "float")
         r = pybind11::float_(getProp<double>(oid, fname));
-    else if (rttType == "vector<double>")
-        r = py::cast(getProp<vector<double>>(oid, fname));
+    else if (rttType == "vector<double>") { 
+        // r = py::cast(getProp<vector<double>>(oid, fname));
+        r = getFieldNumpy<double>(oid, fname);
+    }
     else if (rttType == "string")
         r = pybind11::str(getProp<string>(oid, fname));
     else if (rttType == "char")
@@ -114,7 +116,8 @@ inline ObjId getElementFinfoItem(const ObjId& oid, const size_t& i)
     return ObjId(oid.path(), oid.dataIndex, i);
 }
 
-py::list getElementFinfo(const ObjId& objid, const string& fname, const Finfo* f)
+py::list getElementFinfo(const ObjId& objid, const string& fname,
+                         const Finfo* f)
 {
     auto rttType = f->rttiType();
     auto oid = ObjId(objid.path() + '/' + fname);
@@ -176,13 +179,19 @@ py::object getLookupValueFinfo(const ObjId& oid, const string& fname,
     return py::cast(__Finfo__(oid, fname, f));
 }
 
-py::object getDestFinfo(const ObjId& obj, const string& fname, const Finfo* f)
+py::function getDestFinfo(const ObjId& obj, const string& fname, const Finfo* f)
 {
     auto rttType = f->rttiType();
-    cout << " Setting " << fname << " with rttType " << rttType << " on object "
-         << obj.path() << endl;
-
-    return py::none();
+    if (rttType == "Id") {
+        std::function<bool(const ObjId& tgt)> f = [obj, fname](const ObjId& tgt) {
+            return SetGet1<ObjId>::set(obj, fname, tgt);
+        };
+        return py::cast(f);
+    }
+    else
+        cout << "NotImplented: Setting " << fname << " with rttType '"
+             << rttType << "' on object " << obj.path() << endl;
+    return py::function();
 }
 
 py::object getProperty(const ObjId& oid, const string& fname)
@@ -212,7 +221,7 @@ py::object getProperty(const ObjId& oid, const string& fname)
     }
 
     cerr << "NotImplemented: getProperty for " << fname << " with rttType "
-         << finfo->rttiType() << " and type: " << finfoType << endl;
+         << finfo->rttiType() << " and type: '" << finfoType << "'" << endl;
     return pybind11::none();
 }
 

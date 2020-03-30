@@ -150,7 +150,7 @@ void Cinfo::registerFinfo(Finfo* f)
 string Cinfo::getFinfoType(const Finfo* f) const
 {
     if (dynamic_cast<const DestFinfo*>(f)) {
-        return "DestInfo";
+        return "DestFinfo";
     } else if (dynamic_cast<const SrcFinfo*>(f)) {
         return "SrcFinfo";
     } else if (dynamic_cast<const ValueFinfoBase*>(f)) {
