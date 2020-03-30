@@ -64,6 +64,14 @@ map<string, string> mooseGetFieldDict(const string& className,
 void mooseReinit();
 void mooseStart(double runtime, bool notify);
 
+py::list getElementFinfo(const ObjId& objid, const string& fname, const Finfo* f);
+
+py::function getDestFinfo(const ObjId& obj, const string& fname, const Finfo* f);
+
+py::object getValueFinfo(const ObjId& oid, const string& fname, const Finfo* f);
+
+py::object getProperty(const ObjId& oid, const string& fname);
+
 py::object getLookupValueFinfo(const ObjId& oid, const string& fname,
                                const Finfo* f);
 

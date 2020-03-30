@@ -42,6 +42,7 @@
 
 #include "helper.h"
 #include "Finfo.hpp"
+#include "pymoose.h"
 
 using namespace std;
 
@@ -321,6 +322,103 @@ ObjId mooseCopy(const Id& orig, ObjId newParent, string newName, unsigned int n=
 {
     auto id =  getShellPtr()->doCopy(orig, newParent, newName, n, toGlobal, copyExtMsgs);
     return ObjId(id);
+}
+
+py::object getValueFinfo(const ObjId& oid, const string& fname, const Finfo* f)
+{
+    auto rttType = f->rttiType();
+    py::object r = py::none();
+    if (rttType == "double")
+        r = pybind11::float_(getProp<double>(oid, fname));
+    else if (rttType == "float")
+        r = pybind11::float_(getProp<double>(oid, fname));
+    else if (rttType == "vector<double>") {
+        // r = py::cast(getProp<vector<double>>(oid, fname));
+        r = getFieldNumpy<double>(oid, fname);
+    } else if (rttType == "string")
+        r = pybind11::str(getProp<string>(oid, fname));
+    else if (rttType == "char")
+        r = pybind11::str(getProp<string>(oid, fname));
+    else if (rttType == "int")
+        r = pybind11::int_(getProp<int>(oid, fname));
+    else if (rttType == "unsigned long")
+        r = pybind11::int_(getProp<unsigned long>(oid, fname));
+    else if (rttType == "unsigned int")
+        r = pybind11::int_(getProp<unsigned int>(oid, fname));
+    else if (rttType == "bool")
+        r = pybind11::bool_(getProp<bool>(oid, fname));
+    else if (rttType == "Id")
+        r = py::cast(getProp<Id>(oid, fname));
+    else if (rttType == "ObjId")
+        r = py::cast(getProp<ObjId>(oid, fname));
+    else if (rttType == "Variable")
+        r = py::cast(getProp<Variable>(oid, fname));
+    else if (rttType == "vector<Id>")
+        r = py::cast(getProp<vector<Id>>(oid, fname));
+    else if (rttType == "vector<ObjId>")
+        r = py::cast(getProp<vector<ObjId>>(oid, fname));
+    else {
+        cout << "Warning: getProperty:: Unsupported type '" << rttType << "'"
+             << endl;
+        r = py::none();
+    }
+    return r;
+}
+
+py::list getElementFinfo(const ObjId& objid, const string& fname, const Finfo* f)
+{
+    auto rttType = f->rttiType();
+    auto oid = ObjId(objid.path() + '/' + fname);
+    auto len = Field<unsigned int>::get(oid, "numField");
+    vector<ObjId> res(len);
+    for (size_t i = 0; i < len; i++)
+        res[i] = ObjId(oid.path(), oid.dataIndex, i);
+    return py::cast(res);
+}
+
+py::function getDestFinfo(const ObjId& obj, const string& fname, const Finfo* f)
+{
+    auto rttType = f->rttiType();
+    if (rttType == "Id") {
+        std::function<bool(const ObjId& tgt)> f = [obj, fname](
+            const ObjId& tgt) { return SetGet1<ObjId>::set(obj, fname, tgt); };
+        return py::cast(f);
+    } else
+        cout << "NotImplented: Setting " << fname << " with rttType '"
+             << rttType << "' on object " << obj.path() << endl;
+    return py::function();
+}
+
+
+py::object getProperty(const ObjId& oid, const string& fname)
+{
+    auto cinfo = oid.element()->cinfo();
+    auto finfo = cinfo->findFinfo(fname);
+
+    if (!finfo) {
+        cout << "Error: " << fname << " is not found on " << oid.path() << endl;
+        return pybind11::none();
+    }
+
+    string finfoType = cinfo->getFinfoType(finfo);
+
+    if (finfoType == "ValueFinfo")
+        // return value.
+        return getValueFinfo(oid, fname, finfo);
+    else if (finfoType == "FieldElementFinfo") {
+        // Return list.
+        return getElementFinfo(oid, fname, finfo);
+    } else if (finfoType == "LookupValueFinfo") {
+        // Return function.
+        return getLookupValueFinfo(oid, fname, finfo);
+    } else if (finfoType == "DestFinfo") {
+        // Return function.
+        return getDestFinfo(oid, fname, finfo);
+    }
+
+    cerr << "NotImplemented: getProperty for " << fname << " with rttType "
+         << finfo->rttiType() << " and type: '" << finfoType << "'" << endl;
+    return pybind11::none();
 }
 
 py::object getLookupValueFinfoItem(const ObjId& oid, const string& fname, const string& k, const Finfo* f)
