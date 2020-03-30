@@ -248,7 +248,7 @@ def makereac2():
 
     # Set parameters.
     A.concInit = 2
-    assert A.concInit == 2, A.concIinit
+    assert A.concInit == 2, A.concInit
 
     e1Pool.concInit = 1
     assert e1Pool.concInit == 1.0, e1Pool.concInit
@@ -331,19 +331,22 @@ def test_ksolve2():
     kin = makereac2()
     run_and_assert(kin, "ksolve1_test2.png")
 
-def test_ksolve3():
-    a = moose.Neutral('x')
+def test_access():
+    moose.Neutral('x')
     a = moose.Neutral('x/x')
     print(a.isA('Compartment'))
     print(a.isA)
     print(a.isA[ 'Compartment' ])
     print(a.isA)
+    print(a.isA('Compartment'))
+    print(a.isA['Compartment'])
+    print(a.parent)
 
 def main():
     test_ksolve0()
     test_ksolve1()
     test_ksolve2()
-    test_ksolve3()
+    test_access()
 
 if __name__ == '__main__':
     main()

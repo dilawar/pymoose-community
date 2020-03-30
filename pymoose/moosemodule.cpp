@@ -2556,7 +2556,7 @@ int moose_clear(PyObject *m)
     Py_CLEAR(GETSTATE(m)->error);
     // I did get a segmentation fault at exit (without running a reinit() or
     // start()) after creating a compartment. After putting the finalize here it
-    // went away. But did not reoccur even after commenting it out. Will need
+    // went away. But :edid not reoccur even after commenting it out. Will need
     // closer debugging.
     // - Subha 2012-08-18, 00:36
     finalize();
