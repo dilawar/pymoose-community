@@ -41,7 +41,7 @@
 #include "../utility/strutil.h"
 
 #include "helper.h"
-#include "pymoose.h"
+#include "Finfo.hpp"
 
 using namespace std;
 
@@ -322,3 +322,32 @@ ObjId mooseCopy(const Id& orig, ObjId newParent, string newName, unsigned int n=
     auto id =  getShellPtr()->doCopy(orig, newParent, newName, n, toGlobal, copyExtMsgs);
     return ObjId(id);
 }
+
+py::object getLookupValueFinfoItem(const ObjId& oid, const string& fname, const string& k, const Finfo* f)
+{
+    auto rttType = f->rttiType();
+    vector<string> srcDestType;
+    moose::tokenize(rttType, ",", srcDestType);
+    string srcType = srcDestType[0];
+    string tgtType = srcDestType[1];
+
+    py::object r;
+    if (tgtType == "bool")
+        r = py::cast(LookupField<string, bool>::get(oid, fname, k));
+    else if (tgtType == "vector<Id>")
+        r = py::cast(LookupField<string, vector<Id>>::get(oid, fname, k));
+    else
+        cerr << "Unsupported types: " << rttType << endl;
+    return r;
+}
+
+
+py::object getLookupValueFinfo(const ObjId& oid, const string& fname, const Finfo* f)
+{
+    // std::function<py::object(const string&)> f = [oid, fname, rttType](
+    //    const string& key) {
+    //    return getLookupValueFinfoItem(oid, fname, key, rttType);
+    //};
+    return py::cast(__Finfo__(oid, fname, f));
+}
+

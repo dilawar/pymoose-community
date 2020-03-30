@@ -41,17 +41,18 @@ ObjId getElementFieldItem(const ObjId& objid, const string& fname,
 py::object getFieldGeneric(const ObjId& oid, const string& fname);
 
 ObjId mooseConnect(const ObjId& src, const string& srcField, const ObjId& tgt,
-              const string& tgtField);
+                   const string& tgtField);
 
 void mooseDelete(const ObjId& oid);
 
 ObjId mooseCreate(const string type, const string& path, size_t numdata = 1);
 
-// ObjId mooseCopy(const ObjId& orig, ObjId newParent, string newName, unsigned int n,
+// ObjId mooseCopy(const ObjId& orig, ObjId newParent, string newName, unsigned
+// int n,
 //              bool toGlobal, bool copyExtMsgs);
 
-ObjId mooseCopy(const Id& orig, ObjId newParent, string newName, unsigned int n
-        , bool toGlobal, bool copyExtMsgs);
+ObjId mooseCopy(const Id& orig, ObjId newParent, string newName, unsigned int n,
+                bool toGlobal, bool copyExtMsgs);
 
 py::object mooseGetCwe();
 
@@ -62,5 +63,11 @@ map<string, string> mooseGetFieldDict(const string& className,
 
 void mooseReinit();
 void mooseStart(double runtime, bool notify);
+
+py::object getLookupValueFinfo(const ObjId& oid, const string& fname,
+                               const Finfo* f);
+
+py::object getLookupValueFinfoItem(const ObjId& oid, const string& fname,
+                                   const string& k, const Finfo* f);
 
 #endif /* end of include guard: HELPER_H */

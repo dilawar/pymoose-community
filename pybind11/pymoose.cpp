@@ -42,6 +42,7 @@
 
 #include "helper.h"
 #include "pymoose.h"
+#include "Finfo.hpp"
 
 using namespace std;
 namespace py = pybind11;
@@ -50,27 +51,6 @@ using namespace pybind11::literals;
 Id initModule(py::module& m)
 {
     return initShell();
-}
-
-template <typename T = double>
-void setProperty(const ObjId& id, const string& fname, T val)
-{
-    Field<T>::set(id, fname, val);
-}
-
-template <typename T = double>
-T getProp(const ObjId& id, const string& fname)
-{
-    return Field<T>::get(id, fname);
-}
-
-// FIXME: Is it most efficient?
-// See discussion here: https://github.com/pybind/pybind11/issues/1042
-template <typename T = double>
-py::array_t<T> getFieldNumpy(const ObjId& id, const string& fname)
-{
-    auto v = Field<vector<T>>::get(id, fname);
-    return py::array_t<T>(v.size(), v.data());
 }
 
 py::object getValueFinfo(const ObjId& oid, const string& fname, const Finfo* f)
@@ -131,58 +111,6 @@ py::list getElementFinfo(const ObjId& objid, const string& fname,
         res[i] = ObjId(oid.path(), oid.dataIndex, i);
     return py::cast(res);
 }
-
-py::object getLookupValueFinfoItem(const ObjId& oid, const string& fname,
-                                   const string& k, const Finfo* f)
-{
-    auto rttType = f->rttiType();
-    vector<string> srcDestType;
-    moose::tokenize(rttType, ",", srcDestType);
-    string srcType = srcDestType[0];
-    string tgtType = srcDestType[1];
-
-    py::object r;
-    if (tgtType == "bool")
-        r = py::cast(LookupField<string, bool>::get(oid, fname, k));
-    else if (tgtType == "vector<Id>")
-        r = py::cast(LookupField<string, vector<Id>>::get(oid, fname, k));
-    else
-        cerr << "Unsupported types: " << rttType << endl;
-    return r;
-}
-
-class __Finfo__ {
-public:
-    __Finfo__(const ObjId& oid, const string& fname, const Finfo* f)
-        : oid_(oid), fname_(fname), f_(f)
-    {
-        func_ = [oid, fname, f](const string& key) {
-            return getLookupValueFinfoItem(oid, fname, key, f);
-        };
-    }
-
-    py::object operator()(const string& key)
-    {
-        return func_(key);
-    }
-
-public:
-    ObjId oid_;
-    string fname_;
-    const Finfo* f_;
-    std::function<py::object(const string& key)> func_;
-};
-
-py::object getLookupValueFinfo(const ObjId& oid, const string& fname,
-                               const Finfo* f)
-{
-    // std::function<py::object(const string&)> f = [oid, fname, rttType](
-    //    const string& key) {
-    //    return getLookupValueFinfoItem(oid, fname, key, rttType);
-    //};
-    return py::cast(__Finfo__(oid, fname, f));
-}
-
 py::function getDestFinfo(const ObjId& obj, const string& fname, const Finfo* f)
 {
     auto rttType = f->rttiType();
