@@ -26,7 +26,7 @@ ObjId createIdFromPath(string path, string type, size_t numData = 1);
 
 Shell* getShellPtr();
 
-bool doesExist(const string& path);
+bool mooseExists(const string& path);
 
 ObjId mooseElement(const string& path);
 

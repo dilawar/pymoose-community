@@ -168,9 +168,7 @@ public:
     friend istream& operator >>( istream& s, Id& i );
 
 private:
-    // static void setManager( Manager* m );
     unsigned int id_; // Unique identifier for Element*
-//		unsigned int index_; // Index of array entry within element.
     static vector< Element* >& elements();
 };
 

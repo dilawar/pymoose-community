@@ -42,7 +42,9 @@
 
 #include "helper.h"
 #include "pymoose.h"
+
 #include "Finfo.hpp"
+#include "Vec.hpp"
 
 using namespace std;
 namespace py = pybind11;
@@ -61,11 +63,10 @@ py::object getValueFinfo(const ObjId& oid, const string& fname, const Finfo* f)
         r = pybind11::float_(getProp<double>(oid, fname));
     else if (rttType == "float")
         r = pybind11::float_(getProp<double>(oid, fname));
-    else if (rttType == "vector<double>") { 
+    else if (rttType == "vector<double>") {
         // r = py::cast(getProp<vector<double>>(oid, fname));
         r = getFieldNumpy<double>(oid, fname);
-    }
-    else if (rttType == "string")
+    } else if (rttType == "string")
         r = pybind11::str(getProp<string>(oid, fname));
     else if (rttType == "char")
         r = pybind11::str(getProp<string>(oid, fname));
@@ -115,12 +116,10 @@ py::function getDestFinfo(const ObjId& obj, const string& fname, const Finfo* f)
 {
     auto rttType = f->rttiType();
     if (rttType == "Id") {
-        std::function<bool(const ObjId& tgt)> f = [obj, fname](const ObjId& tgt) {
-            return SetGet1<ObjId>::set(obj, fname, tgt);
-        };
+        std::function<bool(const ObjId& tgt)> f = [obj, fname](
+            const ObjId& tgt) { return SetGet1<ObjId>::set(obj, fname, tgt); };
         return py::cast(f);
-    }
-    else
+    } else
         cout << "NotImplented: Setting " << fname << " with rttType '"
              << rttType << "' on object " << obj.path() << endl;
     return py::function();
@@ -252,12 +251,16 @@ PYBIND11_MODULE(_cmoose, m)
         //---------------------------------------------------------------------
         .def("__repr__", [](const ObjId& oid) {
              return "<" + oid.element()->cinfo()->name() + " id=" +
-                    std::to_string(oid.id.value()) + " path=" + oid.path() +
+                    std::to_string(oid.id.value()) 
+                    + " numData=" + to_string(oid.element()->numData())
+                    + " path=" + oid.path() +
                     ">";
          });
 
+    // Variable.
     py::class_<Variable>(m, "_Variable").def(py::init<>());
 
+    // Cinfo.
     py::class_<Cinfo>(m, "_Cinfo")
         .def(py::init<>())
         .def_property_readonly("name", &Cinfo::name)
@@ -267,6 +270,7 @@ PYBIND11_MODULE(_cmoose, m)
         .def("baseCinfo", &Cinfo::baseCinfo, py::return_value_policy::reference)
         .def("isA", &Cinfo::isA);
 
+    // Shell
     py::class_<Shell>(m, "_Shell")
         .def(py::init<>())
         .def("create", &Shell::doCreate2)
@@ -278,27 +282,37 @@ PYBIND11_MODULE(_cmoose, m)
         .def("start", &Shell::doStart, "runtime"_a, "notify"_a = false)
         .def("quit", &Shell::doQuit);
 
+    // Vec
+    py::class_<MooseVec>(m, "vec")
+        .def(py::init<const string&, size_t, const string&>(), 
+                "path"_a, "n"_a = 1, "dtype"_a = "Neutral") // Default 
+        .def("__len__", &MooseVec::len)
+        ;
+
     // Module functions.
     m.def("getShell",
           []() { return reinterpret_cast<Shell*>(Id().eref().data()); },
           py::return_value_policy::reference);
 
-    m.def("seed", [](size_t a){ moose::mtseed(a);});
-    m.def("rand", [](double a, double b){ return moose::mtrand(a, b);}, "a"_a=0, "b"_a=1);
+    m.def("seed", [](size_t a) { moose::mtseed(a); });
+    m.def("rand", [](double a, double b) { return moose::mtrand(a, b); },
+          "a"_a = 0, "b"_a = 1);
     m.def("wildcardFind", &wildcardFind2);
     m.def("delete", &mooseDelete);
     m.def("create", &mooseCreate);
     m.def("reinit", &mooseReinit);
     m.def("start", &mooseStart, "runtime"_a, "notify"_a = false);
     m.def("element", &mooseElement);
-    m.def("exists", &doesExist);
+    m.def("exists", &mooseExists);
     m.def("connect", &mooseConnect);
     m.def("getCwe", &mooseGetCwe);
     m.def("setClock", &mooseSetClock);
     m.def("loadModelInternal", &loadModelInternal);
-    m.def("getFieldDict", &mooseGetFieldDict, "className"_a, "finfoType"_a = "");
-    m.def("copy", &mooseCopy, "orig"_a, "newParent"_a, "newName"_a
-            , "num"_a = 1, "toGlobal"_a = false, "copyExtMsgs"_a = false);
+    m.def("getFieldDict", &mooseGetFieldDict, "className"_a,
+          "finfoType"_a = "");
+    m.def("copy", &mooseCopy, "orig"_a, "newParent"_a, "newName"_a, "num"_a = 1,
+          "toGlobal"_a = false, "copyExtMsgs"_a = false);
+
     // Attributes.
     m.attr("NA") = NA;
     m.attr("PI") = PI;

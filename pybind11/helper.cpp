@@ -141,7 +141,7 @@ Shell* getShellPtr(void)
     return reinterpret_cast<Shell*>(Id().eref().data());
 }
 
-bool doesExist(const string& path)
+bool mooseExists(const string& path)
 {
     return Id(path) != Id() || path == "/" || path == "/root";
 }

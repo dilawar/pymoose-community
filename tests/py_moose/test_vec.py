@@ -4,7 +4,7 @@ import moose
 def test_vec():
     foo = moose.Pool('/foo1', 500)
     bar = moose.vec('/foo1')
-    assert len(bar) == 500
+    assert len(bar) == 500, len(bar)
 
 def test_vec2():
     iaf = moose.vec('/iaf', n=10, dtype='IntFire')
