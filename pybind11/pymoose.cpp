@@ -37,11 +37,15 @@
 #include "../shell/Shell.h"
 #include "../shell/Wildcard.h"
 #include "../utility/strutil.h"
+
+#include "../basecode/global.h"
+
 #include "helper.h"
 #include "pymoose.h"
 
 using namespace std;
 namespace py = pybind11;
+using namespace pybind11::literals;
 
 Id initModule(py::module& m)
 {
@@ -343,8 +347,7 @@ PYBIND11_MODULE(_cmoose, m)
         .def("setClock", &Shell::doSetClock)
         .def("reinit", &Shell::doReinit)
         .def("delete", &Shell::doDelete)
-        .def("start", &Shell::doStart, py::arg("runtime"),
-             py::arg("notify") = false)
+        .def("start", &Shell::doStart, "runtime"_a, "notify"_a = false)
         .def("quit", &Shell::doQuit);
 
     // Module functions.
@@ -352,22 +355,22 @@ PYBIND11_MODULE(_cmoose, m)
           []() { return reinterpret_cast<Shell*>(Id().eref().data()); },
           py::return_value_policy::reference);
 
+    m.def("seed", [](size_t a){ moose::mtseed(a);});
+    m.def("rand", [](double a, double b){ return moose::mtrand(a, b);}, "a"_a=0, "b"_a=1);
     m.def("wildcardFind", &wildcardFind2);
     m.def("delete", &mooseDelete);
     m.def("create", &mooseCreate);
     m.def("reinit", &mooseReinit);
-    m.def("start", &mooseStart, py::arg("runtime"), py::arg("notify") = false);
+    m.def("start", &mooseStart, "runtime"_a, "notify"_a = false);
     m.def("element", &mooseElement);
     m.def("exists", &doesExist);
     m.def("connect", &mooseConnect);
     m.def("getCwe", &mooseGetCwe);
     m.def("setClock", &mooseSetClock);
     m.def("loadModelInternal", &loadModelInternal);
-    m.def("getFieldDict", &mooseGetFieldDict, py::arg("className"),
-          py::arg("finfoType") = "");
-    m.def("copy", &mooseCopy, py::arg("orig"), py::arg("newParent"),
-          py::arg("newName"), py::arg("num") = 1, py::arg("toGlobal") = false,
-          py::arg("copyExtMsgs") = false);
+    m.def("getFieldDict", &mooseGetFieldDict, "className"_a, "finfoType"_a = "");
+    m.def("copy", &mooseCopy, "orig"_a, "newParent"_a, "newName"_a
+            , "num"_a = 1, "toGlobal"_a = false, "copyExtMsgs"_a = false);
     // Attributes.
     m.attr("NA") = NA;
     m.attr("PI") = PI;
