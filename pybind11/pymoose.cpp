@@ -131,9 +131,9 @@ py::object getLookupValueFinfoItem(const ObjId& oid, const string& fname,
     string tgtType = srcDestType[1];
 
     py::object r;
-    if(tgtType == "bool")
+    if (tgtType == "bool")
         r = py::cast(LookupField<string, bool>::get(oid, fname, k));
-    else if(tgtType == "vector<Id>")
+    else if (tgtType == "vector<Id>")
         r = py::cast(LookupField<string, vector<Id>>::get(oid, fname, k));
     else
         cerr << "Unsupported types: " << rttType << endl;
@@ -197,6 +197,8 @@ PYBIND11_MODULE(_cmoose, m)
         // properties
         .def_property_readonly("numIds", &Id::numIds)
         .def_property_readonly("path", &Id::path)
+        .def_property_readonly("name",
+                               [](const Id& id) { return ObjId(id).name(); })
         .def_property_readonly("id", &Id::value)
         .def_property_readonly(
             "cinfo", [](Id& id) { return id.element()->cinfo(); },
@@ -222,6 +224,8 @@ PYBIND11_MODULE(_cmoose, m)
         .def_property_readonly("value",
                                [](const ObjId oid) { return oid.id.value(); })
         .def_property_readonly("path", &ObjId::path)
+        .def_property_readonly(
+            "parent", [](const ObjId& oid) { return Neutral::parent(oid); })
         .def_property_readonly("name", &ObjId::name)
         .def_property_readonly(
             "className",
@@ -284,8 +288,7 @@ PYBIND11_MODULE(_cmoose, m)
         .def("quit", &Shell::doQuit);
 
     // Module functions.
-    m.def(
-        "getShell",
+    m.def("getShell",
         []() { return reinterpret_cast<Shell*>(Id().eref().data()); },
         py::return_value_policy::reference);
 
@@ -301,7 +304,9 @@ PYBIND11_MODULE(_cmoose, m)
     m.def("loadModelInternal", &loadModelInternal);
     m.def("getFieldDict", &mooseGetFieldDict, py::arg("className"),
           py::arg("finfoType") = "");
-
+    m.def("copy", &mooseCopy, py::arg("orig"), py::arg("newParent"),
+          py::arg("newName"), py::arg("num") = 1, py::arg("toGlobal") = false,
+          py::arg("copyExtMsgs") = false);
     // Attributes.
     m.attr("NA") = NA;
     m.attr("PI") = PI;

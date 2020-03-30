@@ -59,7 +59,7 @@ class __Neutral__(_cmoose._ObjId):
 
 for p in _cmoose.wildcardFind('/##[TYPE=Cinfo]'):
     # create a class.
-    cls = type(p.name, (__Neutral__,), dict(__metaclass__=p.name, objid=p.id))
+    cls = type(p.name, (__Neutral__,), dict(__metaclass__=p.name))
     setattr(moose, cls.__name__, cls)
 
 logger_.info("Declarting classes took %f sec" % (time.time() - t0))
@@ -104,6 +104,12 @@ def element(pathOrObject):
 def exists(path):
     return _cmoose.exists(path)
 
+def copy(elem, newParent, newName="", n=1):
+    if not newName:
+        newName = elem.name
+    if isinstance(newName, str):
+        newParent = __Neutral__(newParent)
+    return _cmoose.copy(elem, newParent, newName, n, False, False) 
 
 def getCwe():
     return __Neutral__(_cmoose.getCwe())

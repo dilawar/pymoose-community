@@ -148,17 +148,12 @@ bool doesExist(const string& path)
 
 ObjId mooseElement(const string& path)
 {
-    ObjId oid;
-    unsigned nid = 0, did = 0, fidx = 0;
-    Id id;
-    unsigned int numData = 0;
-
-    oid = ObjId(path);
+    ObjId oid(path);
     if (oid.bad()) {
         throw runtime_error(std::string("moose_element: '") +
                             std::string(path) +
                             std::string("' does not exist!"));
-        return Id();
+        return ObjId(Id());
     }
     return oid;
 }
@@ -311,4 +306,19 @@ void mooseReinit()
 void mooseStart(double runtime, bool notify=false)
 {
     getShellPtr()->doStart(runtime, notify);
+}
+
+//ObjId mooseCopy(const ObjId& orig, ObjId newParent, string newName, unsigned int n=1
+//        , bool toGlobal=false, bool copyExtMsgs=false)
+//{
+//    auto id =  getShellPtr()->doCopy(orig.id, newParent, newName, n, toGlobal, copyExtMsgs);
+//    return ObjId(id);
+//}
+
+
+ObjId mooseCopy(const Id& orig, ObjId newParent, string newName, unsigned int n=1
+        , bool toGlobal=false, bool copyExtMsgs=false)
+{
+    auto id =  getShellPtr()->doCopy(orig, newParent, newName, n, toGlobal, copyExtMsgs);
+    return ObjId(id);
 }

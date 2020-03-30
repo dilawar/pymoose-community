@@ -47,6 +47,12 @@ void mooseDelete(const ObjId& oid);
 
 ObjId mooseCreate(const string type, const string& path, size_t numdata = 1);
 
+// ObjId mooseCopy(const ObjId& orig, ObjId newParent, string newName, unsigned int n,
+//              bool toGlobal, bool copyExtMsgs);
+
+ObjId mooseCopy(const Id& orig, ObjId newParent, string newName, unsigned int n
+        , bool toGlobal, bool copyExtMsgs);
+
 py::object mooseGetCwe();
 
 void mooseSetClock(const size_t clockId, double dt);
@@ -56,6 +62,5 @@ map<string, string> mooseGetFieldDict(const string& className,
 
 void mooseReinit();
 void mooseStart(double runtime, bool notify);
-
 
 #endif /* end of include guard: HELPER_H */
