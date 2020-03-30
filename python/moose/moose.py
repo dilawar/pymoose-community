@@ -31,7 +31,7 @@ class __Finfo__(object):
         return self.finfo(k)
 
     def __call__(self, k):
-        self.finfo(k)
+        return  self.finfo(k)
 
 class __Neutral__(_cmoose._ObjId):
 

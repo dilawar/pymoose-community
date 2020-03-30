@@ -43,7 +43,10 @@
 using namespace std;
 namespace py = pybind11;
 
-Id initModule(py::module& m) { return initShell(); }
+Id initModule(py::module& m)
+{
+    return initShell();
+}
 
 template <typename T = double>
 void setProperty(const ObjId& id, const string& fname, T val)
@@ -143,8 +146,8 @@ py::object getLookupValueFinfoItem(const ObjId& oid, const string& fname,
 py::function getLookupValueFinfo(const ObjId& oid, const string& fname,
                                  const string& rttType)
 {
-    std::function<py::object(const string&)> f = [oid, fname,
-                                                  rttType](const string& key) {
+    std::function<py::object(const string&)> f = [oid, fname, rttType](
+        const string& key) {
         return getLookupValueFinfoItem(oid, fname, key, rttType);
     };
     return py::cast(f);
@@ -169,8 +172,7 @@ py::object getProperty(const ObjId& oid, const string& fname)
     else if (finfoType == "FieldElementFinfo") {
         // Return list.
         return getElementFinfo(oid, fname, rttType);
-    }
-    else if (finfoType == "LookupValueFinfo") {
+    } else if (finfoType == "LookupValueFinfo") {
         // Return function.
         return getLookupValueFinfo(oid, fname, rttType);
     }
@@ -200,16 +202,15 @@ PYBIND11_MODULE(_cmoose, m)
         .def_property_readonly("name",
                                [](const Id& id) { return ObjId(id).name(); })
         .def_property_readonly("id", &Id::value)
+        .def_property_readonly("cinfo",
+                               [](Id& id) { return id.element()->cinfo(); },
+                               py::return_value_policy::reference)
         .def_property_readonly(
-            "cinfo", [](Id& id) { return id.element()->cinfo(); },
-            py::return_value_policy::reference)
-        .def_property_readonly(
-            "type", [](Id& id) { return id.element()->cinfo()->name(); })
+             "type", [](Id& id) { return id.element()->cinfo()->name(); })
         .def("__repr__", [](const Id& id) {
-            return "<Id id=" + std::to_string(id.value()) +
-                   " path=" + id.path() +
-                   " class=" + id.element()->cinfo()->name() + ">";
-        });
+             return "<Id id=" + std::to_string(id.value()) + " path=" +
+                    id.path() + " class=" + id.element()->cinfo()->name() + ">";
+         });
 
     py::class_<ObjId>(m, "_ObjId")
         .def(py::init<>())
@@ -225,14 +226,14 @@ PYBIND11_MODULE(_cmoose, m)
                                [](const ObjId oid) { return oid.id.value(); })
         .def_property_readonly("path", &ObjId::path)
         .def_property_readonly(
-            "parent", [](const ObjId& oid) { return Neutral::parent(oid); })
+             "parent", [](const ObjId& oid) { return Neutral::parent(oid); })
         .def_property_readonly("name", &ObjId::name)
-        .def_property_readonly(
-            "className",
-            [](const ObjId& oid) { return oid.element()->cinfo()->name(); })
+        .def_property_readonly("className", [](const ObjId& oid) {
+             return oid.element()->cinfo()->name();
+         })
         .def_property_readonly("id", [](ObjId& oid) { return oid.id; })
         .def_property_readonly(
-            "type", [](ObjId& oid) { return oid.element()->cinfo()->name(); })
+             "type", [](ObjId& oid) { return oid.element()->cinfo()->name(); })
         //--------------------------------------------------------------------
         // Set/Get
         //--------------------------------------------------------------------
@@ -245,7 +246,6 @@ PYBIND11_MODULE(_cmoose, m)
 
         // Overload for Field::get
         .def("getField", &getProperty)
-
         .def("getElementField", &getElementField)
         .def("getElementFieldItem", &getElementFieldItem)
         .def("getNumpy", &getFieldNumpy<double>)
@@ -259,10 +259,10 @@ PYBIND11_MODULE(_cmoose, m)
         //  Extra
         //---------------------------------------------------------------------
         .def("__repr__", [](const ObjId& oid) {
-            return "<" + oid.element()->cinfo()->name() +
-                   " id=" + std::to_string(oid.id.value()) +
-                   " path=" + oid.path() + ">";
-        });
+             return "<" + oid.element()->cinfo()->name() + " id=" +
+                    std::to_string(oid.id.value()) + " path=" + oid.path() +
+                    ">";
+         });
 
     py::class_<Variable>(m, "_Variable").def(py::init<>());
 
@@ -273,9 +273,7 @@ PYBIND11_MODULE(_cmoose, m)
                                py::return_value_policy::reference)
         .def("findFinfo", &Cinfo::findFinfoWrapper)
         .def("baseCinfo", &Cinfo::baseCinfo, py::return_value_policy::reference)
-        .def("isA", &Cinfo::isA)
-        ;
-    
+        .def("isA", &Cinfo::isA);
 
     py::class_<Shell>(m, "_Shell")
         .def(py::init<>())
@@ -291,8 +289,8 @@ PYBIND11_MODULE(_cmoose, m)
 
     // Module functions.
     m.def("getShell",
-        []() { return reinterpret_cast<Shell*>(Id().eref().data()); },
-        py::return_value_policy::reference);
+          []() { return reinterpret_cast<Shell*>(Id().eref().data()); },
+          py::return_value_policy::reference);
 
     m.def("wildcardFind", &wildcardFind2);
     m.def("delete", &mooseDelete);
