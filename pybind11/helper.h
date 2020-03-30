@@ -47,7 +47,7 @@ ObjId mooseConnect(const ObjId& src, const string& srcField, const ObjId& tgt,
 bool mooseDelete(const ObjId& oid);
 bool mooseDelete(const string& path);
 
-ObjId mooseCreate(const string type, const string& path, size_t numdata = 1);
+Id mooseCreate(const string type, const string& path, size_t numdata = 1);
 
 Id mooseCopy(const Id& orig, ObjId newParent, string newName,
                 unsigned int n, bool toGlobal, bool copyExtMsgs);

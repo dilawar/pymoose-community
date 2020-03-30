@@ -230,7 +230,7 @@ bool mooseDelete(const string& path)
     return getShellPtr()->doDelete(ObjId(path));
 }
 
-ObjId mooseCreate(const string type, const string& path, size_t numdata)
+Id mooseCreate(const string type, const string& path, size_t numdata)
 {
     auto p = moose::splitPath(path);
     return getShellPtr()->doCreate2(type, ObjId(p.first), p.second, numdata);

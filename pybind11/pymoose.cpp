@@ -91,7 +91,7 @@ PYBIND11_MODULE(_cmoose, m)
         .def("__repr__", [](const Id& id) {
              return "<Id id=" + std::to_string(id.value()) + " path=" +
                     id.path() + " class=" + id.element()->cinfo()->name() + ">";
-         });
+                    });
 
     py::class_<ObjId>(m, "_ObjId")
         .def(py::init<>())
@@ -138,6 +138,7 @@ PYBIND11_MODULE(_cmoose, m)
         .def("__setattr__", &setProperty<vector<double>>)
         .def("__setattr__", &setProperty<std::string>)
         .def("__setattr__", &setProperty<ObjId>)
+        .def("__setattr__", &setProperty<Id>)
         .def("__setattr__", &setProperty<bool>)
 
         //---------------------------------------------------------------------
