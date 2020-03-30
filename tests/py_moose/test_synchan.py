@@ -24,7 +24,8 @@ def make_synapse(path):
     # IN new implementation, there is SimpleSynHandler class which takes cares
     # of multiple synapses. Class SynChan does not have any .synapse field.
     synH = moose.SimpleSynHandler( '%s/SynHandler' % path)
-    synH.synapse.num = 1
+    print(synH)
+    #synH.synapse.num = 1
     ## syn.bufferTime = 1.0 # ms
     synH.synapse.delay = 1.0
     synH.synapse.weight = 1.0
