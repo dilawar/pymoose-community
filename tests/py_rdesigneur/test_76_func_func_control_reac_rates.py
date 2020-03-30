@@ -33,7 +33,7 @@ def makeFuncRate():
     C = moose.Pool( '/library/chem/compt/C' )
     reac = moose.Reac( '/library/chem/compt/reac' )
     func = moose.Function( '/library/chem/compt/reac/func' )
-    func.x.num = 1
+    #  func.x.num = 1
     func.expr = "(x0/1e8)^2"
     moose.connect( C, 'nOut', func.x[0], 'input' )
     moose.connect( func, 'valueOut', reac, 'setNumKf' )

@@ -21,8 +21,10 @@ def test_21_vclamp():
         data.append(t.vector)
     mean = np.mean(data, axis=1)
     std = np.std(data, axis=1)
-    assert np.allclose([-5.83422152e-02, -9.28563233e-09], mean), mean
-    assert np.allclose([9.41512562e-03, 2.79081939e-08], std), std
+    expected = [-5.83205557e-02, -9.23459846e-09]
+    assert np.allclose(expected, mean), mean
+    expected = [9.44856777e-03, 6.30616330e-08]
+    assert np.allclose(expected, std), std
     return data
 
 if __name__ == '__main__':

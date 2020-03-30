@@ -144,14 +144,14 @@ def fixXreacs(basepath):
     xr = findXreacs(basepath, 'Reac')
     xe = findXreacs(basepath, 'Enz')
 
-    for i in (xr):
+    for i in xr:
         reac, reacc, subs, subc, prds, prdc = i
         for j in range(len(subs)):
             reacProxify(reac, reacc, 'sub', subs[j], subc[j])
         for j in range(len(prds)):
             reacProxify(reac, reacc, 'prd', prds[j], prdc[j])
 
-    for i in (xe):
+    for i in xe:
         reac, reacc, subs, subc, prds, prdc = i
         for j in range(len(subs)):
             enzProxify(reac, reacc, 'sub', subs[j], subc[j])
