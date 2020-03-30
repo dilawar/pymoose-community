@@ -138,6 +138,7 @@ PYBIND11_MODULE(_cmoose, m)
         .def("__setattr__", &setProperty<vector<double>>)
         .def("__setattr__", &setProperty<std::string>)
         .def("__setattr__", &setProperty<ObjId>)
+        .def("__setattr__", &setProperty<Id>)
         .def("__setattr__", &setProperty<bool>)
 
         //---------------------------------------------------------------------

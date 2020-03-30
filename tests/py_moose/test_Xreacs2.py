@@ -28,8 +28,10 @@ def test_xreac2():
     ks1 = moose.Ksolve( '/model/kinetics/ksolve' )
     ds1 = moose.Dsolve( '/model/kinetics/dsolve' )
     s1 = moose.Stoich( '/model/kinetics/stoich' )
+    print('xx', s1, type(s1), ks1)
     s1.compartment = moose.element( '/model/kinetics' )
     s1.ksolve = ks1
+    print('yyy', s1.ksolve)
     s1.dsolve = ds1
     s1.path = '/model/kinetics/##'
 

@@ -17,10 +17,13 @@
 #ifndef PYMOOSE_H
 #define PYMOOSE_H
 
+#include "../external/prettyprint.hpp"
+
 template <typename T = double>
-void setProperty(const ObjId& id, const string& fname, T val)
+bool setProperty(const ObjId& id, const string& fname, T val)
 {
-    Field<T>::set(id, fname, val);
+    // MOOSE_DEBUG( "Setting " << fname << " on " << id.path() << " with value " << val);
+    return Field<T>::set(id, fname, val);
 }
 
 template <typename T = double>
