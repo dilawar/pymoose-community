@@ -25,9 +25,16 @@ def test_other():
     finfo = moose.getFieldDict(a1.className)
     print(finfo)
 
+def test_vec():
+    a = moose.Pool('/p111', 100)
+    v = moose.vec(a)
+    for i, x in enumerate(v):
+        print(i, x)
+
 def main():
     test_children()
     test_other()
+    test_vec()
 
 if __name__ == '__main__':
     main()

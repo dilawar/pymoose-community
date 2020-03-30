@@ -20,6 +20,7 @@
 #include "../external/pybind11/include/pybind11/pybind11.h"
 #include "../external/pybind11/include/pybind11/stl.h"
 #include "../external/pybind11/include/pybind11/numpy.h"
+#include "../external/pybind11/include/pybind11/functional.h"
 
 // See
 // https://pybind11.readthedocs.io/en/stable/advanced/cast/stl.html#binding-stl-containers
@@ -147,16 +148,19 @@ bool mooseExists(const string& path)
     return Id(path) != Id() || path == "/" || path == "/root";
 }
 
+ObjId mooseElement(const ObjId& oid)
+{
+    return oid;
+}
+
 ObjId mooseElement(const string& path)
 {
     ObjId oid(path);
     if (oid.bad()) {
-        throw runtime_error(std::string("moose_element: '") +
-                            std::string(path) +
-                            std::string("' does not exist!"));
+        cerr << "moose_element: " << path << " does not exist!" << endl;
         return ObjId(Id());
     }
-    return oid;
+    return mooseElement(oid);
 }
 
 ObjId loadModelInternal(const string& fname, const string& modelpath,
@@ -216,9 +220,14 @@ ObjId mooseConnect(const ObjId& src, const string& srcField, const ObjId& tgt,
     return pShell->doAddMsg("Single", src, srcField, tgt, tgtField);
 }
 
-void mooseDelete(const ObjId& oid)
+bool mooseDelete(const ObjId& oid)
 {
-    getShellPtr()->doDelete(oid);
+    return getShellPtr()->doDelete(oid);
+}
+
+bool mooseDelete(const string& path)
+{
+    return getShellPtr()->doDelete(ObjId(path));
 }
 
 ObjId mooseCreate(const string type, const string& path, size_t numdata)
@@ -390,15 +399,20 @@ py::object handleDestFinfo(const ObjId& obj, const string& fname)
     // return py::none();
 }
 
-py::object getPropertyDestFinfo(const ObjId& oid, const string& fname)
+py::cpp_function getPropertyDestFinfo(const ObjId& oid, const string& fname,
+                                      const Finfo* finfo)
 {
+    const auto rttType = finfo->rttiType();
 
     // Return function.
-    std::function<py::object(const string&)> func = [oid](const string& fname) {
-        return handleDestFinfo(oid, fname);
-    };
-    return py::cast(func);
+    cout << "ObjId " << oid << " -- " << fname << ": " << rttType << endl;
 
+    if (rttType == "void") {
+        std::function<py::object()> func = [oid, fname]() {
+            return handleDestFinfo(oid, fname);
+        };
+        return func;
+    }
 }
 
 py::object getProperty(const ObjId& oid, const string& fname)
@@ -423,7 +437,7 @@ py::object getProperty(const ObjId& oid, const string& fname)
         // Return function.
         return getLookupValueFinfo(oid, fname, finfo);
     } else if (finfoType == "DestFinfo") {
-        return getPropertyDestFinfo(oid, fname);
+        return getPropertyDestFinfo(oid, fname, finfo);
     }
 
     cerr << "NotImplemented: getProperty for " << fname << " with rttType "
@@ -441,13 +455,22 @@ py::object getLookupValueFinfoItem(const ObjId& oid, const string& fname,
     string tgtType = srcDestType[1];
 
     py::object r;
-    if (tgtType == "bool")
-        r = py::cast(LookupField<string, bool>::get(oid, fname, k));
-    else if (tgtType == "vector<Id>")
-        r = py::cast(LookupField<string, vector<Id>>::get(oid, fname, k));
-    else
-        cerr << "Unsupported types: " << rttType << endl;
-    return r;
+    if (srcType == "string") {
+        if (tgtType == "bool")
+            return py::cast(LookupField<string, bool>::get(oid, fname, k));
+        else if (tgtType == "vector<Id>")
+            return py::cast(
+                LookupField<string, vector<Id>>::get(oid, fname, k));
+        else if (tgtType == "vector<ObjId>")
+            return py::cast(
+                LookupField<string, vector<ObjId>>::get(oid, fname, k));
+        else
+            MOOSE_DEBUG("Unsupported types: " << rttType << " and " << tgtType);
+    }
+
+    MOOSE_DEBUG("Unsupported types: " << rttType << " src: " << srcType
+                                      << " and tgt:" << tgtType);
+    py::none();
 }
 
 py::object getLookupValueFinfo(const ObjId& oid, const string& fname,

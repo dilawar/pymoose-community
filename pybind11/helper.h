@@ -28,6 +28,7 @@ Shell* getShellPtr();
 
 bool mooseExists(const string& path);
 
+ObjId mooseElement(const ObjId& oid);
 ObjId mooseElement(const string& path);
 
 ObjId loadModelInternal(const string& fname, const string& modelpath,
@@ -43,7 +44,8 @@ py::object getFieldGeneric(const ObjId& oid, const string& fname);
 ObjId mooseConnect(const ObjId& src, const string& srcField, const ObjId& tgt,
                    const string& tgtField);
 
-void mooseDelete(const ObjId& oid);
+bool mooseDelete(const ObjId& oid);
+bool mooseDelete(const string& path);
 
 ObjId mooseCreate(const string type, const string& path, size_t numdata = 1);
 
@@ -71,7 +73,8 @@ py::object handleDestFinfo(const ObjId& obj, const string& fname);
 
 py::object getValueFinfo(const ObjId& oid, const string& fname, const Finfo* f);
 
-py::object getPropertyDestFinfo(const ObjId& oid);
+py::cpp_function getPropertyDestFinfo(const ObjId& oid, const string& fname,
+                                      const Finfo* finfo);
 
 py::object getProperty(const ObjId& oid, const string& fname);
 

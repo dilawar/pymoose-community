@@ -18,7 +18,7 @@ class MooseVec {
 
 public:
     MooseVec(const string& path, size_t n = 1, const string& dtype = "Neutral")
-        : path_(path), n_(n), dtype_(dtype)
+        : path_(path)
     {
         if (!mooseExists(path)) {
             objs_.clear();
@@ -30,6 +30,12 @@ public:
             for (size_t i = 0; i < o.element()->numData(); i++)
                 objs_.push_back(ObjId(o, i));
         }
+    }
+
+    MooseVec(const ObjId& oid) : path_(oid.path())
+    {
+        for (size_t i = 0; i < oid.element()->numData(); i++)
+            objs_.push_back(ObjId(oid, i));
     }
 
     size_t len()
@@ -64,15 +70,18 @@ public:
     vector<py::object> getAttr(const string& name)
     {
         vector<py::object> res(objs_.size());
-        for (size_t i = 0; i < objs_.size(); i++) 
+        for (size_t i = 0; i < objs_.size(); i++)
             res[i] = getProperty(objs_[i], name);
         return res;
     }
 
+    const vector<ObjId>& objs() const
+    {
+        return objs_;
+    }
+
 private:
     std::string path_;
-    size_t n_;
-    const std::string dtype_;
     std::vector<ObjId> objs_;
 };
 

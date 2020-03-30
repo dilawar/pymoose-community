@@ -25,9 +25,9 @@
 #include "../external/pybind11/include/pybind11/pybind11.h"
 #include "../external/pybind11/include/pybind11/stl.h"
 
-// See
-// https://pybind11.readthedocs.io/en/stable/advanced/cast/stl.html#binding-stl-containers
-// #include "../external/pybind11/include/pybind11/stl_bind.h"
+// See https://pybind11.readthedocs.io/en/master/classes.html#overloaded-methods
+template <typename... Args>
+using overload_cast_ = pybind11::detail::overload_cast_impl<Args...>;
 
 #include "../basecode/global.h"
 #include "../basecode/header.h"
@@ -54,7 +54,6 @@ Id initModule(py::module& m)
 {
     return initShell();
 }
-
 
 PYBIND11_MODULE(_cmoose, m)
 {
@@ -135,7 +134,6 @@ PYBIND11_MODULE(_cmoose, m)
         * Attributes.
         */
         .def("__getattr__", &getProperty)
-        .def("__getattr__", &getPropertyDestFinfo)
         .def("__setattr__", &setProperty<double>)
         .def("__setattr__", &setProperty<vector<double>>)
         .def("__setattr__", &setProperty<std::string>)
@@ -186,12 +184,17 @@ PYBIND11_MODULE(_cmoose, m)
     py::class_<MooseVec>(m, "vec", py::dynamic_attr())
         .def(py::init<const string&, size_t, const string&>(), "path"_a,
              "n"_a = 1, "dtype"_a = "Neutral")  // Default
+        .def(py::init<const ObjId&>())
         .def("__len__", &MooseVec::len)
+        .def("__iter__",
+             [](const MooseVec& v) {
+                 return py::make_iterator(v.objs().begin(), v.objs().end());
+             },
+             py::keep_alive<0, 1>())
         .def("__getitem__", &MooseVec::getElem)
         .def("__setattr__", &MooseVec::setAttrOneToOne<double>)
         .def("__setattr__", &MooseVec::setAttrOneToAll<double>)
-        .def("__getattr__", &MooseVec::getAttr)
-        ;
+        .def("__getattr__", &MooseVec::getAttr);
 
     // Module functions.
     m.def("getShell",
@@ -202,11 +205,13 @@ PYBIND11_MODULE(_cmoose, m)
     m.def("rand", [](double a, double b) { return moose::mtrand(a, b); },
           "a"_a = 0, "b"_a = 1);
     m.def("wildcardFind", &wildcardFind2);
-    m.def("delete", &mooseDelete);
+    m.def("delete", overload_cast_<const ObjId&>()(&mooseDelete));
+    m.def("delete", overload_cast_<const string&>()(&mooseDelete));
     m.def("create", &mooseCreate);
     m.def("reinit", &mooseReinit);
     m.def("start", &mooseStart, "runtime"_a, "notify"_a = false);
-    m.def("element", &mooseElement);
+    m.def("element", overload_cast_<const ObjId&>()(&mooseElement));
+    m.def("element", overload_cast_<const string&>()(&mooseElement));
     m.def("exists", &mooseExists);
     m.def("connect", &mooseConnect);
     m.def("getCwe", &mooseGetCwe);
