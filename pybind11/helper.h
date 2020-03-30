@@ -51,8 +51,8 @@ ObjId mooseCreate(const string type, const string& path, size_t numdata = 1);
 // int n,
 //              bool toGlobal, bool copyExtMsgs);
 
-ObjId mooseCopy(const Id& orig, ObjId newParent, string newName, unsigned int n,
-                bool toGlobal, bool copyExtMsgs);
+ObjId mooseCopy(const ObjId& orig, ObjId newParent, string newName,
+                unsigned int n, bool toGlobal, bool copyExtMsgs);
 
 py::object mooseGetCwe();
 
@@ -64,11 +64,14 @@ map<string, string> mooseGetFieldDict(const string& className,
 void mooseReinit();
 void mooseStart(double runtime, bool notify);
 
-py::list getElementFinfo(const ObjId& objid, const string& fname, const Finfo* f);
+py::list getElementFinfo(const ObjId& objid, const string& fname,
+                         const Finfo* f);
 
-py::function getDestFinfo(const ObjId& obj, const string& fname, const Finfo* f);
+py::object handleDestFinfo(const ObjId& obj, const string& fname);
 
 py::object getValueFinfo(const ObjId& oid, const string& fname, const Finfo* f);
+
+py::object getPropertyDestFinfo(const ObjId& oid);
 
 py::object getProperty(const ObjId& oid, const string& fname);
 

@@ -34,16 +34,6 @@ else(APPLE)
         ${SYSTEM_SHARED_LIBS})
 endif()
 
-
-enable_testing()
-add_test(NAME pybind11_sanity 
-    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/pybind11/test_pybind_moose.py
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    )
-set_tests_properties(pybind11_sanity
-    PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python/moose"
-    )
-
 # # Copy python tree to BUILD directory. User can set PYTHONPATH to
 # # ${CMAKE_BINARY_DIR}/python.
 add_custom_target(copy_python_tree ALL

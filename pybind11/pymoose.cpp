@@ -56,13 +56,6 @@ Id initModule(py::module& m)
 }
 
 
-
-inline ObjId getElementFinfoItem(const ObjId& oid, const size_t& i)
-{
-    return ObjId(oid.path(), oid.dataIndex, i);
-}
-
-
 PYBIND11_MODULE(_cmoose, m)
 {
     m.doc() = R"moosedoc(moose module.)moosedoc";
@@ -142,6 +135,7 @@ PYBIND11_MODULE(_cmoose, m)
         * Attributes.
         */
         .def("__getattr__", &getProperty)
+        .def("__getattr__", &getPropertyDestFinfo)
         .def("__setattr__", &setProperty<double>)
         .def("__setattr__", &setProperty<vector<double>>)
         .def("__setattr__", &setProperty<std::string>)

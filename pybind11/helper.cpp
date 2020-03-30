@@ -210,7 +210,7 @@ ObjId getElementFieldItem(const ObjId& objid, const string& fname,
 }
 
 ObjId mooseConnect(const ObjId& src, const string& srcField, const ObjId& tgt,
-              const string& tgtField)
+                   const string& tgtField)
 {
     auto pShell = getShellPtr();
     return pShell->doAddMsg("Single", src, srcField, tgt, tgtField);
@@ -248,17 +248,15 @@ map<string, string> mooseGetFieldDict(const string& className,
                                       const string& finfoType = "")
 {
     const Cinfo* cinfo = Cinfo::find(className);
-    if (! cinfo) {
+    if (!cinfo) {
         cout << "Warning: Invalid class " << className << endl;
         return {};
     }
 
     map<string, string> fieldDict;
-    if(finfoType == "")
-    {
+    if (finfoType == "") {
         auto finfos = cinfo->finfoMap();
-        for (auto& v : finfos)
-            fieldDict[v.first] = v.second->rttiType();
+        for (auto& v : finfos) fieldDict[v.first] = v.second->rttiType();
         return fieldDict;
     }
 
@@ -266,33 +264,33 @@ map<string, string> mooseGetFieldDict(const string& className,
     // FIXME: Fix the typeids  or remove the 'get' and 'set'
     if (finfoType == "valueFinfo" || finfoType == "value") {
         for (unsigned int ii = 0; ii < cinfo->getNumValueFinfo(); ++ii) {
-            auto *finfo = cinfo->getValueFinfo(ii);
+            auto* finfo = cinfo->getValueFinfo(ii);
             fieldDict[finfo->name()] = finfo->rttiType();
         }
     } else if (finfoType == "srcFinfo" || finfoType == "src") {
         for (unsigned int ii = 0; ii < cinfo->getNumSrcFinfo(); ++ii) {
-            auto *finfo = cinfo->getSrcFinfo(ii);
+            auto* finfo = cinfo->getSrcFinfo(ii);
             fieldDict[finfo->name()] = finfo->rttiType();
         }
     } else if (finfoType == "destFinfo" || finfoType == "dest") {
         for (unsigned int ii = 0; ii < cinfo->getNumDestFinfo(); ++ii) {
-            auto *finfo = cinfo->getDestFinfo(ii);
+            auto* finfo = cinfo->getDestFinfo(ii);
             fieldDict[finfo->name()] = finfo->rttiType();
         }
     } else if (finfoType == "lookupFinfo" || finfoType == "lookup") {
         for (unsigned int ii = 0; ii < cinfo->getNumLookupFinfo(); ++ii) {
-            auto *finfo = cinfo->getLookupFinfo(ii);
+            auto* finfo = cinfo->getLookupFinfo(ii);
             fieldDict[finfo->name()] = finfo->rttiType();
         }
     } else if (finfoType == "sharedFinfo" || finfoType == "shared") {
         for (unsigned int ii = 0; ii < cinfo->getNumSrcFinfo(); ++ii) {
-            auto *finfo = cinfo->getSrcFinfo(ii);
+            auto* finfo = cinfo->getSrcFinfo(ii);
             fieldDict[finfo->name()] = finfo->rttiType();
         }
     } else if (finfoType == "fieldElementFinfo" || finfoType == "field" ||
                finfoType == "fieldElement") {
         for (unsigned int ii = 0; ii < cinfo->getNumFieldElementFinfo(); ++ii) {
-            auto *finfo = cinfo->getFieldElementFinfo(ii);
+            auto* finfo = cinfo->getFieldElementFinfo(ii);
             fieldDict[finfo->name()] = finfo->rttiType();
         }
     }
@@ -304,23 +302,26 @@ void mooseReinit()
     getShellPtr()->doReinit();
 }
 
-void mooseStart(double runtime, bool notify=false)
+void mooseStart(double runtime, bool notify = false)
 {
     getShellPtr()->doStart(runtime, notify);
 }
 
-//ObjId mooseCopy(const ObjId& orig, ObjId newParent, string newName, unsigned int n=1
+// ObjId mooseCopy(const ObjId& orig, ObjId newParent, string newName, unsigned
+// int n=1
 //        , bool toGlobal=false, bool copyExtMsgs=false)
 //{
-//    auto id =  getShellPtr()->doCopy(orig.id, newParent, newName, n, toGlobal, copyExtMsgs);
+//    auto id =  getShellPtr()->doCopy(orig.id, newParent, newName, n, toGlobal,
+// copyExtMsgs);
 //    return ObjId(id);
 //}
 
-
-ObjId mooseCopy(const Id& orig, ObjId newParent, string newName, unsigned int n=1
-        , bool toGlobal=false, bool copyExtMsgs=false)
+ObjId mooseCopy(const ObjId& orig, ObjId newParent, string newName,
+                unsigned int n = 1, bool toGlobal = false,
+                bool copyExtMsgs = false)
 {
-    auto id =  getShellPtr()->doCopy(orig, newParent, newName, n, toGlobal, copyExtMsgs);
+    auto id = getShellPtr()->doCopy(orig, newParent, newName, n, toGlobal,
+                                    copyExtMsgs);
     return ObjId(id);
 }
 
@@ -365,7 +366,8 @@ py::object getValueFinfo(const ObjId& oid, const string& fname, const Finfo* f)
     return r;
 }
 
-py::list getElementFinfo(const ObjId& objid, const string& fname, const Finfo* f)
+py::list getElementFinfo(const ObjId& objid, const string& fname,
+                         const Finfo* f)
 {
     auto rttType = f->rttiType();
     auto oid = ObjId(objid.path() + '/' + fname);
@@ -376,19 +378,28 @@ py::list getElementFinfo(const ObjId& objid, const string& fname, const Finfo* f
     return py::cast(res);
 }
 
-py::function getDestFinfo(const ObjId& obj, const string& fname, const Finfo* f)
+// FIXME: Rename function.
+py::object handleDestFinfo(const ObjId& obj, const string& fname)
 {
-    auto rttType = f->rttiType();
-    if (rttType == "Id") {
-        std::function<bool(const ObjId& tgt)> f = [obj, fname](
-            const ObjId& tgt) { return SetGet1<ObjId>::set(obj, fname, tgt); };
-        return py::cast(f);
-    } else
-        cout << "NotImplented: Setting " << fname << " with rttType '"
-             << rttType << "' on object " << obj.path() << endl;
-    return py::function();
+    auto ret = SetGet0::set(obj, fname);
+
+    return py::cast(ret);
+
+    // cout << "NotImplented: Setting " << fname << " with rttType '"
+    //      << rttType << "' on object " << obj.path() << endl;
+    // return py::none();
 }
 
+py::object getPropertyDestFinfo(const ObjId& oid, const string& fname)
+{
+
+    // Return function.
+    std::function<py::object(const string&)> func = [oid](const string& fname) {
+        return handleDestFinfo(oid, fname);
+    };
+    return py::cast(func);
+
+}
 
 py::object getProperty(const ObjId& oid, const string& fname)
 {
@@ -412,8 +423,7 @@ py::object getProperty(const ObjId& oid, const string& fname)
         // Return function.
         return getLookupValueFinfo(oid, fname, finfo);
     } else if (finfoType == "DestFinfo") {
-        // Return function.
-        return getDestFinfo(oid, fname, finfo);
+        return getPropertyDestFinfo(oid, fname);
     }
 
     cerr << "NotImplemented: getProperty for " << fname << " with rttType "
@@ -421,7 +431,8 @@ py::object getProperty(const ObjId& oid, const string& fname)
     return pybind11::none();
 }
 
-py::object getLookupValueFinfoItem(const ObjId& oid, const string& fname, const string& k, const Finfo* f)
+py::object getLookupValueFinfoItem(const ObjId& oid, const string& fname,
+                                   const string& k, const Finfo* f)
 {
     auto rttType = f->rttiType();
     vector<string> srcDestType;
@@ -439,8 +450,8 @@ py::object getLookupValueFinfoItem(const ObjId& oid, const string& fname, const 
     return r;
 }
 
-
-py::object getLookupValueFinfo(const ObjId& oid, const string& fname, const Finfo* f)
+py::object getLookupValueFinfo(const ObjId& oid, const string& fname,
+                               const Finfo* f)
 {
     // std::function<py::object(const string&)> f = [oid, fname, rttType](
     //    const string& key) {
