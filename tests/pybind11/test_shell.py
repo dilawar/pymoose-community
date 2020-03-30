@@ -3,7 +3,7 @@ import moose._cmoose as M
 import numpy as np
 import math
 
-def makereac0():
+def makereac0(): 
     pools = [None]*10
     s = M.getShell()
     kin = s.create("CubeMesh", M._ObjId(), "kinetics", 1)
@@ -334,6 +334,7 @@ def test_ksolve2():
 def test_access():
     moose.Neutral('x')
     a = moose.Neutral('x/x')
+    print(a.isA)
     print(a.isA('Compartment'))
     print(a.isA)
     print(a.isA[ 'Compartment' ])
@@ -341,6 +342,10 @@ def test_access():
     print(a.isA('Compartment'))
     print(a.isA['Compartment'])
     print(a.parent)
+    a = moose.Pool('13213')
+    print(a)
+    a.diffConst = 1.0
+
 
 def main():
     test_ksolve0()

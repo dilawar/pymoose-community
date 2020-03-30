@@ -40,7 +40,7 @@ ObjId getElementFieldItem(const ObjId& objid, const string& fname,
 
 py::object getFieldGeneric(const ObjId& oid, const string& fname);
 
-ObjId connect(const ObjId& src, const string& srcField, const ObjId& tgt,
+ObjId mooseConnect(const ObjId& src, const string& srcField, const ObjId& tgt,
               const string& tgtField);
 
 void mooseDelete(const ObjId& oid);

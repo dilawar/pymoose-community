@@ -16,22 +16,7 @@ import moose._cmoose as _cmoose
 import logging
 logger_ = logging.getLogger('moose')
 
-def __parent(path):
-    return path.split('/')[-1]
-
 t0 = time.time()
-
-# Hack:
-class __Finfo__(object):
-    def __init__(self, finfo):
-        super().__init__()
-        self.finfo = finfo
-
-    def __getitem__(self, k):
-        return self.finfo(k)
-
-    def __call__(self, k):
-        return  self.finfo(k)
 
 class __Neutral__(_cmoose._ObjId):
 
@@ -45,17 +30,6 @@ class __Neutral__(_cmoose._ObjId):
         else:
             raise RuntimeError("%s is not supported" % x)
         super(__Neutral__, self).__init__(obj.id)
-
-    def __setattr__(self, attr, val):
-        self.setField(attr, val)
-
-    def __getattr__(self, attr):
-        x = super(__Neutral__, self).getField(attr)
-        if not callable(x):
-            return x
-        # else return a dict.
-        return __Finfo__(x)
-
 
 for p in _cmoose.wildcardFind('/##[TYPE=Cinfo]'):
     # create a class.
@@ -94,11 +68,12 @@ def wildcardFind(pattern):
 def delete(a):
     return _cmoose.delete(a)
 
-def element(pathOrObject):
-    if isinstance(pathOrObject, str):
-        obj = _cmoose.element(pathOrObject)
+def element(e):
+    if not isinstance(e, str):
+        path = e.path
     else:
-        obj = _cmoose.element(pathOrObject.path)
+        path = e
+    obj = _cmoose.element(path)
     return __Neutral__(obj)
 
 def exists(path):

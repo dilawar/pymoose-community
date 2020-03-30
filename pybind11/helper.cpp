@@ -208,7 +208,7 @@ ObjId getElementFieldItem(const ObjId& objid, const string& fname,
     return ObjId(oid.id, oid.dataIndex, index);
 }
 
-ObjId connect(const ObjId& src, const string& srcField, const ObjId& tgt,
+ObjId mooseConnect(const ObjId& src, const string& srcField, const ObjId& tgt,
               const string& tgtField)
 {
     auto pShell = getShellPtr();
