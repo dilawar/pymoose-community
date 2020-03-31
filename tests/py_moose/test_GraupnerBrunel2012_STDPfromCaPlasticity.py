@@ -40,12 +40,6 @@ def test_GB2012_STDP():
 
     ## two neurons: index 0 will be presynaptic, 1 will be postsynaptic
     network = moose.LIF( 'network', 2 );
-
-    print(network)
-    quit()
-
-
-
     moose.le( '/network' )
     network.vec.Em = Vrest
     network.vec.thresh = Vt_base
