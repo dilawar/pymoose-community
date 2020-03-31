@@ -338,17 +338,24 @@ py::object getValueFinfo(const ObjId& oid, const string& fname, const Finfo* f)
     auto rttType = f->rttiType();
     py::object r = py::none();
 
+    // cout << "Getting " << fname << "(" << rttType << ")"
+         // << " from " << oid.path() << endl;
+
     if (rttType == "double" or rttType == "float")
         r = pybind11::float_(getField<double>(oid, fname));
     else if (rttType == "vector<double>") {
-        r = py::cast(getField<vector<double>>(oid, fname));
-        // r = getFieldNumpy<double>(oid, fname);
+        // r = py::cast(getField<vector<double>>(oid, fname));
+        r = getFieldNumpy<double>(oid, fname);
     } else if (rttType == "string")
         r = pybind11::str(getField<string>(oid, fname));
-    // else if (rttType == "char")
-        // r = pybind11::int_(getField<char>(oid, fname));
-    else if (rttType == "int" or rttType == "unsigned int" or rttType == "unsigned long" or rttType == "unsigned int")
+    else if (rttType == "char")
+        r = pybind11::int_(getField<char>(oid, fname));
+    else if (rttType == "int")
         r = pybind11::int_(getField<int>(oid, fname));
+    else if (rttType == "unsigned int")
+        r = pybind11::int_(getField<unsigned int>(oid, fname));
+    else if (rttType == "unsigned long")
+        r = pybind11::int_(getField<unsigned long>(oid, fname));
     else if (rttType == "bool")
         r = pybind11::bool_(getField<bool>(oid, fname));
     else if (rttType == "Id")
@@ -382,7 +389,7 @@ py::list getElementFinfo(const ObjId& objid, const string& fname,
 }
 
 py::cpp_function getFieldertyDestFinfo(const ObjId& oid, const string& fname,
-                                      const Finfo* finfo)
+                                       const Finfo* finfo)
 {
     const auto rttType = finfo->rttiType();
 
@@ -396,21 +403,22 @@ py::cpp_function getFieldertyDestFinfo(const ObjId& oid, const string& fname,
         return func;
     }
     if (rttType == "vector<Id>") {
-        std::function<bool(const vector<Id>&)> func = [oid, fname](const vector<Id>& ids) {
+        std::function<bool(const vector<Id>&)> func = [oid, fname](
+            const vector<Id>& ids) {
             return SetGet1<vector<Id>>::set(oid, fname, ids);
         };
         return func;
     }
     if (rttType == "vector<ObjId>") {
-        std::function<bool(const vector<ObjId>&)> func = [oid, fname](const vector<ObjId>& ids) {
+        std::function<bool(const vector<ObjId>&)> func = [oid, fname](
+            const vector<ObjId>& ids) {
             return SetGet1<vector<ObjId>>::set(oid, fname, ids);
         };
         return func;
     }
 
-    throw runtime_error("NotImplemented " + fname + " for rttType " + rttType
-            + " for oid " + oid.path());
-
+    throw runtime_error("NotImplemented " + fname + " for rttType " + rttType +
+                        " for oid " + oid.path());
 }
 
 py::object getFieldGeneric(const ObjId& oid, const string& fname)

@@ -140,13 +140,15 @@ PYBIND11_MODULE(_cmoose, m)
         .def("__setattr__", &setField<bool>)
         .def("__setattr__", &setField<double>)
         .def("__setattr__", &setField<int>)
+        .def("__setattr__", &setField<size_t>)
         .def("__setattr__", &setField<unsigned long>)
-        .def("__setattr__", &setField<unsigned int>)
         .def("__setattr__", &setField<unsigned int>)
         .def("__setattr__", &setField<vector<double>>)
         .def("__setattr__", &setField<std::string>)
         .def("__setattr__", &setField<ObjId>)
+        .def("__setattr__", &setField<vector<ObjId>>)
         .def("__setattr__", &setField<Id>)
+        .def("__setattr__", &setField<vector<Id>>)
 
         //---------------------------------------------------------------------
         //  Connect
