@@ -95,14 +95,14 @@ Id initShell(void)
    Utility function to create objects from full path, dimensions
    and classname.
 */
-ObjId createIdFromPath(string path, string type, size_t numData)
+ObjId createIdFromPath(string path, string type, unsigned int numData)
 {
     Shell* pShell = reinterpret_cast<Shell*>(Id().eref().data());
     string parent_path;
     string name;
 
     string trimmed_path = moose::trim(path);
-    size_t pos = trimmed_path.rfind("/");
+    unsigned int pos = trimmed_path.rfind("/");
     if (pos != string::npos) {
         name = trimmed_path.substr(pos + 1);
         parent_path = trimmed_path.substr(0, pos);
@@ -230,13 +230,13 @@ bool mooseDelete(const string& path)
     return getShellPtr()->doDelete(ObjId(path));
 }
 
-ObjId mooseCreate(const string type, const string& path, size_t numdata)
+ObjId mooseCreate(const string type, const string& path, unsigned int numdata)
 {
     auto p = moose::splitPath(path);
     return getShellPtr()->doCreate2(type, ObjId(p.first), p.second, numdata);
 }
 
-void mooseSetClock(const size_t clockId, double dt)
+void mooseSetClock(const unsigned int clockId, double dt)
 {
     getShellPtr()->doSetClock(clockId, dt);
 }
@@ -329,30 +329,26 @@ ObjId mooseCopy(const Id& orig, ObjId newParent, string newName,
                 unsigned int n = 1, bool toGlobal = false,
                 bool copyExtMsgs = false)
 {
-    return ObjId(getShellPtr()->doCopy(orig, newParent, newName, n, toGlobal, copyExtMsgs));
+    return ObjId(getShellPtr()->doCopy(orig, newParent, newName, n, toGlobal,
+                                       copyExtMsgs));
 }
 
 py::object getValueFinfo(const ObjId& oid, const string& fname, const Finfo* f)
 {
     auto rttType = f->rttiType();
     py::object r = py::none();
-    if (rttType == "double")
-        r = pybind11::float_(getProp<double>(oid, fname));
-    else if (rttType == "float")
+
+    if (rttType == "double" or rttType == "float")
         r = pybind11::float_(getProp<double>(oid, fname));
     else if (rttType == "vector<double>") {
-        // r = py::cast(getProp<vector<double>>(oid, fname));
-        r = getFieldNumpy<double>(oid, fname);
+        r = py::cast(getProp<vector<double>>(oid, fname));
+        // r = getFieldNumpy<double>(oid, fname);
     } else if (rttType == "string")
         r = pybind11::str(getProp<string>(oid, fname));
-    else if (rttType == "char")
-        r = pybind11::str(getProp<string>(oid, fname));
-    else if (rttType == "int")
+    // else if (rttType == "char")
+        // r = pybind11::int_(getProp<char>(oid, fname));
+    else if (rttType == "int" or rttType == "unsigned int" or rttType == "unsigned long" or rttType == "unsigned int")
         r = pybind11::int_(getProp<int>(oid, fname));
-    else if (rttType == "unsigned long")
-        r = pybind11::int_(getProp<unsigned long>(oid, fname));
-    else if (rttType == "unsigned int")
-        r = pybind11::int_(getProp<unsigned int>(oid, fname));
     else if (rttType == "bool")
         r = pybind11::bool_(getProp<bool>(oid, fname));
     else if (rttType == "Id")
@@ -380,21 +376,9 @@ py::list getElementFinfo(const ObjId& objid, const string& fname,
     auto oid = ObjId(objid.path() + '/' + fname);
     auto len = Field<unsigned int>::get(oid, "numField");
     vector<ObjId> res(len);
-    for (size_t i = 0; i < len; i++)
+    for (unsigned int i = 0; i < len; i++)
         res[i] = ObjId(oid.path(), oid.dataIndex, i);
     return py::cast(res);
-}
-
-// FIXME: Rename function.
-py::object handleDestFinfo(const ObjId& obj, const string& fname)
-{
-    auto ret = SetGet0::set(obj, fname);
-
-    return py::cast(ret);
-
-    // cout << "NotImplented: Setting " << fname << " with rttType '"
-    //      << rttType << "' on object " << obj.path() << endl;
-    // return py::none();
 }
 
 py::cpp_function getPropertyDestFinfo(const ObjId& oid, const string& fname,
@@ -406,11 +390,27 @@ py::cpp_function getPropertyDestFinfo(const ObjId& oid, const string& fname,
     cout << "ObjId " << oid << " -- " << fname << ": " << rttType << endl;
 
     if (rttType == "void") {
-        std::function<py::object()> func = [oid, fname]() {
-            return handleDestFinfo(oid, fname);
+        std::function<bool()> func = [oid, fname]() {
+            return SetGet0::set(oid, fname);
         };
         return func;
     }
+    if (rttType == "vector<Id>") {
+        std::function<bool(const vector<Id>&)> func = [oid, fname](const vector<Id>& ids) {
+            return SetGet1<vector<Id>>::set(oid, fname, ids);
+        };
+        return func;
+    }
+    if (rttType == "vector<ObjId>") {
+        std::function<bool(const vector<ObjId>&)> func = [oid, fname](const vector<ObjId>& ids) {
+            return SetGet1<vector<ObjId>>::set(oid, fname, ids);
+        };
+        return func;
+    }
+
+    throw runtime_error("NotImplemented " + fname + " for rttType " + rttType
+            + " for oid " + oid.path());
+
 }
 
 py::object getProperty(const ObjId& oid, const string& fname)

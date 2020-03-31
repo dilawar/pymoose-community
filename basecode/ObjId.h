@@ -10,20 +10,27 @@
 #ifndef _OBJ_ID_H
 #define _OBJ_ID_H
 
+#include "Id.h"
+
 /**
  * This class manages lookups for specific data entries in elements,
  * in a node-independent manner.
  * It is basically a composite of Id and DataIndex.
  */
-class ObjId {
-    friend ostream& operator<<(ostream& s, const ObjId& i);
-    friend istream& operator>>(istream& s, ObjId& i);
+class ObjId
+{
+    friend ostream& operator <<( ostream& s, const ObjId& i );
+    friend istream& operator >>( istream& s, ObjId& i );
 
 public:
+    //////////////////////////////////////////////////////////////
+    //	ObjId creation
+    //////////////////////////////////////////////////////////////
     /**
      * Returns the root Id
      */
-    ObjId() : id(), dataIndex(0), fieldIndex(0)
+    ObjId()
+        : id(), dataIndex( 0 ), fieldIndex( 0 )
     {
         ;
     }
@@ -31,21 +38,14 @@ public:
     /**
      * Creates a ObjId using specified Id and DataIndex
      */
-    ObjId(Id i, unsigned int d)
-        : id(i), dataIndex(d), fieldIndex(0)
+    ObjId( Id i, unsigned int d, unsigned int f = 0 )
+        : id( i ), dataIndex( d ), fieldIndex( f )
     {
         ;
     }
 
-    ObjId(Id i, unsigned int d, unsigned int f)
-        : id(i), dataIndex(d), fieldIndex(f)
-    {
-        ;
-    }
-
-
-
-    ObjId(Id i) : id(i), dataIndex(0), fieldIndex(0)
+    ObjId( Id i )
+        : id( i ), dataIndex( 0 ), fieldIndex( 0 )
     {
         ;
     }
@@ -54,17 +54,12 @@ public:
      * Creates an ObjId by reading the path string
      * Returns bad on failure.
      */
-    ObjId(const string& path);
+    ObjId( const string& path );
 
     /**
      * Returns the absolute path including all array indices.
      */
     string path() const;
-
-    /**
-     * Return name.
-     */
-    string name() const;
 
     /**
      * Returns the Eref matching itself.
@@ -74,13 +69,13 @@ public:
     /**
      * For equality check
      */
-    bool operator==(const ObjId& other) const;
-    bool operator!=(const ObjId& other) const;
+    bool operator==( const ObjId& other ) const;
+    bool operator!=( const ObjId& other ) const;
 
     /**
      * For sorting
      */
-    bool operator<(const ObjId& other) const;
+    bool operator<( const ObjId& other ) const;
 
     /**
      * True if the data is present on the current node. Always true for
@@ -122,4 +117,4 @@ public:
 private:
 };
 
-#endif  // _OBJ_ID_H
+#endif // _OBJ_ID_H

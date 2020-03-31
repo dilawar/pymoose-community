@@ -146,13 +146,13 @@ static int quitFlag = 0;
 vector<int> pysequence_to_dimvec(PyObject *dims)
 {
     vector<int> vec_dims;
-    Py_ssize_t num_dims = 1;
+    Py_sunsigned int num_dims = 1;
     long dim_value = 1;
     if (dims) {
         // First try to use it as a tuple of dimensions
         if (PyTuple_Check(dims)) {
             num_dims = PyTuple_Size(dims);
-            for (Py_ssize_t ii = 0; ii < num_dims; ++ii) {
+            for (Py_sunsigned int ii = 0; ii < num_dims; ++ii) {
                 PyObject *dim = PyTuple_GetItem(dims, ii);
                 dim_value = PyInt_AsLong(dim);
                 if ((dim_value == -1) && PyErr_Occurred()) {
@@ -426,7 +426,7 @@ PyObject *convert_and_set_tuple_entry(PyObject *tuple, unsigned int index, void 
     if (item == NULL) {
         return NULL; // the error message would have been populated by to_cpp
     }
-    if (PyTuple_SetItem(tuple, (Py_ssize_t)index, item) != 0) {
+    if (PyTuple_SetItem(tuple, (Py_sunsigned int)index, item) != 0) {
         PyErr_SetString(
             PyExc_RuntimeError,
             "convert_and_set_tuple_entry: could not set tuple entry.");
@@ -495,7 +495,7 @@ PyObject *to_pytuple(void *obj, char typecode)
     {
         vector<Id> *vec = static_cast<vector<Id> *>(obj);
         assert(vec != NULL);
-        ret = PyTuple_New((Py_ssize_t)vec->size());
+        ret = PyTuple_New((Py_sunsigned int)vec->size());
         assert(ret != NULL);
         for (unsigned int ii = 0; ii < vec->size(); ++ii) {
             if (convert_and_set_tuple_entry(ret, ii, (void *)&vec->at(ii), typecode) == NULL) {
@@ -508,7 +508,7 @@ PyObject *to_pytuple(void *obj, char typecode)
     {
         vector<ObjId> *vec = static_cast<vector<ObjId> *>(obj);
         assert(vec != NULL);
-        ret = PyTuple_New((Py_ssize_t)vec->size());
+        ret = PyTuple_New((Py_sunsigned int)vec->size());
         assert(ret != NULL);
         for (unsigned int ii = 0; ii < vec->size(); ++ii) {
             if (convert_and_set_tuple_entry(ret, ii, (void *)&vec->at(ii), typecode) == NULL) {
@@ -521,7 +521,7 @@ PyObject *to_pytuple(void *obj, char typecode)
     {
         vector<char> *vec = static_cast<vector<char> *>(obj);
         assert(vec != NULL);
-        ret = PyTuple_New((Py_ssize_t)vec->size());
+        ret = PyTuple_New((Py_sunsigned int)vec->size());
         assert(ret != NULL);
         for (unsigned int ii = 0; ii < vec->size(); ++ii) {
             if (convert_and_set_tuple_entry(ret, ii, (void *)&vec->at(ii), typecode) == NULL) {
@@ -534,7 +534,7 @@ PyObject *to_pytuple(void *obj, char typecode)
     {
         vector<short> *vec = static_cast<vector<short> *>(obj);
         assert(vec != NULL);
-        ret = PyTuple_New((Py_ssize_t)vec->size());
+        ret = PyTuple_New((Py_sunsigned int)vec->size());
         assert(ret != NULL);
         for (unsigned int ii = 0; ii < vec->size(); ++ii) {
             if (convert_and_set_tuple_entry(ret, ii, (void *)&vec->at(ii), typecode) == NULL) {
@@ -558,7 +558,7 @@ PyObject *to_pytuple(void *obj, char typecode)
     {
         vector<long long> *vec = static_cast<vector<long long> *>(obj);
         assert(vec != NULL);
-        ret = PyTuple_New((Py_ssize_t)vec->size());
+        ret = PyTuple_New((Py_sunsigned int)vec->size());
         npy_intp size = (npy_intp)(vec->size());
         ret = PyArray_SimpleNew(1, &size, NPY_LONGLONG);
         assert(ret != NULL);
@@ -592,7 +592,7 @@ PyObject *to_pytuple(void *obj, char typecode)
     {
         vector<string> *vec = static_cast<vector<string> *>(obj);
         assert(vec != NULL);
-        ret = PyTuple_New((Py_ssize_t)vec->size());
+        ret = PyTuple_New((Py_sunsigned int)vec->size());
         assert(ret != NULL);
         for (unsigned int ii = 0; ii < vec->size(); ++ii) {
             string v = vec->at(ii);
@@ -607,7 +607,7 @@ PyObject *to_pytuple(void *obj, char typecode)
         vector<vector<unsigned int>> *vec =
             static_cast<vector<vector<unsigned int>> *>(obj);
         assert(vec != NULL);
-        ret = PyTuple_New((Py_ssize_t)vec->size());
+        ret = PyTuple_New((Py_sunsigned int)vec->size());
         assert(ret != NULL);
         for (unsigned int ii = 0; ii < vec->size(); ++ii) {
             if (convert_and_set_tuple_entry(ret, ii, (void *)&vec->at(ii), typecode) == NULL) {
@@ -620,7 +620,7 @@ PyObject *to_pytuple(void *obj, char typecode)
     {
         vector<vector<int>> *vec = static_cast<vector<vector<int>> *>(obj);
         assert(vec != NULL);
-        ret = PyTuple_New((Py_ssize_t)vec->size());
+        ret = PyTuple_New((Py_sunsigned int)vec->size());
         assert(ret != NULL);
         for (unsigned int ii = 0; ii < vec->size(); ++ii) {
             if (convert_and_set_tuple_entry(ret, ii, (void *)&vec->at(ii), typecode) == NULL) {
@@ -633,7 +633,7 @@ PyObject *to_pytuple(void *obj, char typecode)
     {
         vector<vector<double>> *vec = static_cast<vector<vector<double>> *>(obj);
         assert(vec != NULL);
-        ret = PyTuple_New((Py_ssize_t)vec->size());
+        ret = PyTuple_New((Py_sunsigned int)vec->size());
         assert(ret != NULL);
         for (unsigned int ii = 0; ii < vec->size(); ++ii) {
             if (convert_and_set_tuple_entry(ret, ii, (void *)&vec->at(ii), typecode) == NULL) {
@@ -923,7 +923,7 @@ PyTypeObject *getBaseClass(PyObject *self)
     PyTypeObject *base = NULL;
     for (base = Py_TYPE(self); base != &ObjIdType; base = base->tp_base) {
         basetype_str = base->tp_name;
-        size_t dot = basetype_str.find('.');
+        unsigned int dot = basetype_str.find('.');
         basetype_str = basetype_str.substr(dot + 1);
         if (get_moose_classes().find(basetype_str) != get_moose_classes().end()) {
             return base;
@@ -1747,11 +1747,11 @@ PyObject *moose_getField(PyObject *dummy, PyObject *args)
         return (PyObject *)value;
     } else if (ftype == "vector<int>") {
         vector<int> value = Field<vector<int>>::get(oid, fname);
-        PyObject *ret = PyTuple_New((Py_ssize_t)value.size());
+        PyObject *ret = PyTuple_New((Py_sunsigned int)value.size());
 
         for (unsigned int ii = 0; ii < value.size(); ++ii) {
             PyObject *entry = Py_BuildValue("i", value[ii]);
-            if (!entry || PyTuple_SetItem(ret, (Py_ssize_t)ii, entry)) {
+            if (!entry || PyTuple_SetItem(ret, (Py_sunsigned int)ii, entry)) {
                 Py_XDECREF(ret);
                 ret = NULL;
                 break;
@@ -1760,11 +1760,11 @@ PyObject *moose_getField(PyObject *dummy, PyObject *args)
         return ret;
     } else if (ftype == "vector<double>") {
         vector<double> value = Field<vector<double>>::get(oid, fname);
-        PyObject *ret = PyTuple_New((Py_ssize_t)value.size());
+        PyObject *ret = PyTuple_New((Py_sunsigned int)value.size());
 
         for (unsigned int ii = 0; ii < value.size(); ++ii) {
             PyObject *entry = Py_BuildValue("f", value[ii]);
-            if (!entry || PyTuple_SetItem(ret, (Py_ssize_t)ii, entry)) {
+            if (!entry || PyTuple_SetItem(ret, (Py_sunsigned int)ii, entry)) {
                 Py_XDECREF(ret);
                 ret = NULL;
                 break;
@@ -1773,11 +1773,11 @@ PyObject *moose_getField(PyObject *dummy, PyObject *args)
         return ret;
     } else if (ftype == "vector<float>") {
         vector<float> value = Field<vector<float>>::get(oid, fname);
-        PyObject *ret = PyTuple_New((Py_ssize_t)value.size());
+        PyObject *ret = PyTuple_New((Py_sunsigned int)value.size());
 
         for (unsigned int ii = 0; ii < value.size(); ++ii) {
             PyObject *entry = Py_BuildValue("f", value[ii]);
-            if (!entry || PyTuple_SetItem(ret, (Py_ssize_t)ii, entry)) {
+            if (!entry || PyTuple_SetItem(ret, (Py_sunsigned int)ii, entry)) {
                 Py_XDECREF(ret);
                 ret = NULL;
                 break;
@@ -1786,11 +1786,11 @@ PyObject *moose_getField(PyObject *dummy, PyObject *args)
         return ret;
     } else if (ftype == "vector<string>") {
         vector<string> value = Field<vector<string>>::get(oid, fname);
-        PyObject *ret = PyTuple_New((Py_ssize_t)value.size());
+        PyObject *ret = PyTuple_New((Py_sunsigned int)value.size());
 
         for (unsigned int ii = 0; ii < value.size(); ++ii) {
             PyObject *entry = Py_BuildValue("s", value[ii].c_str());
-            if (!entry || PyTuple_SetItem(ret, (Py_ssize_t)ii, entry)) {
+            if (!entry || PyTuple_SetItem(ret, (Py_sunsigned int)ii, entry)) {
                 Py_XDECREF(ret);
                 return NULL;
             }
@@ -1798,12 +1798,12 @@ PyObject *moose_getField(PyObject *dummy, PyObject *args)
         return ret;
     } else if (ftype == "vector<Id>") {
         vector<Id> value = Field<vector<Id>>::get(oid, fname);
-        PyObject *ret = PyTuple_New((Py_ssize_t)value.size());
+        PyObject *ret = PyTuple_New((Py_sunsigned int)value.size());
 
         for (unsigned int ii = 0; ii < value.size(); ++ii) {
             _Id *entry = PyObject_New(_Id, &IdType);
             entry->id_ = value[ii];
-            if (PyTuple_SetItem(ret, (Py_ssize_t)ii, (PyObject *)entry)) {
+            if (PyTuple_SetItem(ret, (Py_sunsigned int)ii, (PyObject *)entry)) {
                 Py_XDECREF(ret);
                 return NULL;
             }
@@ -1811,12 +1811,12 @@ PyObject *moose_getField(PyObject *dummy, PyObject *args)
         return ret;
     } else if (ftype == "vector<ObjId>") {
         vector<ObjId> value = Field<vector<ObjId>>::get(oid, fname);
-        PyObject *ret = PyTuple_New((Py_ssize_t)value.size());
+        PyObject *ret = PyTuple_New((Py_sunsigned int)value.size());
 
         for (unsigned int ii = 0; ii < value.size(); ++ii) {
             _ObjId *entry = PyObject_New(_ObjId, &ObjIdType);
             entry->oid_ = value[ii];
-            if (PyTuple_SetItem(ret, (Py_ssize_t)ii, (PyObject *)entry)) {
+            if (PyTuple_SetItem(ret, (Py_sunsigned int)ii, (PyObject *)entry)) {
                 Py_XDECREF(ret);
                 return NULL;
             }
@@ -1953,7 +1953,7 @@ PyObject *moose_wildcardFind(PyObject *dummy, PyObject *args)
                             "moose.wildcardFind: failed to allocate new vec.");
             return NULL;
         }
-        if (PyTuple_SetItem(ret, (Py_ssize_t)ii, entry)) {
+        if (PyTuple_SetItem(ret, (Py_sunsigned int)ii, entry)) {
             Py_XDECREF(entry);
             Py_XDECREF(ret);
             return NULL;
@@ -2198,7 +2198,7 @@ int defineDestFinfos(const Cinfo *cinfo)
       destFinfos as we have to ignore the destFinfos starting
       with get/set. So use a vector instead of C array.
     */
-    size_t currIndex = vec.size();
+    unsigned int currIndex = vec.size();
     for (unsigned int ii = 0; ii < cinfo->getNumDestFinfo(); ++ii) {
         Finfo *destFinfo = const_cast<Cinfo *>(cinfo)->getDestFinfo(ii);
         const string &name = destFinfo->name();

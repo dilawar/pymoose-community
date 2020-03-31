@@ -203,7 +203,7 @@ bool isNamedPlot( const string& line, const string& plotname )
     if ( line[0] == '/' && line[1] == 'p' )
     {
         string name = line.substr( strlen( "/plotname" ) );
-        string::size_type pos = name.find_first_not_of( " 	" );
+        auto pos = name.find_first_not_of( " 	" );
         if ( pos == string::npos )
         {
             cout << "TableBase::loadXplot: Malformed plotname line '" <<
@@ -539,7 +539,7 @@ string TableBase::getPlotDump() const
 void TableBase::setPlotDump( string v )
 {
 
-    std::size_t pos = v.rfind(" ");
+    auto pos = v.rfind(" ");
     string fname = v.substr( 0, pos );
     string plotname = "plot";
     if ( pos != string::npos )

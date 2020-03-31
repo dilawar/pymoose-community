@@ -299,7 +299,7 @@ Id create_Id_from_path(string path, unsigned int numData, unsigned int isGlobal,
     string name;
 
     string trimmed_path = moose::trim(path);
-    size_t pos = trimmed_path.rfind("/");
+    unsigned int pos = trimmed_path.rfind("/");
     if (pos != string::npos) {
         name = trimmed_path.substr(pos + 1);
         parent_path = trimmed_path.substr(0, pos);
@@ -369,7 +369,7 @@ int moose_Id_init(_Id *self, PyObject *args, PyObject *kwargs)
         // different argument processing will not help. Return error
         string trimmed_path(path);
         trimmed_path = moose::trim(trimmed_path);
-        size_t length = trimmed_path.length();
+        unsigned int length = trimmed_path.length();
         if (length <= 0) {
             PyErr_SetString(PyExc_ValueError,
                             "moose_Id_init: path must be non-empty string.");
@@ -510,15 +510,15 @@ PyObject *moose_Id_getPath(_Id *self)
 ////////////////////////////////////////////
 // Subset of sequence protocol functions
 ////////////////////////////////////////////
-Py_ssize_t moose_Id_getLength(_Id *self)
+Py_sunsigned int moose_Id_getLength(_Id *self)
 {
     if (!Id::isValid(self->id_)) {
         RAISE_INVALID_ID(-1, "moose_Id_getLength");
     }
     if (self->id_.element()->hasFields()) {
-        return (Py_ssize_t)(Field<unsigned int>::get(self->id_, "numField"));
+        return (Py_sunsigned int)(Field<unsigned int>::get(self->id_, "numField"));
     } else {
-        return (Py_ssize_t)(self->id_.element()->numData());
+        return (Py_sunsigned int)(self->id_.element()->numData());
     }
 }
 
@@ -535,8 +535,8 @@ PyObject *moose_Id_getShape(_Id *self)
         // "numData");
         numData = self->id_.element()->numData();
     }
-    PyObject *ret = PyTuple_New((Py_ssize_t)1);
-    if (PyTuple_SetItem(ret, (Py_ssize_t)0, Py_BuildValue("I", numData))) {
+    PyObject *ret = PyTuple_New((Py_sunsigned int)1);
+    if (PyTuple_SetItem(ret, (Py_sunsigned int)0, Py_BuildValue("I", numData))) {
         Py_XDECREF(ret);
         PyErr_SetString(PyExc_RuntimeError,
                         "moose_Id_getShape: could not set tuple entry.");
@@ -545,7 +545,7 @@ PyObject *moose_Id_getShape(_Id *self)
     return ret;
 }
 
-PyObject *moose_Id_getItem(_Id *self, Py_ssize_t index)
+PyObject *moose_Id_getItem(_Id *self, Py_sunsigned int index)
 {
     if (!Id::isValid(self->id_)) {
         RAISE_INVALID_ID(NULL, "moose_Id_getItem");
@@ -568,7 +568,7 @@ PyObject *moose_Id_getItem(_Id *self, Py_ssize_t index)
     return oid_to_element(oid);
 }
 
-static PyObject *moose_Id_fillSlice(_Id *self, Py_ssize_t start, Py_ssize_t end, Py_ssize_t step, Py_ssize_t slicelength)
+static PyObject *moose_Id_fillSlice(_Id *self, Py_sunsigned int start, Py_sunsigned int end, Py_sunsigned int step, Py_sunsigned int slicelength)
 {
 
     PyObject *ret = PyTuple_New(slicelength);
@@ -581,25 +581,25 @@ static PyObject *moose_Id_fillSlice(_Id *self, Py_ssize_t start, Py_ssize_t end,
         else
             value = oid_to_element(ObjId(self->id_, ii));
 
-        PyTuple_SET_ITEM(ret, (Py_ssize_t)(ii - start) / step, value);
+        PyTuple_SET_ITEM(ret, (Py_sunsigned int)(ii - start) / step, value);
     }
     return ret;
 }
 
 #ifndef PY3K
-PyObject *moose_Id_getSlice(_Id *self, Py_ssize_t start, Py_ssize_t end)
+PyObject *moose_Id_getSlice(_Id *self, Py_sunsigned int start, Py_sunsigned int end)
 {
     if (!Id::isValid(self->id_)) {
         RAISE_INVALID_ID(NULL, "moose_Id_getSlice");
     }
-    Py_ssize_t len = moose_Id_getLength(self);
+    Py_sunsigned int len = moose_Id_getLength(self);
     while (start < 0) {
         start += len;
     }
     while (end < 0) {
         end += len;
     }
-    return moose_Id_fillSlice(self, start, end, 1, std::max(end - start, (Py_ssize_t)0));
+    return moose_Id_fillSlice(self, start, end, 1, std::max(end - start, (Py_sunsigned int)0));
 }
 #endif
 
@@ -615,8 +615,8 @@ PyObject *moose_Id_getSlice(_Id *self, Py_ssize_t start, Py_ssize_t end)
 PyObject *moose_Id_subscript(_Id *self, PyObject *op)
 {
     if (PySlice_Check(op)) {
-        const Py_ssize_t len = moose_Id_getLength(self);
-        Py_ssize_t start, stop, step, slicelength;
+        const Py_sunsigned int len = moose_Id_getLength(self);
+        Py_sunsigned int start, stop, step, slicelength;
 
         if (PySlice_GetIndicesEx(SLICE_OBJ(op), len, &start, &stop, &step, &slicelength) < 0)
             return NULL;
@@ -625,7 +625,7 @@ PyObject *moose_Id_subscript(_Id *self, PyObject *op)
     }
 
     if (PyInt_Check(op) || PyLong_Check(op)) {
-        Py_ssize_t value = PyInt_AsLong(op);
+        Py_sunsigned int value = PyInt_AsLong(op);
         return moose_Id_getItem(self, value);
     } else {
         PyErr_SetString(PyExc_KeyError, "moose_Id_subscript: invalid index.");
@@ -853,7 +853,7 @@ int moose_Id_setattro(_Id *self, PyObject *attr, PyObject *value)
         return -1;
     }
     char ftype = shortType(fieldtype);
-    Py_ssize_t length = moose_Id_getLength(self);
+    Py_sunsigned int length = moose_Id_getLength(self);
     bool is_seq = true;
     if (!PySequence_Check(value)) {
         is_seq = false;

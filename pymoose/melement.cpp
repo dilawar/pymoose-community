@@ -253,7 +253,7 @@ long moose_ObjId_hash(_ObjId *self)
     /* attempt to make it with 32 bit system - assuming id will
      * have its value within least significant 16 bits and
      * dataIndex and fieldIndex will be limited to first 8 bits */
-    if (sizeof(size_t) == 8) {
+    if (sizeof(unsigned int) == 8) {
         return id << 48 | dataIndex << 16 | fieldIndex;
     } else {
         return id << 16 | dataIndex << 8 | fieldIndex;
@@ -749,7 +749,7 @@ int moose_ObjId_setattro(_ObjId *self, PyObject *attr, PyObject *value)
                             "For setting vector<double> field, specified "
                             "value must be a sequence.");
         } else {
-            Py_ssize_t length = PySequence_Length(value);
+            Py_sunsigned int length = PySequence_Length(value);
             vector<double> _value;
             for (int ii = 0; ii < length; ++ii) {
                 PyObject *vo = PySequence_GetItem(value, ii);
@@ -799,7 +799,7 @@ int moose_ObjId_setattro(_ObjId *self, PyObject *attr, PyObject *value)
                             "For setting vector<int> field, specified "
                             "value must be a sequence.");
         }
-        Py_ssize_t length = PySequence_Length(value);
+        Py_sunsigned int length = PySequence_Length(value);
         vector<int> _value;
         for (int ii = 0; ii < length; ++ii) {
             PyObject *vo = PySequence_GetItem(value, ii);
@@ -816,7 +816,7 @@ int moose_ObjId_setattro(_ObjId *self, PyObject *attr, PyObject *value)
                             "For setting vector<short> field, specified "
                             "value must be a sequence.");
         } else {
-            Py_ssize_t length = PySequence_Length(value);
+            Py_sunsigned int length = PySequence_Length(value);
             vector<short> _value;
             for (int ii = 0; ii < length; ++ii) {
                 PyObject *vo = PySequence_GetItem(value, ii);
@@ -835,7 +835,7 @@ int moose_ObjId_setattro(_ObjId *self, PyObject *attr, PyObject *value)
                             "For setting vector<long> field, specified "
                             "value must be a sequence.");
         } else {
-            Py_ssize_t length = PySequence_Length(value);
+            Py_sunsigned int length = PySequence_Length(value);
             vector<long> _value;
             for (int ii = 0; ii < length; ++ii) {
                 PyObject *vo = PySequence_GetItem(value, ii);
@@ -854,7 +854,7 @@ int moose_ObjId_setattro(_ObjId *self, PyObject *attr, PyObject *value)
                             "For setting vector<unsigned int> field, "
                             "specified value must be a sequence.");
         } else {
-            Py_ssize_t length = PySequence_Length(value);
+            Py_sunsigned int length = PySequence_Length(value);
             vector<unsigned int> _value;
             for (int ii = 0; ii < length; ++ii) {
                 PyObject *vo = PySequence_GetItem(value, ii);
@@ -873,7 +873,7 @@ int moose_ObjId_setattro(_ObjId *self, PyObject *attr, PyObject *value)
                             "For setting vector<unsigned long> field, "
                             "specified value must be a sequence.");
         } else {
-            Py_ssize_t length = PySequence_Length(value);
+            Py_sunsigned int length = PySequence_Length(value);
             vector<unsigned long> _value;
             for (int ii = 0; ii < length; ++ii) {
                 PyObject *vo = PySequence_GetItem(value, ii);
@@ -892,7 +892,7 @@ int moose_ObjId_setattro(_ObjId *self, PyObject *attr, PyObject *value)
                             "For setting vector<float> field, specified "
                             "value must be a sequence.");
         } else {
-            Py_ssize_t length = PySequence_Length(value);
+            Py_sunsigned int length = PySequence_Length(value);
             vector<float> _value;
             for (int ii = 0; ii < length; ++ii) {
                 PyObject *vo = PySequence_GetItem(value, ii);
@@ -910,7 +910,7 @@ int moose_ObjId_setattro(_ObjId *self, PyObject *attr, PyObject *value)
                             "For setting vector<string> field, specified "
                             "value must be a sequence.");
         } else {
-            Py_ssize_t length = PySequence_Length(value);
+            Py_sunsigned int length = PySequence_Length(value);
             vector<string> _value;
             for (int ii = 0; ii < length; ++ii) {
                 PyObject *vo = PySequence_GetItem(value, ii);
@@ -957,7 +957,7 @@ int moose_ObjId_setattro(_ObjId *self, PyObject *attr, PyObject *value)
                             "For setting vector<Id> field, specified value "
                             "must be a sequence.");
         } else {
-            Py_ssize_t length = PySequence_Length(value);
+            Py_sunsigned int length = PySequence_Length(value);
             vector<Id> _value;
             for (int ii = 0; ii < length; ++ii) {
                 PyObject *vo = PySequence_GetItem(value, ii);
@@ -976,7 +976,7 @@ int moose_ObjId_setattro(_ObjId *self, PyObject *attr, PyObject *value)
                             "For setting vector<ObjId> field, specified "
                             "value must be a sequence.");
         } else {
-            Py_ssize_t length = PySequence_Length(value);
+            Py_sunsigned int length = PySequence_Length(value);
             vector<ObjId> _value;
             for (int ii = 0; ii < length; ++ii) {
                 PyObject *vo = PySequence_GetItem(value, ii);
@@ -1004,7 +1004,7 @@ int moose_ObjId_setattro(_ObjId *self, PyObject *attr, PyObject *value)
     }
 } // moose_ObjId_setattro
 
-PyObject *moose_ObjId_getItem(_ObjId *self, Py_ssize_t index)
+PyObject *moose_ObjId_getItem(_ObjId *self, Py_sunsigned int index)
 {
     if (index < 0) {
         index += moose_ObjId_getLength(self);
@@ -1034,9 +1034,9 @@ PyObject *moose_ObjId_getItem(_ObjId *self, Py_ssize_t index)
     return (PyObject *)ret;
 }
 
-PyObject *moose_ObjId_getSlice(_ObjId *self, Py_ssize_t start, Py_ssize_t end)
+PyObject *moose_ObjId_getSlice(_ObjId *self, Py_sunsigned int start, Py_sunsigned int end)
 {
-    Py_ssize_t len = moose_ObjId_getLength(self);
+    Py_sunsigned int len = moose_ObjId_getLength(self);
     while (start < 0) {
         start += len;
     }
@@ -1049,13 +1049,13 @@ PyObject *moose_ObjId_getSlice(_ObjId *self, Py_ssize_t start, Py_ssize_t end)
         // python itself returns empty tuple - follow that
         return PyTuple_New(0);
     }
-    PyObject *ret = PyTuple_New((Py_ssize_t)(end - start));
+    PyObject *ret = PyTuple_New((Py_sunsigned int)(end - start));
 
     // Py_XINCREF(ret);
     for (int ii = start; ii < end; ++ii) {
         _ObjId *value = PyObject_New(_ObjId, &ObjIdType);
         value->oid_ = ObjId(self->oid_.id, self->oid_.dataIndex, ii);
-        if (PyTuple_SetItem(ret, (Py_ssize_t)(ii - start), (PyObject *)value)) // danger - must we DECREF all prior values?
+        if (PyTuple_SetItem(ret, (Py_sunsigned int)(ii - start), (PyObject *)value)) // danger - must we DECREF all prior values?
         {
             Py_XDECREF(ret);
             // Py_XDECREF(value);
@@ -1067,7 +1067,7 @@ PyObject *moose_ObjId_getSlice(_ObjId *self, Py_ssize_t start, Py_ssize_t end)
     return ret;
 }
 
-Py_ssize_t moose_ObjId_getLength(_ObjId *self)
+Py_sunsigned int moose_ObjId_getLength(_ObjId *self)
 {
     Element *el = self->oid_.element();
     if (!el->hasFields()) {
@@ -1077,7 +1077,7 @@ Py_ssize_t moose_ObjId_getLength(_ObjId *self)
     if (fe == NULL) {
         return 0;
     }
-    return (Py_ssize_t)(fe->numData());
+    return (Py_sunsigned int)(fe->numData());
 }
 
 /// Inner function for looking up value from LookupField on object
@@ -1796,7 +1796,7 @@ PyObject *moose_ObjId_getFieldNames(_ObjId *self, PyObject *args)
         ret = getFieldNames(className, ftype_str);
     }
 
-    PyObject *pyret = PyTuple_New((Py_ssize_t)ret.size());
+    PyObject *pyret = PyTuple_New((Py_sunsigned int)ret.size());
 
     for (unsigned int ii = 0; ii < ret.size(); ++ii) {
         PyObject *fname = Py_BuildValue("s", ret[ii].c_str());
@@ -1805,7 +1805,7 @@ PyObject *moose_ObjId_getFieldNames(_ObjId *self, PyObject *args)
             pyret = NULL;
             break;
         }
-        if (PyTuple_SetItem(pyret, (Py_ssize_t)ii, fname)) {
+        if (PyTuple_SetItem(pyret, (Py_sunsigned int)ii, fname)) {
             Py_XDECREF(pyret);
             // Py_DECREF(fname);
             pyret = NULL;
@@ -1844,11 +1844,11 @@ PyObject *moose_ObjId_getNeighbors(_ObjId *self, PyObject *args)
     vector<Id> val =
         LookupField<string, vector<Id>>::get(self->oid_, "neighbors", string(field));
 
-    PyObject *ret = PyTuple_New((Py_ssize_t)val.size());
+    PyObject *ret = PyTuple_New((Py_sunsigned int)val.size());
 
     for (unsigned int ii = 0; ii < val.size(); ++ii) {
         _Id *entry = PyObject_New(_Id, &IdType);
-        if (!entry || PyTuple_SetItem(ret, (Py_ssize_t)ii, (PyObject *)entry)) {
+        if (!entry || PyTuple_SetItem(ret, (Py_sunsigned int)ii, (PyObject *)entry)) {
             Py_DECREF(ret);
             // Py_DECREF((PyObject*)entry);
             ret = NULL;

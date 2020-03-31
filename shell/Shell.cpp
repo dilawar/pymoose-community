@@ -313,6 +313,7 @@ void Shell::doStart(double runtime, bool notify)
      *-----------------------------------------------------------------------------*/
     vector<ObjId> streamers;
     wildcardFind("/##[TYPE=Streamer]", streamers);
+
     // LOG( moose::debug,  "total streamers " << streamers.size( ) );
     for (vector<ObjId>::const_iterator itr = streamers.begin();
          itr != streamers.end(); itr++) {
@@ -445,7 +446,7 @@ bool Shell::chopString(const string& path, vector<string>& ret, char separator)
         temp = temp.substr(1);
     }
 
-    string::size_type pos = temp.find_first_of(separator);
+    auto pos = temp.find_first_of(separator);
     ret.push_back(temp.substr(0, pos));
     while (pos != string::npos) {
         temp = temp.substr(pos + 1);
@@ -496,7 +497,7 @@ bool Shell::chopPath(const string& path, vector<string>& ret,
             index.resize(0);
             return isAbsolute;
         }
-        size_t pos = ret[i].find_first_of('[');
+        unsigned int pos = ret[i].find_first_of('[');
         if (ret[i].find_first_of('[') != string::npos)
             ret[i] = ret[i].substr(0, pos);
     }

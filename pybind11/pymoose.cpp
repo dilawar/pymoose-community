@@ -81,7 +81,7 @@ PYBIND11_MODULE(_cmoose, m)
         .def_property_readonly("numIds", &Id::numIds)
         .def_property_readonly("path", &Id::path)
         .def_property_readonly("name",
-                               [](const Id& id) { return ObjId(id).name(); })
+                               [](const Id& id) { return id.element()->getName(); })
         .def_property_readonly("id", &Id::value)
         .def_property_readonly("cinfo",
                                [](Id& id) { return id.element()->cinfo(); },
@@ -107,7 +107,7 @@ PYBIND11_MODULE(_cmoose, m)
         .def_property_readonly("path", &ObjId::path)
         .def_property_readonly(
              "parent", [](const ObjId& oid) { return Neutral::parent(oid); })
-        .def_property_readonly("name", &ObjId::name)
+        .def_property_readonly("name", [](const ObjId& oid){ return oid.element()->getName(); })
         .def_property_readonly("className", [](const ObjId& oid) {
              return oid.element()->cinfo()->name();
          })
@@ -117,28 +117,33 @@ PYBIND11_MODULE(_cmoose, m)
         //--------------------------------------------------------------------
         // Set/Get
         //--------------------------------------------------------------------
-        // Overload of Field::set
-        .def("setField", &setProperty<double>)
-        .def("setField", &setProperty<double>)
-        .def("setField", &setProperty<vector<double>>)
-        .def("setField", &setProperty<std::string>)
-        .def("setField", &setProperty<bool>)
+        // Overload of Field::set . FIXME: remove after testing.
+        // .def("setField", &setProperty<double>)
+        // .def("setField", &setProperty<double>)
+        // .def("setField", &setProperty<vector<double>>)
+        // .def("setField", &setProperty<std::string>)
+        // .def("setField", &setProperty<bool>)
 
         // Overload for Field::get
-        .def("getField", &getProperty)
-        .def("getElementField", &getElementField)
-        .def("getElementFieldItem", &getElementFieldItem)
-        .def("getNumpy", &getFieldNumpy<double>)
+        // .def("getField", &getProperty)
+        // .def("getElementField", &getElementField)
+        // .def("getElementFieldItem", &getElementFieldItem)
+        // .def("getNumpy", &getFieldNumpy<double>)
 
         /**
         * Attributes.
         */
         .def("__getattr__", &getProperty)
+        .def("__setattr__", &setProperty<bool>)
         .def("__setattr__", &setProperty<double>)
+        .def("__setattr__", &setProperty<int>)
+        .def("__setattr__", &setProperty<unsigned long>)
+        .def("__setattr__", &setProperty<unsigned int>)
+        .def("__setattr__", &setProperty<unsigned int>)
         .def("__setattr__", &setProperty<vector<double>>)
         .def("__setattr__", &setProperty<std::string>)
         .def("__setattr__", &setProperty<ObjId>)
-        .def("__setattr__", &setProperty<bool>)
+        .def("__setattr__", &setProperty<Id>)
 
         //---------------------------------------------------------------------
         //  Connect
@@ -164,7 +169,7 @@ PYBIND11_MODULE(_cmoose, m)
         .def_property_readonly("name", &Cinfo::name)
         .def_property_readonly("finfoMap", &Cinfo::finfoMap,
                                py::return_value_policy::reference)
-        .def("findFinfo", &Cinfo::findFinfoWrapper)
+        // .def("findFinfo", &Cinfo::findFinfoWrapper)
         .def("baseCinfo", &Cinfo::baseCinfo, py::return_value_policy::reference)
         .def("isA", &Cinfo::isA);
 
@@ -182,7 +187,7 @@ PYBIND11_MODULE(_cmoose, m)
 
     // Vec
     py::class_<MooseVec>(m, "vec", py::dynamic_attr())
-        .def(py::init<const string&, size_t, const string&>(), "path"_a,
+        .def(py::init<const string&, unsigned int, const string&>(), "path"_a,
              "n"_a = 1, "dtype"_a = "Neutral")  // Default
         .def(py::init<const ObjId&>())
         .def("__len__", &MooseVec::len)
@@ -201,7 +206,7 @@ PYBIND11_MODULE(_cmoose, m)
           []() { return reinterpret_cast<Shell*>(Id().eref().data()); },
           py::return_value_policy::reference);
 
-    m.def("seed", [](size_t a) { moose::mtseed(a); });
+    m.def("seed", [](unsigned int a) { moose::mtseed(a); });
     m.def("rand", [](double a, double b) { return moose::mtrand(a, b); },
           "a"_a = 0, "b"_a = 1);
     m.def("wildcardFind", &wildcardFind2);

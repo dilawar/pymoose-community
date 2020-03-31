@@ -17,54 +17,55 @@ const unsigned char MooseGetVecHop = 5;
 const unsigned char MooseReturnHop = 8;
 const unsigned char MooseTestHop = 255;
 
-vector<OpFunc*>& OpFunc::ops()
+vector< OpFunc* >& OpFunc::ops()
 {
-    static vector<OpFunc*> op;
-    return op;
+	static vector< OpFunc* > op;
+	return op;
 }
 
 OpFunc::OpFunc()
 {
-    opIndex_ = ops().size();
-    ops().push_back(this);
+	opIndex_ = ops().size();
+	ops().push_back( this );
 }
 
-const OpFunc* OpFunc0Base::makeHopFunc(HopIndex hopIndex) const
+const OpFunc* OpFunc0Base::makeHopFunc( HopIndex hopIndex ) const
 {
-    return new HopFunc0(hopIndex);
+	return new HopFunc0( hopIndex );
 }
 
-void OpFunc0Base::opBuffer(const Eref& e, double* buf) const
+void OpFunc0Base::opBuffer( const Eref& e, double* buf ) const
 {
-    op(e);
+	op( e );
 }
 
-const OpFunc* OpFunc::lookop(unsigned int opIndex)
+const OpFunc* OpFunc::lookop( unsigned int opIndex )
 {
-    assert(opIndex < ops().size());
-    return ops()[opIndex];
+	assert ( opIndex < ops().size() );
+	return ops()[ opIndex ];
 }
 
 // Static function
 unsigned int OpFunc::rebuildOpIndex()
 {
-    for (vector<OpFunc*>::iterator i = ops().begin(); i != ops().end(); ++i) {
-        (*i)->opIndex_ = ~0U;
-    }
-    return ops().size();
+	for( vector< OpFunc* >::iterator
+		i = ops().begin(); i != ops().end(); ++i ) {
+		(*i)->opIndex_ = ~0U;
+	}
+	return ops().size();
 }
 
-bool OpFunc::setIndex(unsigned int i)  // Should only be called by Cinfo.
+bool OpFunc::setIndex( unsigned int i ) // Should only be called by Cinfo.
 {
-    if (opIndex_ == ~0U) {
-        opIndex_ = i;
-        ops()[i] = this;
-        return true;
-    }
-#if  0     /* ----- #if 0 : If0Label_1 ----- */
-    cout << " OpFunc " << rttiType() <<
-                    " already setup. (old,new) index = (" <<
-                    opIndex_ << ", " << i << " )\n";
-#endif     /* ----- #if 0 : If0Label_1 ----- */
-    return false;
+	if( opIndex_ == ~0U ) {
+		opIndex_ = i;
+		ops()[i] = this;
+		return true;
+	}
+	/*
+	cout << " OpFunc " << rttiType() <<
+			" already setup. (old,new) index = (" <<
+			opIndex_ << ", " << i << " )\n";
+			*/
+	return false;
 }

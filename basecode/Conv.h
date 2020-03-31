@@ -96,11 +96,11 @@ template< class T > class Conv
                 return "float";
             if ( typeid( T ) == typeid( double ) )
                 return "double";
-            if ( typeid( T ) == typeid(Id))
+            if ( typeid( T ) == typeid( Id ) )
                 return "Id";
-            if ( typeid( T ) == typeid(ObjId))
+            if ( typeid( T ) == typeid( ObjId ) )
                 return "ObjId";
-            return typeid(T).name(); // this is not portable but may be more useful than "bad"
+            return typeid( T ).name(); // this is not portable but may be more useful than "bad"
         }
 
     private:

@@ -195,7 +195,7 @@ void SparseMsg::setSeed (int seed)
 {
     seed_ = seed;
     if( seed_ >= 0)
-        rng_.setSeed((size_t)seed_);
+        rng_.setSeed((unsigned int)seed_);
     randomConnect(p_);
 }
 

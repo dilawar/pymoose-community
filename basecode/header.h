@@ -8,8 +8,8 @@
 ** See the file COPYING.LIB for the full notice.
 **********************************************************************/
 
-#ifndef _BASECODE_HEADER_H
-#define _BASECODE_HEADER_H
+#ifndef _HEADER_H
+#define _HEADER_H
 
 #include <math.h>
 #include <algorithm>
@@ -42,17 +42,20 @@ typedef unsigned int DataId;
  * in that it does not refer to the array on any given node, but uniquely
  * identifies the entry over the entire multinode simulation.
  */
+extern const unsigned int ALLDATA; // Defined in consts.cpp
+
+/// Identifies bad DataIndex or FieldIndex in ObjId.
+extern const unsigned int BADINDEX; // Defined in consts.cpp
+
 /**
  * Index into Element::vector< vector< MsgFuncBinding > > msgBinding_;
  */
 typedef unsigned short BindIndex;
 
-constexpr double PI = 3.141592653589793;
-constexpr double NA = 6.0221415e23;
-constexpr double FaradayConst =  96485.3415; // s A / mol
-constexpr double GasConst = 8.3144621; // R, units are J/(K.mol)
-constexpr unsigned int ALLDATA = ~0U;
-constexpr unsigned int BADINDEX = ~1U;
+extern const double PI;	// Defined in consts.cpp
+extern const double NA; // Defined in consts.cpp
+extern const double FaradayConst; // Defined in consts.cpp
+extern const double GasConst; // Defined in consts.cpp
 
 class Element;
 class Eref;
@@ -63,7 +66,6 @@ class FuncBarrier;
 class ObjId;
 class SrcFinfo;
 
-#include "../builtins/Variable.h"
 #include "doubleEq.h"
 #include "Id.h"
 #include "ObjId.h"
@@ -99,4 +101,5 @@ class Neutral;
 #include "FieldElement.h"
 #include "../shell/Neutral.h"
 
-#endif 
+
+#endif // _HEADER_H

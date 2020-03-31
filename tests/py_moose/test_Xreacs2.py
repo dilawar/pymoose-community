@@ -7,7 +7,7 @@ import moose.fixXreacs as fixXreacs
 
 def countCrossings( plot, thresh ):
     vec = moose.element( plot ).vector
-    print( vec )
+    #  print( vec )
     #  print (vec[:-1] <= thresh)
     return sum( (vec[:-1] < thresh) * (vec[1:] >= thresh ) )
 
@@ -28,20 +28,42 @@ def test_xreac2():
     ks1 = moose.Ksolve( '/model/kinetics/ksolve' )
     ds1 = moose.Dsolve( '/model/kinetics/dsolve' )
     s1 = moose.Stoich( '/model/kinetics/stoich' )
-    s1.compartment = moose.element( '/model/kinetics' )
-    s1.ksolve = ks1
-    s1.dsolve = ds1
+    s1.compartment = moose.element( '/model/kinetics' ).id
+    print(s1.compartment)
+    s1.ksolve = ks1.id
+    print(s1.ksolve)
+    s1.dsolve = ds1.id
+    print(s1.dsolve)
+
+
+    for r in moose.wildcardFind('/model/##[TYPE=Reac]'):
+        print('REAC ====')
+        print(r)
+        print('subs', r.neighbors['sub'])
+        print('prds', r.neighbors['prd'])
+    quit()
+
+    # ps = moose.wildcardFind('/model/##')
+    # print(len(ps), "Total paths")
+    # for p in sorted(ps, key=lambda k:k.name):
+    #     print(p)
+    # quit()
+
+    print('s1 path: ', s1.path)
     s1.path = '/model/kinetics/##'
 
     ks2 = moose.Ksolve( '/model/compartment_1/ksolve' )
     ds2 = moose.Dsolve( '/model/compartment_1/dsolve' )
     s2 = moose.Stoich( '/model/compartment_1/stoich' )
-    s2.compartment = moose.element( '/model/compartment_1' )
-    s2.ksolve = ks2
-    s2.dsolve = ds2
+    s2.compartment = moose.element( '/model/compartment_1' ).id
+    s2.ksolve = ks2.id
+    s2.dsolve = ds2.id
+
+
     s2.path = '/model/compartment_1/##'
 
     ds2.buildMeshJunctions( ds1 )
+
 
     moose.reinit()
     moose.start( runtime )

@@ -17,33 +17,33 @@ using namespace std;
 class MooseVec {
 
 public:
-    MooseVec(const string& path, size_t n = 1, const string& dtype = "Neutral")
+    MooseVec(const string& path, unsigned int n = 1, const string& dtype = "Neutral")
         : path_(path)
     {
         if (!mooseExists(path)) {
             objs_.clear();
             ObjId o = mooseCreate(dtype, path, n);
-            for (size_t i = 0; i < n; i++) objs_.push_back(ObjId(o, i));
+            for (unsigned int i = 0; i < n; i++) objs_.push_back(ObjId(o, i));
         } else {
             objs_.clear();
             auto o = ObjId(path);
-            for (size_t i = 0; i < o.element()->numData(); i++)
+            for (unsigned int i = 0; i < o.element()->numData(); i++)
                 objs_.push_back(ObjId(o, i));
         }
     }
 
     MooseVec(const ObjId& oid) : path_(oid.path())
     {
-        for (size_t i = 0; i < oid.element()->numData(); i++)
+        for (unsigned int i = 0; i < oid.element()->numData(); i++)
             objs_.push_back(ObjId(oid, i));
     }
 
-    size_t len()
+    unsigned int len()
     {
         return objs_.size();
     }
 
-    ObjId getElem(const size_t i)
+    ObjId getElem(const unsigned int i)
     {
         return objs_[i];
     }
@@ -63,14 +63,14 @@ public:
                 "does not match size of vector. "
                 "Expected " +
                 to_string(objs_.size()) + ", got " + to_string(val.size()));
-        for (size_t i = 0; i < objs_.size(); i++)
+        for (unsigned int i = 0; i < objs_.size(); i++)
             setProperty<T>(objs_[i], name, val[i]);
     }
 
     vector<py::object> getAttr(const string& name)
     {
         vector<py::object> res(objs_.size());
-        for (size_t i = 0; i < objs_.size(); i++)
+        for (unsigned int i = 0; i < objs_.size(); i++)
             res[i] = getProperty(objs_[i], name);
         return res;
     }

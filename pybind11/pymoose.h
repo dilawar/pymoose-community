@@ -17,9 +17,12 @@
 #ifndef PYMOOSE_H
 #define PYMOOSE_H
 
+#include "../external/prettyprint.hpp"
+
 template <typename T = double>
 void setProperty(const ObjId& id, const string& fname, T val)
 {
+    // cout << "Setting " << fname << " to value " << val << endl;
     Field<T>::set(id, fname, val);
 }
 

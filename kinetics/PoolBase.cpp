@@ -21,32 +21,50 @@ const Cinfo* PoolBase::initCinfo()
     //////////////////////////////////////////////////////////////
     // Field Definitions
     //////////////////////////////////////////////////////////////
-    static ElementValueFinfo<PoolBase, double> n(
-        "n", "Number of molecules in pool", &PoolBase::setN, &PoolBase::getN);
+    static ElementValueFinfo< PoolBase, double > n(
+        "n",
+        "Number of molecules in pool",
+        &PoolBase::setN,
+        &PoolBase::getN
+    );
 
-    static ElementValueFinfo<PoolBase, double> nInit(
-        "nInit", "Initial value of number of molecules in pool",
-        &PoolBase::setNinit, &PoolBase::getNinit);
+    static ElementValueFinfo< PoolBase, double > nInit(
+        "nInit",
+        "Initial value of number of molecules in pool",
+        &PoolBase::setNinit,
+        &PoolBase::getNinit
+    );
 
-    static ElementValueFinfo<PoolBase, double> diffConst(
-        "diffConst", "Diffusion constant of molecule", &PoolBase::setDiffConst,
-        &PoolBase::getDiffConst);
+    static ElementValueFinfo< PoolBase, double > diffConst(
+        "diffConst",
+        "Diffusion constant of molecule",
+        &PoolBase::setDiffConst,
+        &PoolBase::getDiffConst
+    );
 
-    static ElementValueFinfo<PoolBase, double> motorConst(
+    static ElementValueFinfo< PoolBase, double > motorConst(
         "motorConst",
         "Motor transport rate molecule. + is away from soma, - is "
         "towards soma. Only relevant for ZombiePool subclasses.",
-        &PoolBase::setMotorConst, &PoolBase::getMotorConst);
+        &PoolBase::setMotorConst,
+        &PoolBase::getMotorConst
+    );
 
-    static ElementValueFinfo<PoolBase, double> conc(
-        "conc", "Concentration of molecules in this pool", &PoolBase::setConc,
-        &PoolBase::getConc);
+    static ElementValueFinfo< PoolBase, double > conc(
+        "conc",
+        "Concentration of molecules in this pool",
+        &PoolBase::setConc,
+        &PoolBase::getConc
+    );
 
-    static ElementValueFinfo<PoolBase, double> concInit(
-        "concInit", "Initial value of molecular concentration in pool",
-        &PoolBase::setConcInit, &PoolBase::getConcInit);
+    static ElementValueFinfo< PoolBase, double > concInit(
+        "concInit",
+        "Initial value of molecular concentration in pool",
+        &PoolBase::setConcInit,
+        &PoolBase::getConcInit
+    );
 
-    static ElementValueFinfo<PoolBase, double> volume(
+    static ElementValueFinfo< PoolBase, double > volume(
         "volume",
         "Volume of compartment. Units are SI. "
         "Utility field, the actual volume info is "
@@ -55,14 +73,18 @@ const Cinfo* PoolBase::initCinfo()
         "somewhere up the element tree, and must have matching mesh "
         "entries. If the compartment isn't"
         "available the volume is just taken as 1",
-        &PoolBase::setVolume, &PoolBase::getVolume);
+        &PoolBase::setVolume,
+        &PoolBase::getVolume
+    );
 
-    static ElementValueFinfo<PoolBase, unsigned int> speciesId(
+    static ElementValueFinfo< PoolBase, unsigned int > speciesId(
         "speciesId",
         "Species identifier for this mol pool. Eventually link to ontology.",
-        &PoolBase::setSpecies, &PoolBase::getSpecies);
+        &PoolBase::setSpecies,
+        &PoolBase::getSpecies
+    );
 
-    static ElementValueFinfo<PoolBase, bool> isBuffered(
+    static ElementValueFinfo< PoolBase, bool > isBuffered(
         "isBuffered",
         "Flag: True if Pool is buffered. "
         "In the case of Pool and BufPool the field can be assigned, to "
@@ -70,97 +92,129 @@ const Cinfo* PoolBase::initCinfo()
         "None of the messages are affected. "
         "This object class flip can only be done in the non-zombified "
         "form of the Pool/BufPool. In Zombies it is read-only.",
-        &PoolBase::setIsBuffered, &PoolBase::getIsBuffered);
+        &PoolBase::setIsBuffered,
+        &PoolBase::getIsBuffered
+    );
 
     //////////////////////////////////////////////////////////////
     // MsgDest Definitions
     //////////////////////////////////////////////////////////////
-    static DestFinfo process("process", "Handles process call",
-                             new ProcOpFunc<PoolBase>(&PoolBase::process));
-    static DestFinfo reinit("reinit", "Handles reinit call",
-                            new ProcOpFunc<PoolBase>(&PoolBase::reinit));
+    static DestFinfo process( "process",
+                              "Handles process call",
+                              new ProcOpFunc< PoolBase >( &PoolBase::process ) );
+    static DestFinfo reinit( "reinit",
+                             "Handles reinit call",
+                             new ProcOpFunc< PoolBase >( &PoolBase::reinit ) );
 
-    static DestFinfo reacDest(
-        "reacDest", "Handles reaction input",
-        new OpFunc2<PoolBase, double, double>(&PoolBase::reac));
+    static DestFinfo reacDest( "reacDest",
+                               "Handles reaction input",
+                               new OpFunc2< PoolBase, double, double >( &PoolBase::reac )
+                             );
 
-    static DestFinfo handleMolWt(
-        "handleMolWt",
-        "Separate finfo to assign molWt, and consequently diffusion const."
-        "Should only be used in SharedMsg with species.",
-        new EpFunc1<PoolBase, double>(&PoolBase::handleMolWt));
+    static DestFinfo handleMolWt( "handleMolWt",
+                                  "Separate finfo to assign molWt, and consequently diffusion const."
+                                  "Should only be used in SharedMsg with species.",
+                                  new EpFunc1< PoolBase, double >( &PoolBase::handleMolWt )
+                                );
     //////////////////////////////////////////////////////////////
     // MsgDest Definitions: These three are used for non-reaction
     // calculations involving algebraically defined rate terms.
     //////////////////////////////////////////////////////////////
-    static DestFinfo increment(
-        "increment",
-        "Increments mol numbers by specified amount. Can be +ve or -ve",
-        new OpFunc1<PoolBase, double>(&PoolBase::increment));
+    static DestFinfo increment( "increment",
+                                "Increments mol numbers by specified amount. Can be +ve or -ve",
+                                new OpFunc1< PoolBase, double >( &PoolBase::increment )
+                              );
 
-    static DestFinfo decrement(
-        "decrement",
-        "Decrements mol numbers by specified amount. Can be +ve or -ve",
-        new OpFunc1<PoolBase, double>(&PoolBase::decrement));
+    static DestFinfo decrement( "decrement",
+                                "Decrements mol numbers by specified amount. Can be +ve or -ve",
+                                new OpFunc1< PoolBase, double >( &PoolBase::decrement )
+                              );
 
-    static DestFinfo nIn(
-        "nIn", "Assigns the number of molecules in Pool to specified value",
-        new OpFunc1<PoolBase, double>(&PoolBase::nIn));
+    static DestFinfo nIn( "nIn",
+                          "Assigns the number of molecules in Pool to specified value",
+                          new OpFunc1< PoolBase, double >( &PoolBase::nIn )
+                        );
 
     //////////////////////////////////////////////////////////////
     // SrcFinfo Definitions
     //////////////////////////////////////////////////////////////
 
-    static SrcFinfo1<double> nOut(
-        "nOut", "Sends out # of molecules in pool on each timestep");
+    static SrcFinfo1< double > nOut(
+        "nOut",
+        "Sends out # of molecules in pool on each timestep"
+    );
 
-    static SrcFinfo0 requestMolWt("requestMolWt",
-                                  "Requests Species object for mol wt");
+    static SrcFinfo0 requestMolWt(
+        "requestMolWt",
+        "Requests Species object for mol wt"
+    );
 
     //////////////////////////////////////////////////////////////
     // SharedMsg Definitions
     //////////////////////////////////////////////////////////////
-    static Finfo* reacShared[] = {&reacDest, &nOut};
-    static SharedFinfo reac("reac", "Connects to reaction", reacShared,
-                            sizeof(reacShared) / sizeof(const Finfo*));
-    static Finfo* procShared[] = {&process, &reinit};
-    static SharedFinfo proc("proc", "Shared message for process and reinit",
-                            procShared,
-                            sizeof(procShared) / sizeof(const Finfo*));
+    static Finfo* reacShared[] =
+    {
+        &reacDest, &nOut
+    };
+    static SharedFinfo reac( "reac",
+                             "Connects to reaction",
+                             reacShared, sizeof( reacShared ) / sizeof( const Finfo* )
+                           );
+    static Finfo* procShared[] =
+    {
+        &process, &reinit
+    };
+    static SharedFinfo proc( "proc",
+                             "Shared message for process and reinit",
+                             procShared, sizeof( procShared ) / sizeof( const Finfo* )
+                           );
 
-    static Finfo* speciesShared[] = {&requestMolWt, &handleMolWt};
-
-    static SharedFinfo species(
-        "species", "Shared message for connecting to species objects",
-        speciesShared, sizeof(speciesShared) / sizeof(const Finfo*));
-
-    static Finfo* poolFinfos[] = {&n,           // Value
-                                  &nInit,       // Value
-                                  &diffConst,   // Value
-                                  &motorConst,  // Value
-                                  &conc,        // Value
-                                  &concInit,    // Value
-                                  &volume,      // Readonly Value
-                                  &speciesId,   // Value
-                                  &isBuffered,  // Value
-                                  &increment,   // DestFinfo
-                                  &decrement,   // DestFinfo
-                                  &nIn,         // DestFinfo
-                                  &reac,        // SharedFinfo
-                                  &proc,        // SharedFinfo
-                                  &species,     // SharedFinfo
+    static Finfo* speciesShared[] =
+    {
+        &requestMolWt, &handleMolWt
     };
 
-    static string doc[] = {"Name",        "PoolBase",
-                           "Author",      "Upi Bhalla",
-                           "Description", "Abstract base class for pools."};
-    static ZeroSizeDinfo<int> dinfo;
-    static Cinfo poolCinfo(
-        "PoolBase", Neutral::initCinfo(), poolFinfos,
-        sizeof(poolFinfos) / sizeof(Finfo*), &dinfo, doc,
-        sizeof(doc) / sizeof(string),
-        true  // Ban creation as this is an abstract base class.
-        );
+    static SharedFinfo species( "species",
+                                "Shared message for connecting to species objects",
+                                speciesShared, sizeof( speciesShared ) / sizeof ( const Finfo* )
+                              );
+
+    static Finfo* poolFinfos[] =
+    {
+        &n,			// Value
+        &nInit,		// Value
+        &diffConst,	// Value
+        &motorConst,	// Value
+        &conc,		// Value
+        &concInit,	// Value
+        &volume,	// Readonly Value
+        &speciesId,	// Value
+        &isBuffered,	// Value
+        &increment,			// DestFinfo
+        &decrement,			// DestFinfo
+        &nIn,				// DestFinfo
+        &reac,				// SharedFinfo
+        &proc,				// SharedFinfo
+        &species,			// SharedFinfo
+    };
+
+    static string doc[] =
+    {
+        "Name", "PoolBase",
+        "Author", "Upi Bhalla",
+        "Description", "Abstract base class for pools."
+    };
+    static ZeroSizeDinfo< int > dinfo;
+    static Cinfo poolCinfo (
+        "PoolBase",
+        Neutral::initCinfo(),
+        poolFinfos,
+        sizeof( poolFinfos ) / sizeof ( Finfo* ),
+        &dinfo,
+        doc,
+        sizeof( doc )/sizeof( string ),
+        true // Ban creation as this is an abstract base class.
+    );
 
     return &poolCinfo;
 }
@@ -171,199 +225,181 @@ const Cinfo* PoolBase::initCinfo()
 static const Cinfo* poolCinfo = PoolBase::initCinfo();
 
 //////////////////////////////////////////////////////////////
-PoolBase::PoolBase() : concInit_(0.0)
-{
-    ;
-}
+PoolBase::PoolBase() : concInit_( 0.0 )
+{;}
 
 PoolBase::~PoolBase()
-{
-    ;
-}
+{;}
 
 //////////////////////////////////////////////////////////////
 // MsgDest Definitions
 //////////////////////////////////////////////////////////////
 
-void PoolBase::process(const Eref& e, ProcPtr p)
+void PoolBase::process( const Eref& e, ProcPtr p )
 {
-    vProcess(e, p);
+    vProcess( e, p );
 }
 
-void PoolBase::reinit(const Eref& e, ProcPtr p)
+void PoolBase::reinit( const Eref& e, ProcPtr p )
 {
-    vReinit(e, p);
+    vReinit( e, p );
 }
 
-void PoolBase::increment(double val)
+void PoolBase::increment( double val )
 {
     vIncrement(val);
 }
 
-void PoolBase::decrement(double val)
+void PoolBase::decrement( double val )
 {
-    vDecrement(val);
+    vDecrement( val );
 }
 
-void PoolBase::nIn(double val)
+void PoolBase::nIn( double val)
 {
     vnIn(val);
 }
 
-void PoolBase::reac(double A, double B)
+void PoolBase::reac( double A, double B )
 {
-    vReac(A, B);
+    vReac( A, B );
 }
 
-void PoolBase::handleMolWt(const Eref& e, double v)
+void PoolBase::handleMolWt( const Eref& e, double v )
 {
-    vHandleMolWt(e, v);
+    vHandleMolWt( e, v );
 }
 
 //////////////////////////////////////////////////////////////
 // virtual MsgDest Definitions
 //////////////////////////////////////////////////////////////
 
-void PoolBase::vProcess(const Eref& e, ProcPtr p)
-{
-    ;
-}
+void PoolBase::vProcess( const Eref& e, ProcPtr p )
+{;}
 
-void PoolBase::vReinit(const Eref& e, ProcPtr p)
-{
-    ;
-}
+void PoolBase::vReinit( const Eref& e, ProcPtr p )
+{;}
 
-void PoolBase::vReac(double A, double B)
-{
-    ;
-}
+void PoolBase::vReac( double A, double B )
+{;}
 
-void PoolBase::vHandleMolWt(const Eref& e, double v)
-{
-    ;
-}
+void PoolBase::vHandleMolWt( const Eref& e, double v )
+{;}
 
-void PoolBase::vIncrement(double val)
-{
-    ;
-}
+void PoolBase::vIncrement( double val )
+{;}
 
-void PoolBase::vDecrement(double val)
-{
-    ;
-}
+void PoolBase::vDecrement( double val )
+{;}
 
-void PoolBase::vnIn(double val)
-{
-    ;
-}
+void PoolBase::vnIn( double val)
+{;}
 
 //////////////////////////////////////////////////////////////
 // Field Definitions
 //////////////////////////////////////////////////////////////
 
-void PoolBase::setN(const Eref& e, double v)
+void PoolBase::setN( const Eref& e, double v )
 {
-    vSetN(e, v);
+    vSetN( e, v );
 }
 
-double PoolBase::getN(const Eref& e) const
+double PoolBase::getN( const Eref& e ) const
 {
-    return vGetN(e);
+    return vGetN( e );
 }
 
-void PoolBase::setNinit(const Eref& e, double v)
+void PoolBase::setNinit( const Eref& e, double v )
 {
-    concInit_ = v / (NA * lookupVolumeFromMesh(e));
-    vSetNinit(e, v);
+    concInit_ =  v / ( NA * lookupVolumeFromMesh( e ) );
+    vSetNinit( e, v );
 }
 
-double PoolBase::getNinit(const Eref& e) const
+double PoolBase::getNinit( const Eref& e ) const
 {
-    return vGetNinit(e);
+    return vGetNinit( e );
 }
 
 // Conc is given in millimolar. Volume is in m^3
-void PoolBase::setConc(const Eref& e, double c)
+void PoolBase::setConc( const Eref& e, double c )
 {
-    vSetConc(e, c);
+    vSetConc( e, c );
 }
 
 // Returns conc in millimolar.
-double PoolBase::getConc(const Eref& e) const
+double PoolBase::getConc( const Eref& e ) const
 {
-    return vGetConc(e);
+    return vGetConc( e );
 }
 
-void PoolBase::setConcInit(const Eref& e, double c)
+void PoolBase::setConcInit( const Eref& e, double c )
 {
     concInit_ = c;
-    vSetConcInit(e, c);
+    vSetConcInit( e, c );
 }
 
-double PoolBase::vGetConcInit(const Eref& e) const
+double PoolBase::vGetConcInit( const Eref& e ) const
 {
     return concInit_;
 }
 
-double PoolBase::getConcInit(const Eref& e) const
+double PoolBase::getConcInit( const Eref& e ) const
 {
     // return concInit_;
-    return vGetConcInit(e);
+    return vGetConcInit( e );
 }
 
-void PoolBase::setDiffConst(const Eref& e, double v)
+void PoolBase::setDiffConst( const Eref& e, double v )
 {
-    vSetDiffConst(e, v);
+    vSetDiffConst( e, v );
 }
 
-double PoolBase::getDiffConst(const Eref& e) const
+double PoolBase::getDiffConst(const Eref& e ) const
 {
-    return vGetDiffConst(e);
+    return vGetDiffConst( e );
 }
 
-void PoolBase::setMotorConst(const Eref& e, double v)
+void PoolBase::setMotorConst( const Eref& e, double v )
 {
-    vSetMotorConst(e, v);
+    vSetMotorConst( e, v );
 }
 
-double PoolBase::getMotorConst(const Eref& e) const
+double PoolBase::getMotorConst(const Eref& e ) const
 {
-    return vGetMotorConst(e);
+    return vGetMotorConst( e );
 }
 
-void PoolBase::setVolume(const Eref& e, double v)
+void PoolBase::setVolume( const Eref& e, double v )
 {
-    vSetVolume(e, v);
+    vSetVolume( e, v );
 }
 
-double PoolBase::getVolume(const Eref& e) const
+double PoolBase::getVolume( const Eref& e ) const
 {
-    return vGetVolume(e);
+    return vGetVolume( e );
 }
 
-void PoolBase::setSpecies(const Eref& e, unsigned int v)
+void PoolBase::setSpecies( const Eref& e, unsigned int v )
 {
-    vSetSpecies(e, v);
+    vSetSpecies( e, v );
 }
 
-unsigned int PoolBase::getSpecies(const Eref& e) const
+unsigned int PoolBase::getSpecies( const Eref& e ) const
 {
-    return vGetSpecies(e);
+    return vGetSpecies( e );
 }
 
 /**
  * setIsBuffered is active only for Pool and BufPool. Otherwise ignored.
  */
-void PoolBase::setIsBuffered(const Eref& e, bool v)
+void PoolBase::setIsBuffered( const Eref& e, bool v )
 {
-    vSetIsBuffered(e, v);
+    vSetIsBuffered( e, v );
 }
 
-bool PoolBase::getIsBuffered(const Eref& e) const
+bool PoolBase::getIsBuffered( const Eref& e ) const
 {
-    return vGetIsBuffered(e);
+    return vGetIsBuffered( e );
 }
 
 //////////////////////////////////////////////////////////////
@@ -371,21 +407,17 @@ bool PoolBase::getIsBuffered(const Eref& e) const
 //////////////////////////////////////////////////////////////
 
 /// Dummy MotorConst field for most Pool subclasses.
-void PoolBase::vSetMotorConst(const Eref& e, double v)
-{
-    ;
-}
+void PoolBase::vSetMotorConst( const Eref& e, double v )
+{;}
 
-double PoolBase::vGetMotorConst(const Eref& e) const
+double PoolBase::vGetMotorConst(const Eref& e ) const
 {
     return 0.0;
 }
 
 /// Dummy default function for most pool subclasses.
-void PoolBase::vSetIsBuffered(const Eref& e, bool v)
-{
-    ;
-}
+void PoolBase::vSetIsBuffered( const Eref& e, bool v )
+{;}
 
 //////////////////////////////////////////////////////////////
 // Zombie conversion routine: Converts Pool subclasses. There
@@ -396,38 +428,40 @@ void PoolBase::vSetIsBuffered(const Eref& e, bool v)
 // static func
 void PoolBase::zombify(Element* orig, const Cinfo* zClass, Id ksolve, Id dsolve)
 {
-    if (orig->cinfo() == zClass)
+    if ( orig->cinfo() == zClass )
         return;
     unsigned int start = orig->localDataStart();
     unsigned int num = orig->numLocalData();
-    if (num == 0)
+    if ( num == 0 )
         return;
-    vector<unsigned int> species(num, 0);
-    vector<double> concInit(num, 0.0);
-    vector<double> diffConst(num, 0.0);
-    vector<double> motorConst(num, 0.0);
-    for (unsigned int i = 0; i < num; ++i) {
-        Eref er(orig, i + start);
-        const PoolBase* pb = reinterpret_cast<const PoolBase*>(er.data());
-        species[i] = pb->getSpecies(er);
-        concInit[i] = pb->getConcInit(er);
-        diffConst[i] = pb->getDiffConst(er);
-        motorConst[i] = pb->getMotorConst(er);
+    vector< unsigned int > species( num, 0 );
+    vector< double > concInit( num, 0.0 );
+    vector< double > diffConst( num, 0.0 );
+    vector< double > motorConst( num, 0.0 );
+    for ( unsigned int i = 0; i < num; ++i )
+    {
+        Eref er( orig, i + start );
+        const PoolBase* pb = reinterpret_cast< const PoolBase* >( er.data() );
+        species[ i ] = pb->getSpecies( er );
+        concInit[ i ] = pb->getConcInit( er );
+        diffConst[ i ] = pb->getDiffConst( er );
+        motorConst[ i ] = pb->getMotorConst( er );
     }
-    orig->zombieSwap(zClass);
-    for (unsigned int i = 0; i < num; ++i) {
-        Eref er(orig, i + start);
-        PoolBase* pb = reinterpret_cast<PoolBase*>(er.data());
-        pb->vSetSolver(ksolve, dsolve);
-        pb->setSpecies(er, species[i]);
-        pb->setConcInit(er, concInit[i]);
-        pb->setDiffConst(er, diffConst[i]);
-        pb->setMotorConst(er, motorConst[i]);
+    orig->zombieSwap( zClass );
+    for ( unsigned int i = 0; i < num; ++i )
+    {
+        Eref er( orig, i + start );
+        PoolBase* pb = reinterpret_cast< PoolBase* >( er.data() );
+        pb->vSetSolver( ksolve, dsolve );
+        pb->setSpecies( er, species[i] );
+        pb->setConcInit( er, concInit[i] );
+        pb->setDiffConst( er, diffConst[i] );
+        pb->setMotorConst( er, motorConst[i] );
     }
 }
 
 // Virtual func: default does nothing.
-void PoolBase::vSetSolver(Id ksolve, Id dsolve)
+void PoolBase::vSetSolver( Id ksolve, Id dsolve )
 {
     ;
 }

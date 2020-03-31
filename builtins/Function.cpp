@@ -377,7 +377,7 @@ Function& Function::operator=(const Function& rhs)
             varIndex_[x->getName()] = xs_.size()-1;
         }
         // Add all the Ys now.
-        for(size_t i=0; i < rhs.ys_.size(); i++)
+        for(unsigned int i=0; i < rhs.ys_.size(); i++)
             ys_.push_back(shared_ptr<double>(new double(0.0)));
         parser_->LinkVariables(xs_, ys_, &t_);
         parser_->SetExpr(rhs.parser_->GetExpr());
@@ -408,7 +408,7 @@ void Function::addXByIndex(const unsigned int index)
 
     if(index >= xs_.size())
     {
-        for(size_t i = xs_.size(); i <= index; i++) 
+        for(unsigned int i = xs_.size(); i <= index; i++) 
         {
             xs_.push_back(shared_ptr<Variable>(new Variable('x'+to_string(i))));
             varIndex_[name] = xs_.size()-1;
@@ -779,7 +779,7 @@ void Function::process(const Eref &e, ProcPtr p)
     value_ = getValue();
     rate_ = (value_ - lastValue_) / p->dt;
 
-    for (size_t ii = 0; (ii < databuf.size()) && (ii < ys_.size()); ++ii)
+    for (unsigned int ii = 0; (ii < databuf.size()) && (ii < ys_.size()); ++ii)
         *ys_[ii] = databuf[ii];
 
     if ( useTrigger_ && value_ < TriggerThreshold )

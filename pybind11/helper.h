@@ -22,7 +22,7 @@ using namespace std;
 
 Id initShell();
 
-ObjId createIdFromPath(string path, string type, size_t numData = 1);
+ObjId createIdFromPath(string path, string type, unsigned int numData = 1);
 
 Shell* getShellPtr();
 
@@ -47,14 +47,14 @@ ObjId mooseConnect(const ObjId& src, const string& srcField, const ObjId& tgt,
 bool mooseDelete(const ObjId& oid);
 bool mooseDelete(const string& path);
 
-ObjId mooseCreate(const string type, const string& path, size_t numdata = 1);
+ObjId mooseCreate(const string type, const string& path, unsigned int numdata = 1);
 
 ObjId mooseCopy(const Id& orig, ObjId newParent, string newName,
                 unsigned int n, bool toGlobal, bool copyExtMsgs);
 
 py::object mooseGetCwe();
 
-void mooseSetClock(const size_t clockId, double dt);
+void mooseSetClock(const unsigned int clockId, double dt);
 
 map<string, string> mooseGetFieldDict(const string& className,
                                       const string& finfoType);
@@ -64,8 +64,6 @@ void mooseStart(double runtime, bool notify);
 
 py::list getElementFinfo(const ObjId& objid, const string& fname,
                          const Finfo* f);
-
-py::object handleDestFinfo(const ObjId& obj, const string& fname);
 
 py::object getValueFinfo(const ObjId& oid, const string& fname, const Finfo* f);
 
