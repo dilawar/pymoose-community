@@ -79,9 +79,10 @@ PYBIND11_MODULE(_cmoose, m)
         .def(py::init<const ObjId&>())
         // properties
         .def_property_readonly("numIds", &Id::numIds)
-        .def_property_readonly("path", &Id::path)
-        .def_property_readonly("name",
-                               [](const Id& id) { return id.element()->getName(); })
+        .def_property_readonly(
+             "path", [](const Id& id) { return id.element()->getName(); })
+        .def_property_readonly(
+             "name", [](const Id& id) { return id.element()->getName(); })
         .def_property_readonly("id", &Id::value)
         .def_property_readonly("cinfo",
                                [](Id& id) { return id.element()->cinfo(); },
@@ -91,7 +92,7 @@ PYBIND11_MODULE(_cmoose, m)
         .def("__repr__", [](const Id& id) {
              return "<Id id=" + std::to_string(id.value()) + " path=" +
                     id.path() + " class=" + id.element()->cinfo()->name() + ">";
-                    });
+         });
 
     py::class_<ObjId>(m, "_ObjId")
         .def(py::init<>())
@@ -107,25 +108,27 @@ PYBIND11_MODULE(_cmoose, m)
         .def_property_readonly("path", &ObjId::path)
         .def_property_readonly(
              "parent", [](const ObjId& oid) { return Neutral::parent(oid); })
-        .def_property_readonly("name", [](const ObjId& oid){ return oid.element()->getName(); })
+        .def_property_readonly(
+             "name", [](const ObjId& oid) { return oid.element()->getName(); })
         .def_property_readonly("className", [](const ObjId& oid) {
              return oid.element()->cinfo()->name();
          })
         .def_property_readonly("id", [](ObjId& oid) { return oid.id; })
         .def_property_readonly(
              "type", [](ObjId& oid) { return oid.element()->cinfo()->name(); })
+
         //--------------------------------------------------------------------
         // Set/Get
         //--------------------------------------------------------------------
         // Overload of Field::set . FIXME: remove after testing.
-        // .def("setField", &setProperty<double>)
-        // .def("setField", &setProperty<double>)
-        // .def("setField", &setProperty<vector<double>>)
-        // .def("setField", &setProperty<std::string>)
-        // .def("setField", &setProperty<bool>)
+        // .def("setField", &setField<double>)
+        // .def("setField", &setField<double>)
+        // .def("setField", &setField<vector<double>>)
+        // .def("setField", &setField<std::string>)
+        // .def("setField", &setField<bool>)
 
         // Overload for Field::get
-        // .def("getField", &getProperty)
+        // .def("getField", &getFieldGeneric)
         // .def("getElementField", &getElementField)
         // .def("getElementFieldItem", &getElementFieldItem)
         // .def("getNumpy", &getFieldNumpy<double>)
@@ -133,17 +136,17 @@ PYBIND11_MODULE(_cmoose, m)
         /**
         * Attributes.
         */
-        .def("__getattr__", &getProperty)
-        .def("__setattr__", &setProperty<bool>)
-        .def("__setattr__", &setProperty<double>)
-        .def("__setattr__", &setProperty<int>)
-        .def("__setattr__", &setProperty<unsigned long>)
-        .def("__setattr__", &setProperty<unsigned int>)
-        .def("__setattr__", &setProperty<unsigned int>)
-        .def("__setattr__", &setProperty<vector<double>>)
-        .def("__setattr__", &setProperty<std::string>)
-        .def("__setattr__", &setProperty<ObjId>)
-        .def("__setattr__", &setProperty<Id>)
+        .def("__getattr__", &getFieldGeneric)
+        .def("__setattr__", &setField<bool>)
+        .def("__setattr__", &setField<double>)
+        .def("__setattr__", &setField<int>)
+        .def("__setattr__", &setField<unsigned long>)
+        .def("__setattr__", &setField<unsigned int>)
+        .def("__setattr__", &setField<unsigned int>)
+        .def("__setattr__", &setField<vector<double>>)
+        .def("__setattr__", &setField<std::string>)
+        .def("__setattr__", &setField<ObjId>)
+        .def("__setattr__", &setField<Id>)
 
         //---------------------------------------------------------------------
         //  Connect

@@ -339,30 +339,30 @@ py::object getValueFinfo(const ObjId& oid, const string& fname, const Finfo* f)
     py::object r = py::none();
 
     if (rttType == "double" or rttType == "float")
-        r = pybind11::float_(getProp<double>(oid, fname));
+        r = pybind11::float_(getField<double>(oid, fname));
     else if (rttType == "vector<double>") {
-        r = py::cast(getProp<vector<double>>(oid, fname));
+        r = py::cast(getField<vector<double>>(oid, fname));
         // r = getFieldNumpy<double>(oid, fname);
     } else if (rttType == "string")
-        r = pybind11::str(getProp<string>(oid, fname));
+        r = pybind11::str(getField<string>(oid, fname));
     // else if (rttType == "char")
-        // r = pybind11::int_(getProp<char>(oid, fname));
+        // r = pybind11::int_(getField<char>(oid, fname));
     else if (rttType == "int" or rttType == "unsigned int" or rttType == "unsigned long" or rttType == "unsigned int")
-        r = pybind11::int_(getProp<int>(oid, fname));
+        r = pybind11::int_(getField<int>(oid, fname));
     else if (rttType == "bool")
-        r = pybind11::bool_(getProp<bool>(oid, fname));
+        r = pybind11::bool_(getField<bool>(oid, fname));
     else if (rttType == "Id")
-        r = py::cast(getProp<Id>(oid, fname));
+        r = py::cast(getField<Id>(oid, fname));
     else if (rttType == "ObjId")
-        r = py::cast(getProp<ObjId>(oid, fname));
+        r = py::cast(getField<ObjId>(oid, fname));
     else if (rttType == "Variable")
-        r = py::cast(getProp<Variable>(oid, fname));
+        r = py::cast(getField<Variable>(oid, fname));
     else if (rttType == "vector<Id>")
-        r = py::cast(getProp<vector<Id>>(oid, fname));
+        r = py::cast(getField<vector<Id>>(oid, fname));
     else if (rttType == "vector<ObjId>")
-        r = py::cast(getProp<vector<ObjId>>(oid, fname));
+        r = py::cast(getField<vector<ObjId>>(oid, fname));
     else {
-        cout << "Warning: getProperty:: Unsupported type '" << rttType << "'"
+        cout << "Warning: getFielderty:: Unsupported type '" << rttType << "'"
              << endl;
         r = py::none();
     }
@@ -381,7 +381,7 @@ py::list getElementFinfo(const ObjId& objid, const string& fname,
     return py::cast(res);
 }
 
-py::cpp_function getPropertyDestFinfo(const ObjId& oid, const string& fname,
+py::cpp_function getFieldertyDestFinfo(const ObjId& oid, const string& fname,
                                       const Finfo* finfo)
 {
     const auto rttType = finfo->rttiType();
@@ -413,7 +413,7 @@ py::cpp_function getPropertyDestFinfo(const ObjId& oid, const string& fname,
 
 }
 
-py::object getProperty(const ObjId& oid, const string& fname)
+py::object getFieldGeneric(const ObjId& oid, const string& fname)
 {
     auto cinfo = oid.element()->cinfo();
     auto finfo = cinfo->findFinfo(fname);
@@ -435,10 +435,10 @@ py::object getProperty(const ObjId& oid, const string& fname)
         // Return function.
         return getLookupValueFinfo(oid, fname, finfo);
     } else if (finfoType == "DestFinfo") {
-        return getPropertyDestFinfo(oid, fname, finfo);
+        return getFieldertyDestFinfo(oid, fname, finfo);
     }
 
-    cerr << "NotImplemented: getProperty for " << fname << " with rttType "
+    cerr << "NotImplemented: getFielderty for " << fname << " with rttType "
          << finfo->rttiType() << " and type: '" << finfoType << "'" << endl;
     return pybind11::none();
 }

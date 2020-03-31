@@ -19,15 +19,15 @@
 
 #include "../external/prettyprint.hpp"
 
-template <typename T = double>
-void setProperty(const ObjId& id, const string& fname, T val)
+template <typename T>
+void setField(const ObjId& id, const string& fname, T val)
 {
     // cout << "Setting " << fname << " to value " << val << endl;
     Field<T>::set(id, fname, val);
 }
 
-template <typename T = double>
-T getProp(const ObjId& id, const string& fname)
+template <typename T>
+T getField(const ObjId& id, const string& fname)
 {
     return Field<T>::get(id, fname);
 }

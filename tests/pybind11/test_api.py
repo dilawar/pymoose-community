@@ -25,6 +25,8 @@ def test_other():
     finfo = moose.getFieldDict(a1.className)
     print(finfo)
 
+    s = moose.Streamer('/asdada')
+
 def test_vec():
     a = moose.Pool('/p111', 100)
     v = moose.vec(a)

@@ -70,7 +70,7 @@ py::object getValueFinfo(const ObjId& oid, const string& fname, const Finfo* f);
 py::cpp_function getPropertyDestFinfo(const ObjId& oid, const string& fname,
                                       const Finfo* finfo);
 
-py::object getProperty(const ObjId& oid, const string& fname);
+py::object getFieldGeneric(const ObjId& oid, const string& fname);
 
 py::object getLookupValueFinfo(const ObjId& oid, const string& fname,
                                const Finfo* f);

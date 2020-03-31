@@ -51,7 +51,7 @@ public:
     template <typename T>
     void setAttrOneToAll(const string& name, const T& val)
     {
-        for (auto& o : objs_) setProperty<T>(o, name, val);
+        for (auto& o : objs_) setField<T>(o, name, val);
     }
 
     template <typename T>
@@ -64,14 +64,14 @@ public:
                 "Expected " +
                 to_string(objs_.size()) + ", got " + to_string(val.size()));
         for (unsigned int i = 0; i < objs_.size(); i++)
-            setProperty<T>(objs_[i], name, val[i]);
+            setField<T>(objs_[i], name, val[i]);
     }
 
     vector<py::object> getAttr(const string& name)
     {
         vector<py::object> res(objs_.size());
         for (unsigned int i = 0; i < objs_.size(); i++)
-            res[i] = getProperty(objs_[i], name);
+            res[i] = getFieldGeneric(objs_[i], name);
         return res;
     }
 
