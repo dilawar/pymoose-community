@@ -330,11 +330,11 @@ void mooseStart(double runtime, bool notify = false)
 //    return ObjId(id);
 //}
 
-ObjId mooseCopy(const Id& orig, ObjId newParent, string newName,
+ObjId mooseCopy(const ObjId& orig, ObjId newParent, string newName,
                 unsigned int n = 1, bool toGlobal = false,
                 bool copyExtMsgs = false)
 {
-    return ObjId(getShellPtr()->doCopy(orig, newParent, newName, n, toGlobal,
+    return ObjId(getShellPtr()->doCopy(orig.id, newParent, newName, n, toGlobal,
                                        copyExtMsgs));
 }
 
@@ -397,9 +397,6 @@ py::list getElementFinfo(const ObjId& objid, const string& fname,
 py::cpp_function getFieldPropertyDestFinfo(const ObjId& oid, const string& fname, const Finfo* finfo)
 {
     const auto rttType = finfo->rttiType();
-
-    // Return function.
-    cout << "ObjId " << oid << " -- " << fname << ": " << rttType << endl;
 
     if (rttType == "void") {
         std::function<bool()> func = [oid, fname]() {

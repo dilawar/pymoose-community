@@ -68,6 +68,8 @@ bool setFieldGeneric(const ObjId& oid, const string& fieldName,
 
     if (fieldType == "double")
         return Field<double>::set(oid, fieldName, val.cast<double>());
+    if (fieldType == "vector<double>")
+        return Field<vector<double>>::set(oid, fieldName, val.cast<vector<double>>());
     if (fieldType == "float")
         return Field<float>::set(oid, fieldName, val.cast<float>());
     if (fieldType == "unsigned int")
@@ -82,12 +84,16 @@ bool setFieldGeneric(const ObjId& oid, const string& fieldName,
         return Field<bool>::set(oid, fieldName, val.cast<bool>());
     if (fieldType == "string")
         return Field<string>::set(oid, fieldName, val.cast<string>());
+    if (fieldType == "vector<string>")
+        return Field<vector<string>>::set(oid, fieldName, val.cast<vector<string>>());
     if (fieldType == "char")
         return Field<char>::set(oid, fieldName, val.cast<char>());
     if (fieldType == "ObjId")
         return Field<ObjId>::set(oid, fieldName, val.cast<ObjId>());
-    if (fieldType == "Id")
-        return Field<Id>::set(oid, fieldName, val.cast<Id>());
+    if (fieldType == "Id") {
+        // NB: Note that we cast to ObjId here and not to Id. 
+        return Field<Id>::set(oid.id, fieldName, val.cast<ObjId>());
+    }
     if (fieldType == "Variable")
         return Field<Variable>::set(oid, fieldName, val.cast<Variable>());
 
