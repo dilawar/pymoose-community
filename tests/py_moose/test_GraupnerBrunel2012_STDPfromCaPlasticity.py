@@ -71,7 +71,7 @@ def test_GB2012_STDP():
     moose.connect( syn, 'activationOut', network.vec[1], 'activation' )
 
     # synapse from presynaptic neuron
-    moose.connect( network.vec[0],'spikeOut', syn.synapse[0], 'addSpike')
+    moose.connect( network.vec[0], 'spikeOut', syn.synapse[0], 'addSpike')
 
     # post-synaptic spikes also needed for STDP
     moose.connect( network.vec[1], 'spikeOut', syn, 'addPostSpike')
@@ -100,9 +100,9 @@ def test_GB2012_STDP():
     # Setting up tables
     # ###########################################
 
-    Vms = moose.Table( '/plotVms', 2 )
+    Vms = moose.vec(moose.Table( '/plotVms', 2))
     moose.connect( network, 'VmOut', Vms, 'input', 'OneToOne')
-    spikes = moose.Table( '/plotSpikes', 2 )
+    spikes = moose.vec(moose.Table( '/plotSpikes', 2))
     moose.connect( network, 'spikeOut', spikes, 'input', 'OneToOne')
     CaTable = moose.Table( '/plotCa', 1 )
     moose.connect( CaTable, 'requestOut', syn, 'getCa')
@@ -190,15 +190,15 @@ def test_GB2012_STDP():
         print(('pre before post, dt = %1.3f s, dw/w = %1.3f'%(deltat,dw)))
         dwlist_pos.append(dw)
 
-    Vmseries0 = Vms.vec[0].vector
+    Vmseries0 = Vms[0].vector
     numsteps = len(Vmseries0)
 
-    for t in spikes.vec[0].vector:
+    for t in spikes[0].vector:
         Vmseries0[int(t/dt)-1] = 30e-3 # V
 
-    Vmseries1 = Vms.vec[1].vector
+    Vmseries1 = Vms[1].vector
 
-    for t in spikes.vec[1].vector:
+    for t in spikes[1].vector:
         Vmseries1[int(t/dt)-1] = 30e-3 # V
 
     timeseries = np.linspace(0.,200*numsteps*dt,numsteps)

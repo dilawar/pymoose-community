@@ -20,17 +20,18 @@
 #include <utility>
 #include <vector>
 
-#include "../external/pybind11/include/pybind11/functional.h"
-#include "../external/pybind11/include/pybind11/numpy.h"
 #include "../external/pybind11/include/pybind11/pybind11.h"
 #include "../external/pybind11/include/pybind11/stl.h"
+#include "../external/pybind11/include/pybind11/numpy.h"
+// #include "../external/pybind11/include/pybind11/functional.h"
+namespace py = pybind11;
 
 // See https://pybind11.readthedocs.io/en/master/classes.html#overloaded-methods
 template <typename... Args>
 using overload_cast_ = pybind11::detail::overload_cast_impl<Args...>;
 
-#include "../basecode/global.h"
 #include "../basecode/header.h"
+#include "../basecode/global.h"
 #include "../basecode/Cinfo.h"
 #include "../builtins/Variable.h"
 #include "../shell/Neutral.h"
@@ -46,9 +47,7 @@ using overload_cast_ = pybind11::detail::overload_cast_impl<Args...>;
 
 #include "pymoose.h"
 
-
 using namespace std;
-namespace py = pybind11;
 using namespace pybind11::literals;
 
 Id initModule(py::module& m)
@@ -56,7 +55,8 @@ Id initModule(py::module& m)
     return initShell();
 }
 
-bool setFieldGeneric(const ObjId& oid, const string& fieldName, const py::object& val)
+bool setFieldGeneric(const ObjId& oid, const string& fieldName,
+                     const py::object& val)
 {
     auto cinfo = oid.element()->cinfo();
     auto finfo = cinfo->findFinfo(fieldName);
@@ -66,30 +66,33 @@ bool setFieldGeneric(const ObjId& oid, const string& fieldName, const py::object
     }
     auto fieldType = finfo->rttiType();
 
-    if(fieldType == "double")
+    if (fieldType == "double")
         return Field<double>::set(oid, fieldName, val.cast<double>());
-    if(fieldType == "float")
+    if (fieldType == "float")
         return Field<float>::set(oid, fieldName, val.cast<float>());
-    if(fieldType == "unsigned int")
-        return Field<unsigned int>::set(oid, fieldName, val.cast<unsigned int>());
-    if(fieldType == "unsigned long")
-        return Field<unsigned long>::set(oid, fieldName, val.cast<unsigned long>());
-    if(fieldType == "int")
+    if (fieldType == "unsigned int")
+        return Field<unsigned int>::set(oid, fieldName,
+                                        val.cast<unsigned int>());
+    if (fieldType == "unsigned long")
+        return Field<unsigned long>::set(oid, fieldName,
+                                         val.cast<unsigned long>());
+    if (fieldType == "int")
         return Field<int>::set(oid, fieldName, val.cast<int>());
-    if(fieldType == "bool")
+    if (fieldType == "bool")
         return Field<bool>::set(oid, fieldName, val.cast<bool>());
-    if(fieldType == "string")
+    if (fieldType == "string")
         return Field<string>::set(oid, fieldName, val.cast<string>());
-    if(fieldType == "char")
+    if (fieldType == "char")
         return Field<char>::set(oid, fieldName, val.cast<char>());
-    if(fieldType == "ObjId")
+    if (fieldType == "ObjId")
         return Field<ObjId>::set(oid, fieldName, val.cast<ObjId>());
-    if(fieldType == "Id")
+    if (fieldType == "Id")
         return Field<Id>::set(oid, fieldName, val.cast<Id>());
-    if(fieldType == "Variable")
+    if (fieldType == "Variable")
         return Field<Variable>::set(oid, fieldName, val.cast<Variable>());
 
-    throw runtime_error("NotImplemented: setField for " + fieldName + " with value type " + fieldType); 
+    throw runtime_error("NotImplemented: setField for " + fieldName +
+                        " with value type " + fieldType);
     return false;
 }
 
@@ -99,7 +102,8 @@ py::object getFieldGeneric(const ObjId& oid, const string& fieldName)
     auto finfo = cinfo->findFinfo(fieldName);
 
     if (!finfo) {
-        cout << "Error: " << fieldName << " is not found on " << oid.path() << endl;
+        cout << "Error: " << fieldName << " is not found on " << oid.path()
+             << endl;
         return pybind11::none();
     }
 
@@ -123,38 +127,12 @@ py::object getFieldGeneric(const ObjId& oid, const string& fieldName)
     return pybind11::none();
 }
 
-template<>
-ObjId connectVec(const MooseVec& src, const string& srcField, const ObjId& tgt, const string& tgtField)
-{
-    ObjId result;
-    for (const auto& obj : src.objs())
-        result = connect<ObjId, ObjId>(obj, srcField, tgt, tgtField);
-    return result;
-}
-
-template<>
-ObjId connectVec(const ObjId& src, const string& srcField, const MooseVec& tgt, const string& tgtField)
-{
-    ObjId result;
-    for (const auto& obj : tgt.objs())
-        result = connect<ObjId, ObjId>(src, srcField, obj, tgtField);
-    return result;
-}
-
-template<>
-ObjId connectVec(const MooseVec& src, const string& srcField, const MooseVec& tgt, const string& tgtField)
-{
-    ObjId result;
-    if (src.size() != tgt.size())
-        throw runtime_error(
-                "Size mismatch for source and target vectors. Source size " +
-                std::to_string(src.size()) + ", target size " +
-                std::to_string(tgt.size()) + ".");
-    for (size_t i = 0; i < src.size(); i++)
-        result = connect<ObjId, ObjId>(src.objs()[i], srcField, tgt.objs()[i], tgtField);
-    return result;
-}
-
+// ObjId connectGeneric(const py::object& src, const string srcfield,
+//                      const py::object& tgt, const string& tgtfield,
+//                      const string& type)
+// {
+//     return src.connect(srcfield, tgt, tgtfield, type);
+// }
 
 PYBIND11_MODULE(_cmoose, m)
 {
@@ -233,12 +211,12 @@ PYBIND11_MODULE(_cmoose, m)
         // .def("getElementField", &getElementField)
         // .def("getElementFieldItem", &getElementFieldItem)
         // .def("getNumpy", &getFieldNumpy<double>)
-    
+
         /**
         *  Override __eq__ etc.
         */
-        .def("__eq__", [](const ObjId& a, const ObjId& b){ return a==b; })
-        .def("__ne__", [](const ObjId& a, const ObjId& b){ return a!=b; })
+        .def("__eq__", [](const ObjId& a, const ObjId& b) { return a == b; })
+        .def("__ne__", [](const ObjId& a, const ObjId& b) { return a != b; })
 
         /**
         * Attributes.
@@ -261,14 +239,30 @@ PYBIND11_MODULE(_cmoose, m)
         //---------------------------------------------------------------------
         //  Connect
         //---------------------------------------------------------------------
-        .def("connect", &connect<ObjId, ObjId>)
-        .def("connect", &connect<ObjId, Id>)
-        .def("connect", &connect<Id, ObjId>)
-        .def("connect", &connect<Id, Id>)
         // This would be so much easier with c++17.
-        .def("connect", &connectVec<MooseVec, ObjId>)
-        .def("connect", &connectVec<ObjId, MooseVec>)
-        .def("connect", &connectVec<MooseVec, MooseVec>)
+        .def("connect",
+             [](const ObjId& src, const string& srcfield, const ObjId& tgt,
+                const string& tgtfield, const string& type) {
+             return mooseConnect(src, srcfield, tgt, tgtfield, type);
+         })
+        // // , "src"_a, "srcfield"_a, "dest"_a, "destfield"_a, "msgtype"_a)
+        // //, "src"_a, "srcfield"_a, "dest"_a, "destfield"_a, "msgtype"_a =
+        // //"OneToAll")
+        // .def("connect", &connectVec<MooseVec, MooseVec>)
+        // // , "src"_a, //"srcfield"_a, "dest"_a, "destfield"_a, "msgtype"_a =
+        // // "OneToOne")
+        // .def("connect", &connect<ObjId, ObjId>)
+        // // , "src"_a, "srcfield"_a, "dest"_a, "destfield"_a, "msgtype"_a =
+        // // "Single")
+        // .def("connect", &connect<ObjId, Id>)
+        // // , "src"_a, "srcfield"_a, "dest"_a, "destfield"_a, "msgtype"_a =
+        // // "Single")
+        // .def("connect", &connect<Id, ObjId>)
+        // // , "src"_a, "srcfield"_a, "dest"_a, "destfield"_a, "msgtype"_a =
+        // // "Single")
+        // .def("connect", &connect<Id, Id>)
+        // // , "src"_a, "srcfield"_a, "dest"_a, "destfield"_a, "msgtype"_a =
+        // // "Single")
 
         //---------------------------------------------------------------------
         //  Extra
@@ -310,6 +304,8 @@ PYBIND11_MODULE(_cmoose, m)
         .def(py::init<const string&, unsigned int, const string&>(), "path"_a,
              "n"_a = 1, "dtype"_a = "Neutral")  // Default
         .def(py::init<const ObjId&>())
+        .def("connect", &MooseVec::connectToSingle)
+        .def("connect", &MooseVec::connectToVec)
         .def("__len__", &MooseVec::len)
         .def("__iter__",
              [](const MooseVec& v) {
@@ -327,7 +323,9 @@ PYBIND11_MODULE(_cmoose, m)
         // This is to provide old API support. Some scripts use .vec even on a
         // vec to get a vec. So silly or so Zen?!
         .def_property_readonly("vec", [](const MooseVec& vec) { return &vec; },
-                               py::return_value_policy::reference_internal);
+                               py::return_value_policy::reference_internal)
+        .def_property_readonly("type",
+                               [](const MooseVec& v) { return "moose.vec"; });
 
     // Module functions.
     m.def("getShell",
@@ -346,9 +344,9 @@ PYBIND11_MODULE(_cmoose, m)
     m.def("element", overload_cast_<const ObjId&>()(&mooseElement));
     m.def("element", overload_cast_<const string&>()(&mooseElement));
     m.def("exists", &mooseExists);
-    m.def("connect", &mooseConnect);
     m.def("getCwe", &mooseGetCwe);
     m.def("setClock", &mooseSetClock);
+    m.def("useClock", &mooseUseClock);
     m.def("loadModelInternal", &loadModelInternal);
     m.def("getFieldDict", &mooseGetFieldDict, "className"_a,
           "finfoType"_a = "");

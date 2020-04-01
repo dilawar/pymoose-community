@@ -43,18 +43,8 @@ py::array_t<T> getFieldNumpy(const ObjId& id, const string& fname)
     return py::array_t<T>(v.size(), v.data());
 }
 
-template <typename P = ObjId, typename Q = ObjId>
-ObjId connect(const P& src, const string& srcField, const Q& tgt,
-              const string& tgtField)
-{
-    return mooseConnect(ObjId(src), srcField, ObjId(tgt), tgtField);
-}
-
-template<typename P, typename Q>
-ObjId connectVec(const P& src, const string& srcField, const Q& tgt, const string& tgtField);
-
-
-bool setFieldGeneric(const ObjId& id, const string& frname, const py::object& val);
+bool setFieldGeneric(const ObjId& id, const string& frname,
+                     const py::object& val);
 
 py::object getFieldGeneric(const ObjId& oid, const string& fname);
 

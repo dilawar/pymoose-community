@@ -52,6 +52,10 @@ def about():
                 version=_cmoose.VERSION,
                 docs='https://moose.readthedocs.io/en/latest/')
 
+
+def connect(src, srcfield, dest, destfield, msgtype="Single"):
+    return src.connect(srcfield, dest, destfield, msgtype)
+
 def wildcardFind(pattern):
     """wildcardFind.
 
@@ -65,9 +69,6 @@ def wildcardFind(pattern):
         paths.append(__Neutral__(p))
     return paths
 
-def delete(a):
-    return _cmoose.delete(a)
-
 def element(e):
     if not isinstance(e, str):
         path = e.path
@@ -75,9 +76,6 @@ def element(e):
         path = e
     obj = _cmoose.element(path)
     return __Neutral__(obj)
-
-def exists(path):
-    return _cmoose.exists(path)
 
 def copy(elem, newParent, newName="", n=1):
     if not newName:
@@ -120,7 +118,7 @@ def le(el=None):
     if el is None:
         el = getCwe()
     elif isinstance(el, str):
-        if not exists(el):
+        if not _cmoose.exists(el):
             raise ValueError('no such element')
         el = element(el)
     #elif isinstance(el, _cmoose.vec):

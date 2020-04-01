@@ -214,10 +214,10 @@ ObjId getElementFieldItem(const ObjId& objid, const string& fname,
 }
 
 ObjId mooseConnect(const ObjId& src, const string& srcField, const ObjId& tgt,
-                   const string& tgtField)
+                   const string& tgtField, const string& msgType)
 {
     auto pShell = getShellPtr();
-    return pShell->doAddMsg("Single", src, srcField, tgt, tgtField);
+    return pShell->doAddMsg(msgType, src, srcField, tgt, tgtField);
 }
 
 bool mooseDelete(const ObjId& oid)
@@ -239,6 +239,11 @@ ObjId mooseCreate(const string type, const string& path, unsigned int numdata)
 void mooseSetClock(const unsigned int clockId, double dt)
 {
     getShellPtr()->doSetClock(clockId, dt);
+}
+
+void mooseUseClock(size_t tick, const string& path, const string& field)
+{
+    getShellPtr()->doUseClock(path,  field, tick);
 }
 
 /* --------------------------------------------------------------------------*/

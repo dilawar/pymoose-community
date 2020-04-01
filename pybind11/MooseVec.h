@@ -25,7 +25,8 @@ public:
 
     unsigned int len();
 
-    const ObjId& getItem(const size_t i) const;
+    const ObjId& getItemRef(const size_t i) const;
+    ObjId getItem(const size_t i) const;
 
     void setAttrOneToAll(const string& name, const py::object& val);
 
@@ -34,6 +35,10 @@ public:
     vector<py::object> getAttr(const string& name);
 
     const vector<ObjId>& objs() const;
+
+    ObjId connectToSingle(const string& srcfield, const ObjId& tgt, const string& tgtfield, const string& msgtype);
+
+    ObjId connectToVec(const string& srcfield, const MooseVec& tgt, const string& tgtfield, const string& msgtype);
 
 private:
     std::string path_;

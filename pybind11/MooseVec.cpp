@@ -19,8 +19,9 @@ namespace py = pybind11;
 #include "pymoose.h"
 #include "MooseVec.h"
 
-MooseVec::MooseVec(const string& path, unsigned int n = 1, const string& dtype = "Neutral")
-: path_(path)
+MooseVec::MooseVec(const string& path, unsigned int n = 1,
+                   const string& dtype = "Neutral")
+    : path_(path)
 {
     if (!mooseExists(path)) {
         objs_.clear();
@@ -60,9 +61,14 @@ unsigned int MooseVec::len()
     return (unsigned int)size();
 }
 
-const ObjId& MooseVec::getItem(const size_t i) const
+const ObjId& MooseVec::getItemRef(const size_t i) const
 {
-    return objs_.at(i);
+    return objs_[i];
+}
+
+ObjId MooseVec::getItem(const size_t i) const
+{
+    return objs_[i];
 }
 
 void MooseVec::setAttrOneToAll(const string& name, const py::object& val)
@@ -72,12 +78,12 @@ void MooseVec::setAttrOneToAll(const string& name, const py::object& val)
 
 void MooseVec::setAttrOneToOne(const string& name, const py::sequence& val)
 {
-    if ( py::len(val) != objs_.size())
+    if (py::len(val) != objs_.size())
         throw runtime_error(
-                "Length of sequence on the right hand side "
-                "does not match size of vector. "
-                "Expected " +
-                to_string(objs_.size()) + ", got " + to_string(py::len(val)));
+            "Length of sequence on the right hand side "
+            "does not match size of vector. "
+            "Expected " +
+            to_string(objs_.size()) + ", got " + to_string(py::len(val)));
     for (size_t i = 0; i < objs_.size(); i++)
         setFieldGeneric(objs_[i], name, val[i]);
 }
@@ -93,4 +99,27 @@ vector<py::object> MooseVec::getAttr(const string& name)
 const vector<ObjId>& MooseVec::objs() const
 {
     return objs_;
+}
+
+ObjId MooseVec::connectToSingle(const string& srcfield, const ObjId& tgt,
+                                const string& tgtfield, const string& msgtype)
+{
+    ObjId res;
+    for (const auto& obj : objs_)
+        res = mooseConnect(obj, srcfield, tgt, tgtfield, msgtype);
+    return res;
+}
+
+ObjId MooseVec::connectToVec(const string& srcfield, const MooseVec& tgt,
+                             const string& tgtfield, const string& msgtype)
+{
+    if (objs_.size() != tgt.size())
+        throw runtime_error(
+            "Length mismatch. Source vector size is " + to_string(size()) +
+            " but the target vector size is " + to_string(tgt.size()));
+
+    ObjId res;
+    for (size_t i = 0; i < size(); i++)
+        res = mooseConnect(objs_[i], srcfield, tgt.getItem(i), tgtfield, msgtype);
+    return res;
 }

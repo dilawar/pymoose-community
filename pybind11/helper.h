@@ -42,7 +42,7 @@ ObjId getElementFieldItem(const ObjId& objid, const string& fname,
                           unsigned int index);
 
 ObjId mooseConnect(const ObjId& src, const string& srcField, const ObjId& tgt,
-                   const string& tgtField);
+                   const string& tgtField, const string& msgType);
 
 bool mooseDelete(const ObjId& oid);
 bool mooseDelete(const string& path);
@@ -55,6 +55,8 @@ ObjId mooseCopy(const Id& orig, ObjId newParent, string newName,
 py::object mooseGetCwe();
 
 void mooseSetClock(const unsigned int clockId, double dt);
+
+void mooseUseClock(size_t tick, const string& path, const string& field);
 
 map<string, string> mooseGetFieldDict(const string& className,
                                       const string& finfoType);
