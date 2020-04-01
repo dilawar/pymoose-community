@@ -42,7 +42,7 @@
 #include "../utility/strutil.h"
 
 #include "helper.h"
-#include "Finfo.hpp"
+#include "Finfo.h"
 #include "pymoose.h"
 
 using namespace std;
@@ -429,62 +429,5 @@ py::cpp_function getFieldPropertyDestFinfo(const ObjId& oid,
 
     throw runtime_error("getFieldPropertyDestFinfo::NotImplemented " + fname +
                         " for rttType " + rttType + " for oid " + oid.path());
-}
-
-template<typename T>
-py::object getLookupValueFinfoItemInner(const ObjId& oid, const string& fname,
-        const T& key, const string& tgtType)
-{
-    if (tgtType == "bool")
-        return py::cast(LookupField<T, bool>::get(oid, fname, key));
-    if (tgtType == "double")
-        return py::cast(LookupField<T, double>::get(oid, fname, key));
-    else if (tgtType == "vector<Id>")
-        return py::cast(LookupField<T, vector<Id>>::get(oid, fname, key));
-    else if (tgtType == "vector<ObjId>")
-        return py::cast(LookupField<T, vector<ObjId>>::get(oid, fname, key));
-    return py::none();
-}
-
-
-py::object getLookupValueFinfoItem(const ObjId& oid, const string& fname,
-                                   const py::object& key, const Finfo* f)
-{
-    auto rttType = f->rttiType();
-    vector<string> srcDestType;
-    moose::tokenize(rttType, ",", srcDestType);
-    string srcType = srcDestType[0];
-    string tgtType = srcDestType[1];
-
-    py::object r;
-
-    // cout << " LookupValue at fname " << fname << " with src: " << srcType
-         // << " and tgtType: " << tgtType << endl;
-
-    if (srcType == "string") {
-        auto k = py::cast<string>(key);
-        r = getLookupValueFinfoItemInner<string>(oid, fname, k, tgtType);
-    }
-    else if (srcType == "unsigned int") {
-        auto k = py::cast<unsigned int>(key);
-        r = getLookupValueFinfoItemInner<unsigned int>(oid, fname, k, tgtType);
-    }
-
-    if(r.is(py::none())) {
-        py::print("getLookupValueFinfoItem::NotImplemented for key:", key,
-                  "srcType:", srcType, "and tgtType:", tgtType, "path: ", oid.path());
-        throw runtime_error("getLookupValueFinfoItem::NotImplemented error");
-    }
-    return r;
-}
-
-py::object getLookupValueFinfo(const ObjId& oid, const string& fname,
-                               const Finfo* f)
-{
-    // std::function<py::object(const string&)> f = [oid, fname, rttType](
-    //    const string& key) {
-    //    return getLookupValueFinfoItem(oid, fname, key, rttType);
-    //};
-    return py::cast(__Finfo__(oid, fname, f));
 }
 

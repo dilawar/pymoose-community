@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../CheckCXXCompiler.cmake)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../cmake_modules/")
 
-pybind11_add_module(_cmoose pymoose.cpp helper.cpp MooseVec.cpp)
+pybind11_add_module(_cmoose pymoose.cpp helper.cpp Finfo.cpp MooseVec.cpp)
 
 # set_target_properties(_moose PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/python/moose)
 set_target_properties(_cmoose PROPERTIES

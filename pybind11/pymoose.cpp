@@ -4,11 +4,6 @@
 //
 //    Description:  Python bindings generated using PyBind11.
 //
-//        Version:  1.0
-//        Created:  03/15/2020 04:03:58 PM
-//       Revision:  none
-//       Compiler:  g++
-//
 //         Author:  Dilawar Singh (), dilawar.s.rajput@gmail.com
 //   Organization:  NCBS Bangalore
 //
@@ -42,7 +37,7 @@ using overload_cast_ = pybind11::detail::overload_cast_impl<Args...>;
 #include "../basecode/global.h"
 
 #include "helper.h"
-#include "Finfo.hpp"
+#include "Finfo.h"
 #include "MooseVec.h"
 
 #include "pymoose.h"
@@ -153,9 +148,11 @@ PYBIND11_MODULE(_cmoose, m)
     // Note that both a.isA["Compartment"] and a.isA("Compartment") are valid
     // now.
     py::class_<__Finfo__>(m, "_Finfo")
-        .def(py::init<const ObjId&, const string&, const Finfo*>())
+        .def(py::init<const ObjId&, const string&, const Finfo*, const string&>())
         .def("__call__", &__Finfo__::operator())
-        .def("__getitem__", &__Finfo__::operator());
+        .def("__getitem__", &__Finfo__::operator())
+        .def("__setitem__", &__Finfo__::setItem)
+        ;
 
     py::class_<Id>(m, "_Id")
         .def(py::init<>())
