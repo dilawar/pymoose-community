@@ -14,3 +14,5 @@ from moose.model_utils import *
 
 # Import moose test.
 from moose.moose_test import test
+
+__version__ = _cmoose.__version__

@@ -243,7 +243,7 @@ void mooseSetClock(const unsigned int clockId, double dt)
 
 void mooseUseClock(size_t tick, const string& path, const string& field)
 {
-    getShellPtr()->doUseClock(path,  field, tick);
+    getShellPtr()->doUseClock(path, field, tick);
 }
 
 /* --------------------------------------------------------------------------*/
@@ -344,7 +344,7 @@ py::object getValueFinfo(const ObjId& oid, const string& fname, const Finfo* f)
     py::object r = py::none();
 
     // cout << "Getting " << fname << "(" << rttType << ")"
-         // << " from " << oid.path() << endl;
+    // << " from " << oid.path() << endl;
 
     if (rttType == "double" or rttType == "float")
         r = pybind11::float_(getField<double>(oid, fname));
@@ -393,8 +393,9 @@ py::list getElementFinfo(const ObjId& objid, const string& fname,
     return py::cast(res);
 }
 
-
-py::cpp_function getFieldPropertyDestFinfo(const ObjId& oid, const string& fname, const Finfo* finfo)
+py::cpp_function getFieldPropertyDestFinfo(const ObjId& oid,
+                                           const string& fname,
+                                           const Finfo* finfo)
 {
     const auto rttType = finfo->rttiType();
 
@@ -418,14 +419,36 @@ py::cpp_function getFieldPropertyDestFinfo(const ObjId& oid, const string& fname
         };
         return func;
     }
+    if (rttType == "vector<double>") {
+        std::function<bool(const vector<double>&)> func = [oid, fname](
+            const vector<double>& data) {
+            return SetGet1<vector<double>>::set(oid, fname, data);
+        };
+        return func;
+    }
 
-    throw runtime_error("NotImplemented " + fname + " for rttType " + rttType +
-                        " for oid " + oid.path());
+    throw runtime_error("getFieldPropertyDestFinfo::NotImplemented " + fname +
+                        " for rttType " + rttType + " for oid " + oid.path());
+}
+
+template<typename T>
+py::object getLookupValueFinfoItemInner(const ObjId& oid, const string& fname,
+        const T& key, const string& tgtType)
+{
+    if (tgtType == "bool")
+        return py::cast(LookupField<T, bool>::get(oid, fname, key));
+    if (tgtType == "double")
+        return py::cast(LookupField<T, double>::get(oid, fname, key));
+    else if (tgtType == "vector<Id>")
+        return py::cast(LookupField<T, vector<Id>>::get(oid, fname, key));
+    else if (tgtType == "vector<ObjId>")
+        return py::cast(LookupField<T, vector<ObjId>>::get(oid, fname, key));
+    return py::none();
 }
 
 
 py::object getLookupValueFinfoItem(const ObjId& oid, const string& fname,
-                                   const string& k, const Finfo* f)
+                                   const py::object& key, const Finfo* f)
 {
     auto rttType = f->rttiType();
     vector<string> srcDestType;
@@ -434,22 +457,25 @@ py::object getLookupValueFinfoItem(const ObjId& oid, const string& fname,
     string tgtType = srcDestType[1];
 
     py::object r;
+
+    // cout << " LookupValue at fname " << fname << " with src: " << srcType
+         // << " and tgtType: " << tgtType << endl;
+
     if (srcType == "string") {
-        if (tgtType == "bool")
-            return py::cast(LookupField<string, bool>::get(oid, fname, k));
-        else if (tgtType == "vector<Id>")
-            return py::cast(
-                LookupField<string, vector<Id>>::get(oid, fname, k));
-        else if (tgtType == "vector<ObjId>")
-            return py::cast(
-                LookupField<string, vector<ObjId>>::get(oid, fname, k));
-        else
-            MOOSE_DEBUG("Unsupported types: " << rttType << " and " << tgtType);
+        auto k = py::cast<string>(key);
+        r = getLookupValueFinfoItemInner<string>(oid, fname, k, tgtType);
+    }
+    else if (srcType == "unsigned int") {
+        auto k = py::cast<unsigned int>(key);
+        r = getLookupValueFinfoItemInner<unsigned int>(oid, fname, k, tgtType);
     }
 
-    MOOSE_DEBUG("Unsupported types: " << rttType << " src: " << srcType
-                                      << " and tgt:" << tgtType);
-    return py::none();
+    if(r.is(py::none())) {
+        py::print("getLookupValueFinfoItem::NotImplemented for key:", key,
+                  "srcType:", srcType, "and tgtType:", tgtType, "path: ", oid.path());
+        throw runtime_error("getLookupValueFinfoItem::NotImplemented error");
+    }
+    return r;
 }
 
 py::object getLookupValueFinfo(const ObjId& oid, const string& fname,

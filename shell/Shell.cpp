@@ -201,7 +201,8 @@ Id Shell::doCreate(string type, ObjId parent, string name, unsigned int numData,
             stringstream ss;
             ss << "Object with same path already present : " << parent.path()
                << "/" << name;
-            moose::showWarn(ss.str());
+            moose::showError(ss.str());
+            throw runtime_error(ss.str());
             return Id();
         }
         // Get the new Id ahead of time and pass to all nodes.

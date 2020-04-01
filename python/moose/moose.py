@@ -24,7 +24,10 @@ class __Neutral__(_cmoose._ObjId):
 
     def __init__(self, x, ndata=1):
         if isinstance(x, str):
-            obj = _cmoose.create(self.__metaclass__, x, ndata) 
+            if _cmoose.exists(x):
+                obj = _cmoose.element(x)
+            else:
+                obj = _cmoose.create(self.__metaclass__, x, ndata) 
         elif isinstance(x, _cmoose._ObjId):
             obj = x
         else:

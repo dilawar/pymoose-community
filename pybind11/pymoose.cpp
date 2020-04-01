@@ -97,7 +97,7 @@ bool setFieldGeneric(const ObjId& oid, const string& fieldName,
     if (fieldType == "Variable")
         return Field<Variable>::set(oid, fieldName, val.cast<Variable>());
 
-    throw runtime_error("NotImplemented: setField for " + fieldName +
+    throw runtime_error("NotImplemented::setField : " + fieldName +
                         " with value type " + fieldType);
     return false;
 }
@@ -128,8 +128,8 @@ py::object getFieldGeneric(const ObjId& oid, const string& fieldName)
         return getFieldPropertyDestFinfo(oid, fieldName, finfo);
     }
 
-    cerr << "NotImplemented: getFielderty for " << fieldName << " with rttType "
-         << finfo->rttiType() << " and type: '" << finfoType << "'" << endl;
+    throw runtime_error("getFieldGeneric::NotImplemented : " + fieldName + " with rttType "
+         + finfo->rttiType() + " and type: '" + finfoType + "'");
     return pybind11::none();
 }
 

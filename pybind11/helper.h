@@ -76,7 +76,7 @@ py::object getLookupValueFinfo(const ObjId& oid, const string& fname,
                                const Finfo* f);
 
 py::object getLookupValueFinfoItem(const ObjId& oid, const string& fname,
-                                   const string& k, const Finfo* f);
+                                   const py::object& k, const Finfo* f);
 
 py::cpp_function getFieldPropertyDestFinfo(const ObjId& oid, const string& fname, const Finfo* finfo);
 

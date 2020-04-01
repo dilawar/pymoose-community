@@ -23,9 +23,13 @@ def test_other():
     a1 = moose.Pool('/ada')
     print('classname', a1.className)
     finfo = moose.getFieldDict(a1.className)
-    print(finfo)
-
     s = moose.Streamer('/asdada')
+
+    p = moose.PulseGen('pg1')
+    print(p.delay)
+    print(p.delay[0])
+    p.delay[1] = 1.0
+
 
 def test_vec():
     a = moose.Pool('/p111', 100)
@@ -38,8 +42,8 @@ def test_vec():
 
 def main():
     test_children()
-    test_other()
     test_vec()
+    test_other()
 
 if __name__ == '__main__':
     main()
