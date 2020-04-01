@@ -9,7 +9,14 @@
 //
 // =====================================================================================
 
+#include "../external/pybind11/include/pybind11/pybind11.h"
+#include "../external/pybind11/include/pybind11/stl.h"
+#include "../external/pybind11/include/pybind11/numpy.h"
+// #include "../external/pybind11/include/pybind11/functional.h"
+namespace py = pybind11;
+
 #include "../basecode/header.h"
+#include "../utility/strutil.h"
 #include "helper.h"
 #include "Finfo.h"
 
@@ -17,14 +24,14 @@ __Finfo__::__Finfo__(const ObjId& oid, const string& fname, const Finfo* f,
         const string& ftype)
     : oid_(oid), fname_(fname), f_(f), finfoType_(ftype)
 {
-    func_ = [oid, fname, f](const py::object& key) {
-        return getLookupValueFinfoItem(oid, fname, key, f);
+    func_ = [oid, fname, f, this](const py::object& key) {
+        return this->getLookupValueFinfoItem(oid, fname, key, f);
     };
 }
 
 void __Finfo__::setItem(const py::object& key, const py::object& val)
 {
-    setLookupValueFinfoItem(key, val, f_, fname_);
+    // setLookupValueFinfoItem(key, val, f_, fname_);
 }
 
 
