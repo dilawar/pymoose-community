@@ -10,6 +10,8 @@
 #ifndef _ID_H
 #define _ID_H
 
+class ObjId;
+
 /**
  * This class manages id lookups for elements. Ids provide a uniform
  * handle for every object, independent of which node they are located on.
@@ -61,7 +63,6 @@ public:
     /**
      * The specified element is placed into current id.
      */
-    void bindIdToElement( Element* e );
 
     /**
      * Cleanly deletes the associated Element, and zeroes out
@@ -118,6 +119,8 @@ public:
 
     unsigned int value() const;
 
+    void bindIdToElement( Element* e );
+
     //////////////////////////////////////////////////////////////
     //	Comparisons between ids
     //////////////////////////////////////////////////////////////
@@ -162,6 +165,8 @@ public:
      * Used to clean out any specific Id.
      */
     void zeroOut() const;
+
+
     //////////////////////////////////////////////////////////////
 
     friend ostream& operator <<( ostream& s, const Id& i );

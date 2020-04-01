@@ -30,8 +30,11 @@ def test_other():
 def test_vec():
     a = moose.Pool('/p111', 100)
     v = moose.vec(a)
-    for i, x in enumerate(v):
-        print(i, x)
+    assert len(v) == 100, len(v)
+    print(v)
+    print(v.vec)
+    assert v == v.vec
+    assert v[0] == v.vec[0], (v[0], v.vec[0])
 
 def main():
     test_children()

@@ -388,8 +388,8 @@ py::list getElementFinfo(const ObjId& objid, const string& fname,
     return py::cast(res);
 }
 
-py::cpp_function getFieldertyDestFinfo(const ObjId& oid, const string& fname,
-                                       const Finfo* finfo)
+
+py::cpp_function getFieldPropertyDestFinfo(const ObjId& oid, const string& fname, const Finfo* finfo)
 {
     const auto rttType = finfo->rttiType();
 
@@ -421,35 +421,6 @@ py::cpp_function getFieldertyDestFinfo(const ObjId& oid, const string& fname,
                         " for oid " + oid.path());
 }
 
-py::object getFieldGeneric(const ObjId& oid, const string& fname)
-{
-    auto cinfo = oid.element()->cinfo();
-    auto finfo = cinfo->findFinfo(fname);
-
-    if (!finfo) {
-        cout << "Error: " << fname << " is not found on " << oid.path() << endl;
-        return pybind11::none();
-    }
-
-    string finfoType = cinfo->getFinfoType(finfo);
-
-    if (finfoType == "ValueFinfo")
-        // return value.
-        return getValueFinfo(oid, fname, finfo);
-    else if (finfoType == "FieldElementFinfo") {
-        // Return list.
-        return getElementFinfo(oid, fname, finfo);
-    } else if (finfoType == "LookupValueFinfo") {
-        // Return function.
-        return getLookupValueFinfo(oid, fname, finfo);
-    } else if (finfoType == "DestFinfo") {
-        return getFieldertyDestFinfo(oid, fname, finfo);
-    }
-
-    cerr << "NotImplemented: getFielderty for " << fname << " with rttType "
-         << finfo->rttiType() << " and type: '" << finfoType << "'" << endl;
-    return pybind11::none();
-}
 
 py::object getLookupValueFinfoItem(const ObjId& oid, const string& fname,
                                    const string& k, const Finfo* f)
@@ -476,7 +447,7 @@ py::object getLookupValueFinfoItem(const ObjId& oid, const string& fname,
 
     MOOSE_DEBUG("Unsupported types: " << rttType << " src: " << srcType
                                       << " and tgt:" << tgtType);
-    py::none();
+    return py::none();
 }
 
 py::object getLookupValueFinfo(const ObjId& oid, const string& fname,

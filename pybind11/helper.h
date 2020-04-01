@@ -20,6 +20,8 @@
 namespace py = pybind11;
 using namespace std;
 
+class Shell;
+
 Id initShell();
 
 ObjId createIdFromPath(string path, string type, unsigned int numData = 1);
@@ -38,8 +40,6 @@ ObjId getElementField(const ObjId objid, const string& fname);
 
 ObjId getElementFieldItem(const ObjId& objid, const string& fname,
                           unsigned int index);
-
-py::object getFieldGeneric(const ObjId& oid, const string& fname);
 
 ObjId mooseConnect(const ObjId& src, const string& srcField, const ObjId& tgt,
                    const string& tgtField);
@@ -70,12 +70,12 @@ py::object getValueFinfo(const ObjId& oid, const string& fname, const Finfo* f);
 py::cpp_function getPropertyDestFinfo(const ObjId& oid, const string& fname,
                                       const Finfo* finfo);
 
-py::object getFieldGeneric(const ObjId& oid, const string& fname);
-
 py::object getLookupValueFinfo(const ObjId& oid, const string& fname,
                                const Finfo* f);
 
 py::object getLookupValueFinfoItem(const ObjId& oid, const string& fname,
                                    const string& k, const Finfo* f);
+
+py::cpp_function getFieldPropertyDestFinfo(const ObjId& oid, const string& fname, const Finfo* finfo);
 
 #endif /* end of include guard: HELPER_H */

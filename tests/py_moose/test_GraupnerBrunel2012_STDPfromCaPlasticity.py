@@ -41,14 +41,15 @@ def test_GB2012_STDP():
     ## two neurons: index 0 will be presynaptic, 1 will be postsynaptic
     network = moose.vec(moose.LIF( 'network', 2 ))
     moose.le( '/network' )
-    network.vec.Em = Vrest
-    network.vec.thresh = Vt_base
-    network.vec.refractoryPeriod = refrT
-    network.vec.Rm = R
-    network.vec.vReset = Vreset
-    network.vec.Cm = tau/R
-    network.vec.inject = 0.
-    network.vec.initVm = Vrest
+    print(network)
+    network.Em = Vrest
+    network.thresh = Vt_base
+    network.refractoryPeriod = refrT
+    network.Rm = R
+    network.vReset = Vreset
+    network.Cm = tau/R
+    network.inject = 0.
+    network.initVm = Vrest
 
     tauCa = 20e-3     
     tauSyn = 150.0    
@@ -64,7 +65,9 @@ def test_GB2012_STDP():
     bistable = True   
 
     syn = moose.GraupnerBrunel2012CaPlasticitySynHandler( '/network/syn' )
+    print(dir(syn))
     syn.numSynapses = 1   
+    assert syn.numSynapses == 1, syn.numSynapses
     moose.connect( syn, 'activationOut', network.vec[1], 'activation' )
 
     # synapse from presynaptic neuron
