@@ -308,7 +308,9 @@ def getFieldDoc(tokens, indent=''):
     while True:
         try:
             classelement = element('/classes/' + classname)
-            for fieldelement in classelement.children:
+            for finfo in classelement.children:
+                # FIXME me
+                return
                 for fieldelement in finfo:
                     baseinfo = ''
                     if classname != tokens[0]:

@@ -154,12 +154,11 @@ PYBIND11_MODULE(_cmoose, m)
     py::class_<Id>(m, "_Id")
         .def(py::init<>())
         .def(py::init<unsigned int>())
-        .def(py::init<const string&, const string&>())
+        .def(py::init<const string&>())
         .def(py::init<const ObjId&>())
         // properties
         .def_property_readonly("numIds", &Id::numIds)
-        .def_property_readonly(
-             "path", [](const Id& id) { return id.element()->getName(); })
+        .def_property_readonly("path", &Id::path)
         .def_property_readonly(
              "name", [](const Id& id) { return id.element()->getName(); })
         .def_property_readonly("id", &Id::value)
@@ -207,7 +206,7 @@ PYBIND11_MODULE(_cmoose, m)
         // .def("setField", &setField<bool>)
 
         // Overload for Field::get
-        // .def("getField", &getFieldGeneric)
+        .def("getField", &getFieldGeneric)
         // .def("getElementField", &getElementField)
         // .def("getElementFieldItem", &getElementFieldItem)
         // .def("getNumpy", &getFieldNumpy<double>)
