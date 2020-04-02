@@ -25,17 +25,17 @@ MooseVec::MooseVec(const string& path, unsigned int n = 1,
 {
     if (!mooseExists(path)) {
         objs_.clear();
-        ObjId o = mooseCreate(dtype, path, n);
-        for (unsigned int i = 0; i < n; i++) objs_.push_back(ObjId(o, i));
+        oid_ = mooseCreate(dtype, path, n);
+        for (unsigned int i = 0; i < n; i++) objs_.push_back(ObjId(oid_.id, i));
     } else {
         objs_.clear();
-        auto o = ObjId(path);
-        for (unsigned int i = 0; i < o.element()->numData(); i++)
-            objs_.push_back(ObjId(o, i));
+        oid_ = ObjId(path);
+        for (unsigned int i = 0; i < oid_.element()->numData(); i++)
+            objs_.push_back(ObjId(oid_.id, i));
     }
 }
 
-MooseVec::MooseVec(const ObjId& oid) : path_(oid.path())
+MooseVec::MooseVec(const ObjId& oid) : oid_(oid), path_(oid.path())
 {
     for (unsigned int i = 0; i < oid.element()->numData(); i++)
         objs_.push_back(ObjId(oid, i));
@@ -104,10 +104,7 @@ const vector<ObjId>& MooseVec::objs() const
 ObjId MooseVec::connectToSingle(const string& srcfield, const ObjId& tgt,
                                 const string& tgtfield, const string& msgtype)
 {
-    ObjId res;
-    for (const auto& obj : objs_)
-        res = shellConnect(obj, srcfield, tgt, tgtfield, msgtype);
-    return res;
+    return shellConnect(oid_, srcfield, tgt, tgtfield, msgtype);
 }
 
 ObjId MooseVec::connectToVec(const string& srcfield, const MooseVec& tgt,
@@ -117,10 +114,10 @@ ObjId MooseVec::connectToVec(const string& srcfield, const MooseVec& tgt,
         throw runtime_error(
             "Length mismatch. Source vector size is " + to_string(size()) +
             " but the target vector size is " + to_string(tgt.size()));
+    return shellConnect(oid_, srcfield, tgt.obj(), tgtfield, msgtype);
+}
 
-    ObjId res;
-    for (size_t i = 0; i < size(); i++)
-        res =
-            shellConnect(objs_[i], srcfield, tgt.getItem(i), tgtfield, msgtype);
-    return res;
+const ObjId& MooseVec::obj() const
+{
+    return oid_;
 }

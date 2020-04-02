@@ -59,6 +59,7 @@ def makeGlobalBalanceNetwork():
     oiv = moose.vec( outInhSyn.path + '/synapse' )
 
     temp = moose.connect( stim, 'spikeOut', iv, 'addSpike', 'Sparse' )
+    print(temp, 'temp')
     inhibMatrix = moose.element(temp)
 
     assert inhibMatrix == temp
@@ -90,17 +91,19 @@ def makeGlobalBalanceNetwork():
     assert temp == negFFMatrix
     assert id(temp) != id(negFFMatrix)
     negFFMatrix.setRandomConnectivity(params['inhToOutProb'], params['inhToOutSeed'] )
-    assert negFFMatrix.numEntries == 492, negFFMatrix.numEntries
+    assert negFFMatrix.numEntries == 55, negFFMatrix.numEntries
 
     cl = negFFMatrix.connectionList
     numInhSyns = [ ]
     niv = 0
     nov = 0
     noiv = 0
+
+    print(insyn, '1111')
     for i in moose.vec(insyn):
-        print('xxx', i.synapse)
+        print('xxx', i.synapse.num)
         niv += i.synapse.num
-        numInhSyns.append( i.synapse.num )
+        numInhSyns.append( i.synapse.num)
         if i.synapse.num > 0:
             i.synapse.weight = params['wtStimToInh']
 

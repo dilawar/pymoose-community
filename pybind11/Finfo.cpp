@@ -114,7 +114,7 @@ py::object __Finfo__::getLookupValueFinfoItem(const ObjId& oid, const Finfo* f, 
 
 py::object __Finfo__::getItem(const py::object& key)
 {
-    py::print("Fetching value for", key, finfoType_);
+    // py::print("Fetching value for", key, finfoType_);
     return func_(key);
 }
 

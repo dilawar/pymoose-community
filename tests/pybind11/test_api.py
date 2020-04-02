@@ -34,6 +34,7 @@ def test_other():
 def test_vec():
     a = moose.Pool('/p111', 100)
     v = moose.vec(a)
+    print(v, 'vvv')
     assert len(v) == 100, len(v)
     print(v)
     print(v.vec)

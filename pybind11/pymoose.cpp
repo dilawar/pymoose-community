@@ -230,10 +230,7 @@ PYBIND11_MODULE(_cmoose, m)
         .def("connect", [](const ObjId &src, const string &srcfield,
                            const MooseVec &tgtvec, const string &tgtfield,
                            const string &type) {
-             ObjId res;
-             for (const auto &tgt : tgtvec.objs())
-                 res = shellConnect(src, srcfield, tgt, tgtfield, type);
-             return res;
+             return shellConnect(src, srcfield, tgtvec.obj(), tgtfield, type);
          })
         //---------------------------------------------------------------------
         //  Extra

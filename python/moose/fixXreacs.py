@@ -78,7 +78,7 @@ def proxify(reac, reacc, direction, pool, poolc):
     duppool.diffConst = 0  # diffusion only happens in original compt
     removeEnzFromPool(duppool)
     disconnectReactant(reac, pool, duppool)
-    _cmoose.connect(reac, direction, duppool, 'reac')
+    moose.connect(reac, direction, duppool, 'reac')
     #_cmoose.showfield( reac )
     #_cmoose.showmsg( reac )
 
@@ -206,7 +206,7 @@ def restoreXreacs(basepath):
                 #check to see if object exist before moose.connect, cases where object is deleted but
                 #_xref_ annotation info field still holds the reference
                 if (_cmoose.exists(args[0]) and _cmoose.exists(args[2])):
-                    _cmoose.connect(args[0], args[1], args[2], args[3])
+                    moose.connect(args[0], args[1], args[2], args[3])
                 #print( "Reconnecting {}".format( args ) )
                 #_cmoose.showfield( args[0] )
         restoreOldRates(oldRates, msgs)

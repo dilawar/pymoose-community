@@ -17,6 +17,8 @@ public:
 
     MooseVec(const ObjId& oid);
 
+    const ObjId& obj() const;
+
     const string dtype() const;
 
     const size_t size() const;
@@ -26,6 +28,7 @@ public:
     unsigned int len();
 
     const ObjId& getItemRef(const size_t i) const;
+
     ObjId getItem(const size_t i) const;
 
     void setAttrOneToAll(const string& name, const py::object& val);
@@ -41,6 +44,7 @@ public:
     ObjId connectToVec(const string& srcfield, const MooseVec& tgt, const string& tgtfield, const string& msgtype);
 
 private:
+    ObjId oid_;
     std::string path_;
     std::vector<ObjId> objs_;
 };
