@@ -40,8 +40,14 @@ ObjId getElementField(const ObjId objid, const string& fname);
 ObjId getElementFieldItem(const ObjId& objid, const string& fname,
                           unsigned int index);
 
-ObjId mooseConnect(const ObjId& src, const string& srcField, const ObjId& tgt,
+// Connect using doConnect
+ObjId shellConnect(const ObjId& src, const string& srcField, const ObjId& tgt,
                    const string& tgtField, const string& msgType);
+
+//// Python API.
+//ObjId mooseConnect(const py::object& src, const string& srcfield, const py::object& tgt
+//        , const string& tgtfield,  const string& msgType);
+
 
 bool mooseDelete(const ObjId& oid);
 bool mooseDelete(const string& path);

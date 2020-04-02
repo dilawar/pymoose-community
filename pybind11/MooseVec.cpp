@@ -106,7 +106,7 @@ ObjId MooseVec::connectToSingle(const string& srcfield, const ObjId& tgt,
 {
     ObjId res;
     for (const auto& obj : objs_)
-        res = mooseConnect(obj, srcfield, tgt, tgtfield, msgtype);
+        res = shellConnect(obj, srcfield, tgt, tgtfield, msgtype);
     return res;
 }
 
@@ -120,6 +120,7 @@ ObjId MooseVec::connectToVec(const string& srcfield, const MooseVec& tgt,
 
     ObjId res;
     for (size_t i = 0; i < size(); i++)
-        res = mooseConnect(objs_[i], srcfield, tgt.getItem(i), tgtfield, msgtype);
+        res =
+            shellConnect(objs_[i], srcfield, tgt.getItem(i), tgtfield, msgtype);
     return res;
 }

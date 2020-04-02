@@ -247,7 +247,15 @@ PYBIND11_MODULE(_cmoose, m)
         .def("connect",
              [](const ObjId& src, const string& srcfield, const ObjId& tgt,
                 const string& tgtfield, const string& type) {
-             return mooseConnect(src, srcfield, tgt, tgtfield, type);
+             return shellConnect(src, srcfield, tgt, tgtfield, type);
+         })
+        .def("connect", [](const ObjId& src, const string& srcfield,
+                           const MooseVec& tgtvec, const string& tgtfield,
+                           const string& type) {
+             ObjId res;
+             for (const auto& tgt : tgtvec.objs())
+                 res = shellConnect(src, srcfield, tgt, tgtfield, type);
+             return res;
          })
         // // , "src"_a, "srcfield"_a, "dest"_a, "destfield"_a, "msgtype"_a)
         // //, "src"_a, "srcfield"_a, "dest"_a, "destfield"_a, "msgtype"_a =
@@ -355,8 +363,10 @@ PYBIND11_MODULE(_cmoose, m)
           "finfoType"_a = "");
     m.def("copy", &mooseCopy, "orig"_a, "newParent"_a, "newName"_a, "num"_a = 1,
           "toGlobal"_a = false, "copyExtMsgs"_a = false);
-    m.def("connect", &mooseConnect, "src"_a, "srcfield"_a, "dest"_a,
-          "destfield"_a, "msgtype"_a = "Single");
+
+    // This is better handled by moose.py. Later we can move it back here.
+    // m.def("connect", &mooseConnect, "src"_a, "srcfield"_a, "dest"_a,
+    //      "destfield"_a, "msgtype"_a = "Single");
 
     // Attributes.
     m.attr("NA") = NA;

@@ -208,12 +208,20 @@ ObjId getElementFieldItem(const ObjId& objid, const string& fname,
     return ObjId(oid.id, oid.dataIndex, index);
 }
 
-ObjId mooseConnect(const ObjId& src, const string& srcField, const ObjId& tgt,
+ObjId shellConnect(const ObjId& src, const string& srcField, const ObjId& tgt,
                    const string& tgtField, const string& msgType)
 {
-    auto pShell = getShellPtr();
-    return pShell->doAddMsg(msgType, src, srcField, tgt, tgtField);
+    return getShellPtr()->doAddMsg(msgType, src, srcField, tgt, tgtField);
 }
+
+//// Python API.
+//ObjId mooseConnect(const py::object& src, const string& srcField,
+//                   const py::object& tgt, const string& tgtField,
+//                   const string& msgType)
+//{
+//    // py::print("src", src, src.attr("type"));
+//    // return src.connect(srcField, tgt, tgtField, msgType);
+//}
 
 bool mooseDelete(const ObjId& oid)
 {
@@ -325,7 +333,7 @@ void mooseStart(double runtime, bool notify = false)
 //    return ObjId(id);
 //}
 //
-//ObjId mooseCopy(const ObjId& orig, ObjId newParent, string newName,
+// ObjId mooseCopy(const ObjId& orig, ObjId newParent, string newName,
 //                unsigned int n = 1, bool toGlobal = false,
 //                bool copyExtMsgs = false)
 //{
@@ -337,12 +345,10 @@ ObjId mooseCopy(const py::object& elem, ObjId newParent, string newName,
                 unsigned int n = 1, bool toGlobal = false,
                 bool copyExtMsgs = false)
 {
-    // py::print("Copyging..", elem);
     Id orig = py::cast<Id>(elem);
     return ObjId(getShellPtr()->doCopy(orig, newParent, newName, n, toGlobal,
                                        copyExtMsgs));
 }
-
 
 py::object getValueFinfo(const ObjId& oid, const Finfo* f)
 {
