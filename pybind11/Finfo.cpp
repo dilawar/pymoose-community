@@ -27,9 +27,27 @@ namespace py = pybind11;
 __Finfo__::__Finfo__(const ObjId& oid, const Finfo* f, const string& finfoType)
     : oid_(oid), f_(f), finfoType_(finfoType)
 {
-    func_ = [oid, f, this](const py::object& key) {
-        return __Finfo__::getLookupValueFinfoItem(oid, key, f);
-    };
+    // cout << " __Finfo__ type " << finfoType << endl;
+
+    if(finfoType == "DestFinfo")
+        func_ = [oid, f, this](const py::object& key) {
+            return getLookupValueFinfoItem(oid, f, key);
+        };
+    else if(finfoType == "FieldElementFinfo")
+        func_ = [oid, f, this](const py::object& index) {
+            // this is essential of make this function static.
+            return getElementFinfoItem(oid, f, py::cast<unsigned int>(index));
+        };
+    else if(finfoType == "LookupValueFinfo")
+        func_ = [oid, f, this](const py::object& key) {
+            // Assigning is essential or make these functions static.
+            return this->getLookupValueFinfoItem(oid, f, key);
+        };
+    else
+        func_ = [this](const py::object& key) {
+            throw runtime_error("Not supported for Finfo type '"+finfoType_+"'");
+            return py::none();
+        };
 }
 
 // Exposed to python as __setitem__ on Finfo
@@ -66,9 +84,7 @@ bool __Finfo__::setLookupValueFinfoItem(const ObjId& oid, const py::object& key,
     return true;
 }
 
-py::object __Finfo__::getLookupValueFinfoItem(const ObjId& oid,
-                                              const py::object& key,
-                                              const Finfo* f)
+py::object __Finfo__::getLookupValueFinfoItem(const ObjId& oid, const Finfo* f, const py::object& key)
 {
     auto rttType = f->rttiType();
     auto fname = f->name();
@@ -79,15 +95,12 @@ py::object __Finfo__::getLookupValueFinfoItem(const ObjId& oid,
 
     py::object r;
 
-    // cout << " LookupValue at fname " << fname << " with src: " << srcType
-    // << " and tgtType: " << tgtType << endl;
-
     if (srcType == "string") {
         auto k = py::cast<string>(key);
-        r = getLookupValueFinfoItemInner<string>(oid, fname, k, tgtType);
+        r = getLookupValueFinfoItemInner<string>(oid, f, k, tgtType);
     } else if (srcType == "unsigned int") {
         auto k = py::cast<unsigned int>(key);
-        r = getLookupValueFinfoItemInner<unsigned int>(oid, fname, k, tgtType);
+        r = getLookupValueFinfoItemInner<unsigned int>(oid, f, k, tgtType);
     }
 
     if (r.is(py::none())) {
@@ -99,13 +112,9 @@ py::object __Finfo__::getLookupValueFinfoItem(const ObjId& oid,
     return r;
 }
 
-// py::object __Finfo__::getLookupValueFinfo(const ObjId& oid, const Finfo* f)
-//{
-//    return py::cast(__Finfo__(oid, f));
-//}
-
 py::object __Finfo__::getItem(const py::object& key)
 {
+    py::print("Fetching value for", key, finfoType_);
     return func_(key);
 }
 
@@ -233,7 +242,6 @@ py::object __Finfo__::getFieldValue(const ObjId& oid, const Finfo* f)
 
 py::list __Finfo__::getElementFinfo(const ObjId& objid, const Finfo* f)
 {
-    auto rttType = f->rttiType();
     auto fname = f->name();
     auto oid = ObjId(objid.path() + '/' + fname);
     auto len = Field<unsigned int>::get(oid, "numField");
@@ -242,4 +250,36 @@ py::list __Finfo__::getElementFinfo(const ObjId& objid, const Finfo* f)
         res[i] = ObjId(oid.path(), oid.dataIndex, i);
     return py::cast(res);
 }
+
+py::object __Finfo__::getElementFinfoItem(const ObjId& oid, const Finfo* f, unsigned int index)
+{
+    // cout << "Fetching at index " << index << " " << getNumField() << endl ;
+    if(index >= getNumFieldStatic(oid, f)) {
+        throw py::index_error("Index " + to_string(index) + " out of range.");
+    }
+    auto o = ObjId(oid.path() + '/' + f->name());
+    return py::cast(ObjId(o.path(), o.dataIndex, index));
+}
+
+string __Finfo__::type() const
+{
+    return finfoType_;
+}
+
+// py::object __Finfo__::getAttr(const string& key)
+// {
+    // std::cout << "Accessing " << key << std::endl;
+// }
+
+unsigned int __Finfo__::getNumField() 
+{
+    return __Finfo__::getNumFieldStatic(oid_, f_);
+}
+
+unsigned int __Finfo__::getNumFieldStatic(const ObjId& oid, const Finfo* f) 
+{
+    auto o = ObjId(oid.path() + '/' + f->name());
+    return Field<unsigned int>::get(o, "numField");
+}
+
 

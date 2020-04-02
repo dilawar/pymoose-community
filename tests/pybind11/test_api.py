@@ -20,17 +20,16 @@ def test_children():
     print(type(s), s)
 
 def test_other():
+    print(f"[INFO ] Testing other...")
     a1 = moose.Pool('/ada')
     print('classname', a1.className)
     finfo = moose.getFieldDict(a1.className)
     s = moose.Streamer('/asdada')
-
     p = moose.PulseGen('pg1')
-    print(p.delay)
+    print(p.delay, p.delay.type)
     print(p.delay[0])
     p.delay[1] = 0.99
     assert p.delay[1] == 0.99, p.delay[1]
-
 
 def test_vec():
     a = moose.Pool('/p111', 100)
@@ -43,15 +42,23 @@ def test_vec():
 
 def test_finfos():
     s = moose.SimpleSynHandler('synh')
-    print(s.synapse.num)
-    print(s.synapse)
-    print(s)
+    print('synapse.num', s.synapse.num)
+    print('synapse.num', s.synapse.num)
+    print('synapse.num', s.synapse.num)
+    print('synapse: ', s.synapse)
+    try:
+        print(s.synapse[0])
+    except Exception as e:
+        print(e, "Must get an exception here")
+        pass
+    else:
+        raise Exception("This should have failed");
 
 def main():
     test_children()
-    test_vec()
-    test_other()
     test_finfos()
+    test_other()
+    test_vec()
 
 if __name__ == '__main__':
     main()

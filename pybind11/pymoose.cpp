@@ -119,7 +119,6 @@ py::object getFieldGeneric(const ObjId &oid, const string &fieldName)
     if (finfoType == "ValueFinfo")
         return __Finfo__::getFieldValue(oid, finfo);
     else if (finfoType == "FieldElementFinfo") {
-        // return getElementFinfo(oid, finfo);
         return py::cast(__Finfo__(oid, finfo, "FieldElementFinfo"));
     } else if (finfoType == "LookupValueFinfo") {
         // Return function.
@@ -147,11 +146,15 @@ PYBIND11_MODULE(_cmoose, m)
     // class bind both __getitem__ to the getter function call.
     // Note that both a.isA["Compartment"] and a.isA("Compartment") are valid
     // now.
-    py::class_<__Finfo__>(m, "_Finfo")
+    py::class_<__Finfo__>(m, "_Finfo", py::dynamic_attr())
         .def(py::init<const ObjId &, const Finfo *, const char *>())
+        .def_property_readonly("type", &__Finfo__::type)    
+        .def_property_readonly("num", &__Finfo__::getNumField)   // Only for FieldElementFinfos
+        .def("__call__", &__Finfo__::operator())
         .def("__call__", &__Finfo__::operator())
         .def("__getitem__", &__Finfo__::getItem)
-        .def("__setitem__", &__Finfo__::setItem);
+        .def("__setitem__", &__Finfo__::setItem)    
+        ;
 
     py::class_<Id>(m, "_Id")
         .def(py::init<>())

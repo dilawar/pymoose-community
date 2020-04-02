@@ -15,10 +15,11 @@ public:
     __Finfo__(const ObjId& oid, const Finfo* f, const string& finfoType);
 
     template <typename T>
-    py::object getLookupValueFinfoItemInner(const ObjId& oid,
-                                            const string& fname, const T& key,
-                                            const string& tgtType)
+    static py::object getLookupValueFinfoItemInner(const ObjId& oid,
+                                                   const Finfo* f, const T& key,
+                                                   const string& tgtType)
     {
+        auto fname = f->name();
         if (tgtType == "bool")
             return py::cast(LookupField<T, bool>::get(oid, fname, key));
         if (tgtType == "double")
@@ -50,10 +51,15 @@ public:
 
     static py::object getFieldValue(const ObjId& oid, const Finfo* f);
 
-
     static py::list getElementFinfo(const ObjId& objid, const Finfo* f);
 
+    static py::object getElementFinfoItem(const ObjId& oid, const Finfo* f,
+                                          unsigned int i);
 
+    // Get attribute (python api);
+    unsigned int getNumField();
+
+    static unsigned int getNumFieldStatic(const ObjId& oid, const Finfo* f);
 
     // Exposed to python as __setitem__
     bool setItem(const py::object& key, const py::object& val);
@@ -61,8 +67,8 @@ public:
     // Exposed to python as __getitem__
     py::object getItem(const py::object& key);
 
-    py::object getLookupValueFinfoItem(const ObjId& oid, const py::object& key,
-                                       const Finfo* f);
+    static py::object getLookupValueFinfoItem(const ObjId& oid, const Finfo* f,
+                                              const py::object& key);
 
     static bool setLookupValueFinfoItem(const ObjId& oid, const py::object& key,
                                         const py::object& val,
@@ -70,10 +76,12 @@ public:
 
     py::object operator()(const py::object& key);
 
+    string type() const;
+
 public:
     ObjId oid_;
     const Finfo* f_;
-    std::string finfoType_;
+    const std::string finfoType_;
     std::function<py::object(const py::object& key)> func_;
 };
 
