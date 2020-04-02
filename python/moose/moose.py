@@ -9,7 +9,7 @@ import os
 import pydoc
 import io
 import time
-
+import copy as _copy
 import moose
 import moose._cmoose as _cmoose
 
@@ -57,7 +57,7 @@ def about():
 
 
 def connect(src, srcfield, dest, destfield, msgtype="Single"):
-    return src.connect(srcfield, dest, destfield, msgtype)
+    return __Neutral__(src.connect(srcfield, dest, destfield, msgtype))
 
 def wildcardFind(pattern):
     """wildcardFind.

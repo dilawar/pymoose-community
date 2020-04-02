@@ -44,18 +44,10 @@ ObjId getElementFieldItem(const ObjId& objid, const string& fname,
 ObjId shellConnect(const ObjId& src, const string& srcField, const ObjId& tgt,
                    const string& tgtField, const string& msgType);
 
-//// Python API.
-//ObjId mooseConnect(const py::object& src, const string& srcfield, const py::object& tgt
-//        , const string& tgtfield,  const string& msgType);
-
-
 bool mooseDelete(const ObjId& oid);
 bool mooseDelete(const string& path);
 
 ObjId mooseCreate(const string type, const string& path, unsigned int numdata = 1);
-
-//ObjId mooseCopy(const ObjId& orig, ObjId newParent, string newName,
-//                unsigned int n, bool toGlobal, bool copyExtMsgs);
 
 ObjId mooseCopy(const py::object& orig, ObjId newParent, string newName,
                 unsigned int n, bool toGlobal, bool copyExtMsgs);
@@ -72,12 +64,6 @@ map<string, string> mooseGetFieldDict(const string& className,
 void mooseReinit();
 void mooseStart(double runtime, bool notify);
 
-py::list getElementFinfo(const ObjId& objid, const Finfo* f);
-
-py::object getValueFinfo(const ObjId& oid, const Finfo* f);
-
 py::cpp_function getPropertyDestFinfo(const ObjId& oid, const Finfo* finfo);
-
-py::cpp_function getFieldPropertyDestFinfo(const ObjId& oid, const Finfo* finfo);
 
 #endif /* end of include guard: HELPER_H */

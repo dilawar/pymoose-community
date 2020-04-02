@@ -215,7 +215,7 @@ ObjId shellConnect(const ObjId& src, const string& srcField, const ObjId& tgt,
 }
 
 //// Python API.
-//ObjId mooseConnect(const py::object& src, const string& srcField,
+// ObjId mooseConnect(const py::object& src, const string& srcField,
 //                   const py::object& tgt, const string& tgtField,
 //                   const string& msgType)
 //{
@@ -324,23 +324,6 @@ void mooseStart(double runtime, bool notify = false)
     getShellPtr()->doStart(runtime, notify);
 }
 
-// ObjId mooseCopy(const ObjId& orig, ObjId newParent, string newName, unsigned
-// int n=1
-//        , bool toGlobal=false, bool copyExtMsgs=false)
-//{
-//    auto id =  getShellPtr()->doCopy(orig.id, newParent, newName, n, toGlobal,
-// copyExtMsgs);
-//    return ObjId(id);
-//}
-//
-// ObjId mooseCopy(const ObjId& orig, ObjId newParent, string newName,
-//                unsigned int n = 1, bool toGlobal = false,
-//                bool copyExtMsgs = false)
-//{
-//    return ObjId(getShellPtr()->doCopy(orig, newParent, newName, n, toGlobal,
-//                                       copyExtMsgs));
-//}
-
 ObjId mooseCopy(const py::object& elem, ObjId newParent, string newName,
                 unsigned int n = 1, bool toGlobal = false,
                 bool copyExtMsgs = false)
@@ -348,95 +331,5 @@ ObjId mooseCopy(const py::object& elem, ObjId newParent, string newName,
     Id orig = py::cast<Id>(elem);
     return ObjId(getShellPtr()->doCopy(orig, newParent, newName, n, toGlobal,
                                        copyExtMsgs));
-}
-
-py::object getValueFinfo(const ObjId& oid, const Finfo* f)
-{
-    auto rttType = f->rttiType();
-    auto fname = f->name();
-    py::object r = py::none();
-
-    if (rttType == "double" or rttType == "float")
-        r = pybind11::float_(getField<double>(oid, fname));
-    else if (rttType == "vector<double>") {
-        // r = py::cast(getField<vector<double>>(oid, fname));
-        r = getFieldNumpy<double>(oid, fname);
-    } else if (rttType == "string")
-        r = pybind11::str(getField<string>(oid, fname));
-    else if (rttType == "char")
-        r = pybind11::int_(getField<char>(oid, fname));
-    else if (rttType == "int")
-        r = pybind11::int_(getField<int>(oid, fname));
-    else if (rttType == "unsigned int")
-        r = pybind11::int_(getField<unsigned int>(oid, fname));
-    else if (rttType == "unsigned long")
-        r = pybind11::int_(getField<unsigned long>(oid, fname));
-    else if (rttType == "bool")
-        r = pybind11::bool_(getField<bool>(oid, fname));
-    else if (rttType == "Id")
-        r = py::cast(getField<Id>(oid, fname));
-    else if (rttType == "ObjId")
-        r = py::cast(getField<ObjId>(oid, fname));
-    else if (rttType == "Variable")
-        r = py::cast(getField<Variable>(oid, fname));
-    else if (rttType == "vector<Id>")
-        r = py::cast(getField<vector<Id>>(oid, fname));
-    else if (rttType == "vector<ObjId>")
-        r = py::cast(getField<vector<ObjId>>(oid, fname));
-    else {
-        cout << "Warning: getFielderty:: Unsupported type '" << rttType << "'"
-             << endl;
-        r = py::none();
-    }
-    return r;
-}
-
-py::list getElementFinfo(const ObjId& objid, const Finfo* f)
-{
-    auto rttType = f->rttiType();
-    auto fname = f->name();
-    auto oid = ObjId(objid.path() + '/' + fname);
-    auto len = Field<unsigned int>::get(oid, "numField");
-    vector<ObjId> res(len);
-    for (unsigned int i = 0; i < len; i++)
-        res[i] = ObjId(oid.path(), oid.dataIndex, i);
-    return py::cast(res);
-}
-
-py::cpp_function getFieldPropertyDestFinfo(const ObjId& oid, const Finfo* finfo)
-{
-    const auto rttType = finfo->rttiType();
-    const auto fname = finfo->name();
-
-    if (rttType == "void") {
-        std::function<bool()> func = [oid, fname]() {
-            return SetGet0::set(oid, fname);
-        };
-        return func;
-    }
-    if (rttType == "vector<Id>") {
-        std::function<bool(const vector<Id>&)> func = [oid, fname](
-            const vector<Id>& ids) {
-            return SetGet1<vector<Id>>::set(oid, fname, ids);
-        };
-        return func;
-    }
-    if (rttType == "vector<ObjId>") {
-        std::function<bool(const vector<ObjId>&)> func = [oid, fname](
-            const vector<ObjId>& ids) {
-            return SetGet1<vector<ObjId>>::set(oid, fname, ids);
-        };
-        return func;
-    }
-    if (rttType == "vector<double>") {
-        std::function<bool(const vector<double>&)> func = [oid, fname](
-            const vector<double>& data) {
-            return SetGet1<vector<double>>::set(oid, fname, data);
-        };
-        return func;
-    }
-
-    throw runtime_error("getFieldPropertyDestFinfo::NotImplemented " + fname +
-                        " for rttType " + rttType + " for oid " + oid.path());
 }
 

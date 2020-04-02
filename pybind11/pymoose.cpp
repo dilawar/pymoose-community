@@ -45,13 +45,13 @@ using overload_cast_ = pybind11::detail::overload_cast_impl<Args...>;
 using namespace std;
 using namespace pybind11::literals;
 
-Id initModule(py::module& m)
+Id initModule(py::module &m)
 {
     return initShell();
 }
 
-bool setFieldGeneric(const ObjId& oid, const string& fieldName,
-                     const py::object& val)
+bool setFieldGeneric(const ObjId &oid, const string &fieldName,
+                     const py::object &val)
 {
     auto cinfo = oid.element()->cinfo();
     auto finfo = cinfo->findFinfo(fieldName);
@@ -99,7 +99,7 @@ bool setFieldGeneric(const ObjId& oid, const string& fieldName,
     return false;
 }
 
-py::object getFieldGeneric(const ObjId& oid, const string& fieldName)
+py::object getFieldGeneric(const ObjId &oid, const string &fieldName)
 {
     auto cinfo = oid.element()->cinfo();
     auto finfo = cinfo->findFinfo(fieldName);
@@ -112,17 +112,21 @@ py::object getFieldGeneric(const ObjId& oid, const string& fieldName)
 
     string finfoType = cinfo->getFinfoType(finfo);
 
+    // Either return a simple value (ValueFinfo), list, dict or DestFinfo
+    // setter.
+    // The DestFinfo setter is a function.
+
     if (finfoType == "ValueFinfo")
-        // return value.
-        return getValueFinfo(oid, finfo);
+        return __Finfo__::getFieldValue(oid, finfo);
     else if (finfoType == "FieldElementFinfo") {
-        // Return list.
-        return getElementFinfo(oid, finfo);
+        // return getElementFinfo(oid, finfo);
+        return py::cast(__Finfo__(oid, finfo, "FieldElementFinfo"));
     } else if (finfoType == "LookupValueFinfo") {
         // Return function.
-        return __Finfo__::getLookupValueFinfo(oid, finfo);
+        return py::cast(__Finfo__(oid, finfo, "LookupValueFinfo"));
     } else if (finfoType == "DestFinfo") {
-        return getFieldPropertyDestFinfo(oid, finfo);
+        // Return a setter function. It can be used to set field on DestFinfo.
+        return __Finfo__::getDestFinfoSetterFunc(oid, finfo);
     }
 
     throw runtime_error("getFieldGeneric::NotImplemented : " + fieldName +
@@ -130,13 +134,6 @@ py::object getFieldGeneric(const ObjId& oid, const string& fieldName)
                         finfoType + "'");
     return pybind11::none();
 }
-
-// ObjId connectGeneric(const py::object& src, const string srcfield,
-//                      const py::object& tgt, const string& tgtfield,
-//                      const string& type)
-// {
-//     return src.connect(srcfield, tgt, tgtfield, type);
-// }
 
 PYBIND11_MODULE(_cmoose, m)
 {
@@ -151,7 +148,7 @@ PYBIND11_MODULE(_cmoose, m)
     // Note that both a.isA["Compartment"] and a.isA("Compartment") are valid
     // now.
     py::class_<__Finfo__>(m, "_Finfo")
-        .def(py::init<const ObjId&, const Finfo*>())
+        .def(py::init<const ObjId &, const Finfo *, const char *>())
         .def("__call__", &__Finfo__::operator())
         .def("__getitem__", &__Finfo__::getItem)
         .def("__setitem__", &__Finfo__::setItem);
@@ -159,20 +156,20 @@ PYBIND11_MODULE(_cmoose, m)
     py::class_<Id>(m, "_Id")
         .def(py::init<>())
         .def(py::init<unsigned int>())
-        .def(py::init<const string&>())
-        .def(py::init<const ObjId&>())
+        .def(py::init<const string &>())
+        .def(py::init<const ObjId &>())
         // properties
         .def_property_readonly("numIds", &Id::numIds)
         .def_property_readonly("path", &Id::path)
         .def_property_readonly(
-             "name", [](const Id& id) { return id.element()->getName(); })
+             "name", [](const Id &id) { return id.element()->getName(); })
         .def_property_readonly("id", &Id::value)
         .def_property_readonly("cinfo",
-                               [](Id& id) { return id.element()->cinfo(); },
+                               [](Id &id) { return id.element()->cinfo(); },
                                py::return_value_policy::reference)
         .def_property_readonly(
-             "type", [](Id& id) { return id.element()->cinfo()->name(); })
-        .def("__repr__", [](const Id& id) {
+             "type", [](Id &id) { return id.element()->cinfo()->name(); })
+        .def("__repr__", [](const Id &id) {
              return "<Id id=" + std::to_string(id.value()) + " path=" +
                     id.path() + " class=" + id.element()->cinfo()->name() + ">";
          });
@@ -182,7 +179,7 @@ PYBIND11_MODULE(_cmoose, m)
         .def(py::init<Id>())
         .def(py::init<Id, unsigned int>())
         .def(py::init<Id, unsigned int, unsigned int>())
-        .def(py::init<const string&>())
+        .def(py::init<const string &>())
         //---------------------------------------------------------------------
         //  Readonly properties.
         //---------------------------------------------------------------------
@@ -190,96 +187,55 @@ PYBIND11_MODULE(_cmoose, m)
                                [](const ObjId oid) { return oid.id.value(); })
         .def_property_readonly("path", &ObjId::path)
         .def_property_readonly(
-             "parent", [](const ObjId& oid) { return Neutral::parent(oid); })
+             "parent", [](const ObjId &oid) { return Neutral::parent(oid); })
         .def_property_readonly(
-             "name", [](const ObjId& oid) { return oid.element()->getName(); })
-        .def_property_readonly("className", [](const ObjId& oid) {
+             "name", [](const ObjId &oid) { return oid.element()->getName(); })
+        .def_property_readonly("className", [](const ObjId &oid) {
              return oid.element()->cinfo()->name();
          })
-        .def_property_readonly("id", [](ObjId& oid) { return oid.id; })
+        .def_property_readonly("id", [](ObjId &oid) { return oid.id; })
         .def_property_readonly(
-             "type", [](ObjId& oid) { return oid.element()->cinfo()->name(); })
+             "type", [](ObjId &oid) { return oid.element()->cinfo()->name(); })
 
         //--------------------------------------------------------------------
         // Set/Get
         //--------------------------------------------------------------------
-        // Overload of Field::set . FIXME: remove after testing.
-        // .def("setField", &setField<double>)
-        // .def("setField", &setField<double>)
-        // .def("setField", &setField<vector<double>>)
-        // .def("setField", &setField<std::string>)
-        // .def("setField", &setField<bool>)
-
-        // Overload for Field::get
         .def("getField", &getFieldGeneric)
-        // .def("getElementField", &getElementField)
-        // .def("getElementFieldItem", &getElementFieldItem)
-        // .def("getNumpy", &getFieldNumpy<double>)
+        //.def("getNumpy", &getFieldNumpy<double>)
 
         /**
         *  Override __eq__ etc.
         */
-        .def("__eq__", [](const ObjId& a, const ObjId& b) { return a == b; })
-        .def("__ne__", [](const ObjId& a, const ObjId& b) { return a != b; })
+        .def("__eq__", [](const ObjId &a, const ObjId &b) { return a == b; })
+        .def("__ne__", [](const ObjId &a, const ObjId &b) { return a != b; })
 
         /**
         * Attributes.
         */
         .def("__getattr__", &getFieldGeneric)
         .def("__setattr__", &setFieldGeneric)
-        // .def("__setattr__", &setField<bool>)
-        // .def("__setattr__", &setField<double>)
-        // .def("__setattr__", &setField<size_t>)
-        // .def("__setattr__", &setField<unsigned long>)
-        // .def("__setattr__", &setField<unsigned int>)
-        // .def("__setattr__", &setField<int>)
-        // .def("__setattr__", &setField<vector<double>>)
-        // .def("__setattr__", &setField<std::string>)
-        // .def("__setattr__", &setField<ObjId>)
-        // .def("__setattr__", &setField<vector<ObjId>>)
-        // .def("__setattr__", &setField<Id>)
-        // .def("__setattr__", &setField<vector<Id>>)
 
         //---------------------------------------------------------------------
         //  Connect
         //---------------------------------------------------------------------
         // This would be so much easier with c++17.
         .def("connect",
-             [](const ObjId& src, const string& srcfield, const ObjId& tgt,
-                const string& tgtfield, const string& type) {
+             [](const ObjId &src, const string &srcfield, const ObjId &tgt,
+                const string &tgtfield, const string &type) {
              return shellConnect(src, srcfield, tgt, tgtfield, type);
          })
-        .def("connect", [](const ObjId& src, const string& srcfield,
-                           const MooseVec& tgtvec, const string& tgtfield,
-                           const string& type) {
+        .def("connect", [](const ObjId &src, const string &srcfield,
+                           const MooseVec &tgtvec, const string &tgtfield,
+                           const string &type) {
              ObjId res;
-             for (const auto& tgt : tgtvec.objs())
+             for (const auto &tgt : tgtvec.objs())
                  res = shellConnect(src, srcfield, tgt, tgtfield, type);
              return res;
          })
-        // // , "src"_a, "srcfield"_a, "dest"_a, "destfield"_a, "msgtype"_a)
-        // //, "src"_a, "srcfield"_a, "dest"_a, "destfield"_a, "msgtype"_a =
-        // //"OneToAll")
-        // .def("connect", &connectVec<MooseVec, MooseVec>)
-        // // , "src"_a, //"srcfield"_a, "dest"_a, "destfield"_a, "msgtype"_a =
-        // // "OneToOne")
-        // .def("connect", &connect<ObjId, ObjId>)
-        // // , "src"_a, "srcfield"_a, "dest"_a, "destfield"_a, "msgtype"_a =
-        // // "Single")
-        // .def("connect", &connect<ObjId, Id>)
-        // // , "src"_a, "srcfield"_a, "dest"_a, "destfield"_a, "msgtype"_a =
-        // // "Single")
-        // .def("connect", &connect<Id, ObjId>)
-        // // , "src"_a, "srcfield"_a, "dest"_a, "destfield"_a, "msgtype"_a =
-        // // "Single")
-        // .def("connect", &connect<Id, Id>)
-        // // , "src"_a, "srcfield"_a, "dest"_a, "destfield"_a, "msgtype"_a =
-        // // "Single")
-
         //---------------------------------------------------------------------
         //  Extra
         //---------------------------------------------------------------------
-        .def("__repr__", [](const ObjId& oid) {
+        .def("__repr__", [](const ObjId &oid) {
              return "<moose." + oid.element()->cinfo()->name() + " id=" +
                     std::to_string(oid.id.value()) + " dataIndex=" +
                     to_string(oid.eref().dataIndex()) + " path=" + oid.path() +
@@ -313,14 +269,14 @@ PYBIND11_MODULE(_cmoose, m)
 
     // Vec
     py::class_<MooseVec>(m, "vec", py::dynamic_attr())
-        .def(py::init<const string&, unsigned int, const string&>(), "path"_a,
+        .def(py::init<const string &, unsigned int, const string &>(), "path"_a,
              "n"_a = 1, "dtype"_a = "Neutral")  // Default
-        .def(py::init<const ObjId&>())
+        .def(py::init<const ObjId &>())
         .def("connect", &MooseVec::connectToSingle)
         .def("connect", &MooseVec::connectToVec)
         .def("__len__", &MooseVec::len)
         .def("__iter__",
-             [](const MooseVec& v) {
+             [](const MooseVec &v) {
                  return py::make_iterator(v.objs().begin(), v.objs().end());
              },
              py::keep_alive<0, 1>())
@@ -334,22 +290,22 @@ PYBIND11_MODULE(_cmoose, m)
          })
         // This is to provide old API support. Some scripts use .vec even on a
         // vec to get a vec. So silly or so Zen?!
-        .def_property_readonly("vec", [](const MooseVec& vec) { return &vec; },
+        .def_property_readonly("vec", [](const MooseVec &vec) { return &vec; },
                                py::return_value_policy::reference_internal)
         .def_property_readonly("type",
-                               [](const MooseVec& v) { return "moose.vec"; });
+                               [](const MooseVec &v) { return "moose.vec"; });
 
     // Module functions.
     m.def("getShell",
-          []() { return reinterpret_cast<Shell*>(Id().eref().data()); },
+          []() { return reinterpret_cast<Shell *>(Id().eref().data()); },
           py::return_value_policy::reference);
 
     m.def("seed", [](unsigned int a) { moose::mtseed(a); });
     m.def("rand", [](double a, double b) { return moose::mtrand(a, b); },
           "a"_a = 0, "b"_a = 1);
     m.def("wildcardFind", &wildcardFind2);
-    m.def("delete", overload_cast_<const ObjId&>()(&mooseDelete));
-    m.def("delete", overload_cast_<const string&>()(&mooseDelete));
+    m.def("delete", overload_cast_<const ObjId &>()(&mooseDelete));
+    m.def("delete", overload_cast_<const string &>()(&mooseDelete));
     m.def("create", &mooseCreate);
     m.def("reinit", &mooseReinit);
     m.def("start", &mooseStart, "runtime"_a, "notify"_a = false);

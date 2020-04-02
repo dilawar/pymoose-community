@@ -59,40 +59,46 @@ def makeGlobalBalanceNetwork():
     oiv = moose.vec( outInhSyn.path + '/synapse' )
 
     temp = moose.connect( stim, 'spikeOut', iv, 'addSpike', 'Sparse' )
-    inhibMatrix = moose.element( temp )
-    inhibMatrix.setRandomConnectivity( 
-            params['stimToInhProb'], params['stimToInhSeed'] )
+    inhibMatrix = moose.element(temp)
+
+    assert inhibMatrix == temp
+    assert id(temp) != id(inhibMatrix)
+
+    print(params['stimToInhProb'], params['stimToOutSeed'])
+
+    inhibMatrix.setRandomConnectivity(params['stimToInhProb'], params['stimToInhSeed'])
     cl = inhibMatrix.connectionList
 
     # This can change when random-number generator changes.
-    # This was before we used c++11 <random> to generate random numbers. This
-    # test has changes on Tuesday 31 July 2018 11:12:35 AM IST
     #  expectedCl = [ 1,4,13,13,26,42,52,56,80,82,95,97,4,9,0,9,4,8,0,6,1,6,6,7]
     expectedCl=[0,6,47,50,56,67,98,2,0,3,5,4,8,3]
 
+    #  print('CL', cl)
     assert list(cl) == expectedCl, "Expected %s, got %s" % (expectedCl, cl)
+    assert inhibMatrix.numEntries == 7, inhibMatrix.numEntries
 
     temp = moose.connect( stim, 'spikeOut', ov, 'addSpike', 'Sparse' )
-    excMatrix = moose.element( temp )
-    excMatrix.setRandomConnectivity( 
-            params['stimToOutProb'], params['stimToOutSeed'] )
+    excMatrix = moose.element(temp)
+    assert excMatrix == temp
+    assert id(excMatrix) != id(temp)
+
+    excMatrix.setRandomConnectivity(params['stimToOutProb'], params['stimToOutSeed'])
+    assert excMatrix.numEntries == 62, excMatrix.numEntries
 
     temp = moose.connect( inhib, 'spikeOut', oiv, 'addSpike', 'Sparse' )
     negFFMatrix = moose.element( temp )
-    negFFMatrix.setRandomConnectivity( 
-            params['inhToOutProb'], params['inhToOutSeed'] )
-
-    # print("ConnMtxEntries: ", inhibMatrix.numEntries, excMatrix.numEntries, negFFMatrix.numEntries)
-    got = (inhibMatrix.numEntries, excMatrix.numEntries, negFFMatrix.numEntries)
-    expected = (7, 62, 55)
-    assert expected == got, "Expected %s, Got %s" % (expected,got)
+    assert temp == negFFMatrix
+    assert id(temp) != id(negFFMatrix)
+    negFFMatrix.setRandomConnectivity(params['inhToOutProb'], params['inhToOutSeed'] )
+    assert negFFMatrix.numEntries == 492, negFFMatrix.numEntries
 
     cl = negFFMatrix.connectionList
     numInhSyns = [ ]
     niv = 0
     nov = 0
     noiv = 0
-    for i in moose.vec( insyn ):
+    for i in moose.vec(insyn):
+        print('xxx', i.synapse)
         niv += i.synapse.num
         numInhSyns.append( i.synapse.num )
         if i.synapse.num > 0:

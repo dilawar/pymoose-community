@@ -41,10 +41,17 @@ def test_vec():
     assert v == v.vec
     assert v[0] == v.vec[0], (v[0], v.vec[0])
 
+def test_finfos():
+    s = moose.SimpleSynHandler('synh')
+    print(s.synapse.num)
+    print(s.synapse)
+    print(s)
+
 def main():
     test_children()
     test_vec()
     test_other()
+    test_finfos()
 
 if __name__ == '__main__':
     main()

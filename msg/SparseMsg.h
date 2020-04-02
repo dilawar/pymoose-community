@@ -43,60 +43,57 @@
  * It can be modified after creation to add or remove message entries.
  */
 
-class SparseMsg: public Msg
-{
-    friend unsigned int Msg::initMsgManagers(); // for initializing Id.
+class SparseMsg : public Msg {
+    friend unsigned int Msg::initMsgManagers();  // for initializing Id.
 
 public:
-
-    SparseMsg( Element* e1, Element* e2, unsigned int msgIndex );
+    SparseMsg(Element* e1, Element* e2, unsigned int msgIndex);
     ~SparseMsg();
 
-    Eref firstTgt( const Eref& src ) const;
+    Eref firstTgt(const Eref& src) const;
 
-    void sources( vector< vector< Eref > >& v ) const;
-    void targets( vector< vector< Eref > >& v ) const;
+    void sources(vector<vector<Eref>>& v) const;
+    void targets(vector<vector<Eref>>& v) const;
 
-    unsigned int randomConnect( double probability );
+    unsigned int randomConnect(double probability);
 
     Id managerId() const;
 
-    ObjId findOtherEnd( ObjId end ) const;
+    ObjId findOtherEnd(ObjId end) const;
 
-    Msg* copy( Id origSrc, Id newSrc, Id newTgt,
-               FuncId fid, unsigned int b, unsigned int n ) const;
+    Msg* copy(Id origSrc, Id newSrc, Id newTgt, FuncId fid, unsigned int b,
+              unsigned int n) const;
 
     /**
      * Assigns the whole connection matrix
      */
-    void setMatrix( const SparseMatrix< unsigned int >& m );
+    void setMatrix(const SparseMatrix<unsigned int>& m);
 
     /**
      * Returns the connection matrix
      */
-    SparseMatrix< unsigned int >& getMatrix();
+    SparseMatrix<unsigned int>& getMatrix();
 
     // Uses default addToQ function.
 
     // Here we define the Element interface functions for SparseMsg
-    void setRandomConnectivity( double probability, long seed );
+    void setRandomConnectivity(double probability, unsigned int seed);
     double getProbability() const;
-    void setProbability( double value );
+    void setProbability(double value);
 
-    vector< unsigned int > getMatrixEntry() const;
-    vector< unsigned int > getColIndex() const;
-    vector< unsigned int > getRowStart() const;
+    vector<unsigned int> getMatrixEntry() const;
+    vector<unsigned int> getColIndex() const;
+    vector<unsigned int> getRowStart() const;
 
     int getSeed() const;
-    void setSeed( int value );
+    void setSeed(int value);
 
-    vector< unsigned int > getEntryPairs() const;
-    void setEntryPairs( vector< unsigned int > entries );
+    vector<unsigned int> getEntryPairs() const;
+    void setEntryPairs(vector<unsigned int> entries);
 
-    void setEntry( unsigned int row, unsigned int column,
-                   unsigned int value );
+    void setEntry(unsigned int row, unsigned int column, unsigned int value);
 
-    void unsetEntry( unsigned int row, unsigned int column );
+    void unsetEntry(unsigned int row, unsigned int column);
 
     // Still need to implement array field gets.
     unsigned int getNumRows() const;
@@ -109,16 +106,14 @@ public:
      * Fills up the entire message based on pairs of src,dest (i.e.,
      * row,column) values. All filled entries are set to zero.
      */
-    void pairFill( vector< unsigned int > src,
-                   vector< unsigned int> dest );
+    void pairFill(vector<unsigned int> src, vector<unsigned int> dest);
 
     /**
      * Fills up the entire message based on triplets of
      * src,destDataIndex,destFieldIndex
      */
-    void tripletFill( vector< unsigned int > src,
-                      vector< unsigned int> dest,
-                      vector< unsigned int > field );
+    void tripletFill(vector<unsigned int> src, vector<unsigned int> dest,
+                     vector<unsigned int> field);
 
     /**
      * Fills up the entire message based on triplets of
@@ -126,7 +121,7 @@ public:
      * a single long vector since PyMoose doesn't know how to handle
      * multiple vectors.
      */
-    void tripletFill1( vector< unsigned int > entries );
+    void tripletFill1(vector<unsigned int> entries);
 
     /**
      * Utility function to update all sorts of values after we've
@@ -136,21 +131,21 @@ public:
 
     /// Msg lookup functions
     static unsigned int numMsg();
-    static char* lookupMsg( unsigned int index );
+    static char* lookupMsg(unsigned int index);
 
     static const Cinfo* initCinfo();
 
 private:
-    SparseMatrix< unsigned int > matrix_;
-    unsigned int numThreads_; // Number of threads to partition
-    unsigned int nrows_; // The original size of the matrix.
+    SparseMatrix<unsigned int> matrix_;
+    unsigned int numThreads_;  // Number of threads to partition
+    unsigned int nrows_;       // The original size of the matrix.
     double p_;
-    static Id managerId_; // The Element that manages Sparse Msgs.
-    static vector< SparseMsg* > msg_;
+    static Id managerId_;  // The Element that manages Sparse Msgs.
+    static vector<SparseMsg*> msg_;
 
     // RNG.
     int seed_;
     moose::RNG rng_;
 };
 
-#endif // _SPARSE_MSG_H
+#endif  // _SPARSE_MSG_H

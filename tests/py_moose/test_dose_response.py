@@ -20,12 +20,12 @@ def setupSteadyState(simdt,plotDt):
 
     ksolve = moose.Ksolve( '/model/kinetics/ksolve' )
     stoich = moose.Stoich( '/model/kinetics/stoich' )
-    stoich.compartment = moose.element('/model/kinetics').id
-    stoich.ksolve = ksolve.id
+    stoich.compartment = moose.element('/model/kinetics')
+    stoich.ksolve = ksolve
     stoich.path = "/model/kinetics/##"
     state = moose.SteadyState( '/model/kinetics/state' )
     moose.reinit()
-    state.stoich = stoich.id
+    state.stoich = stoich
     state.showMatrices()
     state.convergenceCriterion = 1e-8
     return ksolve, state
