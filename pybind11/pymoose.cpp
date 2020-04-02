@@ -112,15 +112,15 @@ py::object getFieldGeneric(const ObjId& oid, const string& fieldName)
 
     if (finfoType == "ValueFinfo")
         // return value.
-        return getValueFinfo(oid, fieldName, finfo);
+        return getValueFinfo(oid, finfo);
     else if (finfoType == "FieldElementFinfo") {
         // Return list.
-        return getElementFinfo(oid, fieldName, finfo);
+        return getElementFinfo(oid, finfo);
     } else if (finfoType == "LookupValueFinfo") {
         // Return function.
-        return getLookupValueFinfo(oid, fieldName, finfo);
+        return __Finfo__::getLookupValueFinfo(oid, finfo);
     } else if (finfoType == "DestFinfo") {
-        return getFieldPropertyDestFinfo(oid, fieldName, finfo);
+        return getFieldPropertyDestFinfo(oid, finfo);
     }
 
     throw runtime_error("getFieldGeneric::NotImplemented : " + fieldName + " with rttType "
@@ -148,9 +148,9 @@ PYBIND11_MODULE(_cmoose, m)
     // Note that both a.isA["Compartment"] and a.isA("Compartment") are valid
     // now.
     py::class_<__Finfo__>(m, "_Finfo")
-        .def(py::init<const ObjId&, const string&, const Finfo*, const string&>())
+        .def(py::init<const ObjId&, const Finfo*>())
         .def("__call__", &__Finfo__::operator())
-        .def("__getitem__", &__Finfo__::operator())
+        .def("__getitem__", &__Finfo__::getItem)
         .def("__setitem__", &__Finfo__::setItem)
         ;
 

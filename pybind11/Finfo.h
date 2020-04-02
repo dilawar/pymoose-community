@@ -10,12 +10,9 @@
 #ifndef FINFO_H
 #define FINFO_H
 
-
 class __Finfo__ {
 public:
-    __Finfo__(const ObjId& oid, const string& fname, const Finfo* f, const string& ftype);
-
-    void setItem(const py::object& key, const py::object& val);
+    __Finfo__(const ObjId& oid, const Finfo* f);
 
     template <typename T>
     py::object getLookupValueFinfoItemInner(const ObjId& oid,
@@ -34,19 +31,25 @@ public:
         return py::none();
     }
 
-    py::object getLookupValueFinfoItem(const ObjId& oid, const string& fname,
-                                       const py::object& key, const Finfo* f);
+    // Exposed to python as __setitem__
+    bool setItem(const py::object& key, const py::object& val);
 
-    py::object getLookupValueFinfo(const ObjId& oid, const string& fname,
-                                   const Finfo* f);
+    // Exposed to python as __getitem__
+    py::object getItem(const py::object& key);
+
+    py::object getLookupValueFinfoItem(const ObjId& oid, const py::object& key, const Finfo* f);
+
+    static py::object getLookupValueFinfo(const ObjId& oid, const Finfo* f);
+
+    static bool setLookupValueFinfoItem(const ObjId& oid, const py::object& key,
+                                        const py::object& val,
+                                        const Finfo* finfo);
 
     py::object operator()(const py::object& key);
 
 public:
     ObjId oid_;
-    string fname_;
     const Finfo* f_;
-    const string finfoType_;
     std::function<py::object(const py::object& key)> func_;
 };
 

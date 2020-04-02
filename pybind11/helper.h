@@ -64,20 +64,12 @@ map<string, string> mooseGetFieldDict(const string& className,
 void mooseReinit();
 void mooseStart(double runtime, bool notify);
 
-py::list getElementFinfo(const ObjId& objid, const string& fname,
-                         const Finfo* f);
+py::list getElementFinfo(const ObjId& objid, const Finfo* f);
 
-py::object getValueFinfo(const ObjId& oid, const string& fname, const Finfo* f);
+py::object getValueFinfo(const ObjId& oid, const Finfo* f);
 
-py::cpp_function getPropertyDestFinfo(const ObjId& oid, const string& fname,
-                                      const Finfo* finfo);
+py::cpp_function getPropertyDestFinfo(const ObjId& oid, const Finfo* finfo);
 
-py::object getLookupValueFinfo(const ObjId& oid, const string& fname,
-                               const Finfo* f);
-
-py::object getLookupValueFinfoItem(const ObjId& oid, const string& fname,
-                                   const py::object& k, const Finfo* f);
-
-py::cpp_function getFieldPropertyDestFinfo(const ObjId& oid, const string& fname, const Finfo* finfo);
+py::cpp_function getFieldPropertyDestFinfo(const ObjId& oid, const Finfo* finfo);
 
 #endif /* end of include guard: HELPER_H */

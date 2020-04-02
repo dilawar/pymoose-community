@@ -338,13 +338,11 @@ ObjId mooseCopy(const ObjId& orig, ObjId newParent, string newName,
                                        copyExtMsgs));
 }
 
-py::object getValueFinfo(const ObjId& oid, const string& fname, const Finfo* f)
+py::object getValueFinfo(const ObjId& oid, const Finfo* f)
 {
     auto rttType = f->rttiType();
+    auto fname = f->name();
     py::object r = py::none();
-
-    // cout << "Getting " << fname << "(" << rttType << ")"
-    // << " from " << oid.path() << endl;
 
     if (rttType == "double" or rttType == "float")
         r = pybind11::float_(getField<double>(oid, fname));
@@ -381,10 +379,10 @@ py::object getValueFinfo(const ObjId& oid, const string& fname, const Finfo* f)
     return r;
 }
 
-py::list getElementFinfo(const ObjId& objid, const string& fname,
-                         const Finfo* f)
+py::list getElementFinfo(const ObjId& objid, const Finfo* f)
 {
     auto rttType = f->rttiType();
+    auto fname = f->name();
     auto oid = ObjId(objid.path() + '/' + fname);
     auto len = Field<unsigned int>::get(oid, "numField");
     vector<ObjId> res(len);
@@ -393,11 +391,10 @@ py::list getElementFinfo(const ObjId& objid, const string& fname,
     return py::cast(res);
 }
 
-py::cpp_function getFieldPropertyDestFinfo(const ObjId& oid,
-                                           const string& fname,
-                                           const Finfo* finfo)
+py::cpp_function getFieldPropertyDestFinfo(const ObjId& oid, const Finfo* finfo)
 {
     const auto rttType = finfo->rttiType();
+    const auto fname = finfo->name();
 
     if (rttType == "void") {
         std::function<bool()> func = [oid, fname]() {

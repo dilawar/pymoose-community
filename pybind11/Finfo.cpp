@@ -2,7 +2,7 @@
 //
 //       Filename:  Finfo.cpp
 //
-//    Description:  
+//    Description:
 //
 //         Author:  Dilawar Singh (), dilawar.s.rajput@gmail.com
 //   Organization:  NCBS Bangalore
@@ -20,25 +20,52 @@ namespace py = pybind11;
 #include "helper.h"
 #include "Finfo.h"
 
-__Finfo__::__Finfo__(const ObjId& oid, const string& fname, const Finfo* f,
-        const string& ftype)
-    : oid_(oid), fname_(fname), f_(f), finfoType_(ftype)
+__Finfo__::__Finfo__(const ObjId& oid, const Finfo* f) : oid_(oid), f_(f)
 {
-    func_ = [oid, fname, f, this](const py::object& key) {
-        return this->getLookupValueFinfoItem(oid, fname, key, f);
+    func_ = [oid, f, this](const py::object& key) {
+        return __Finfo__::getLookupValueFinfoItem(oid, key, f);
     };
 }
 
-void __Finfo__::setItem(const py::object& key, const py::object& val)
+// Exposed to python as __setitem__ on Finfo
+bool __Finfo__::setItem(const py::object& key, const py::object& val)
 {
-    // setLookupValueFinfoItem(key, val, f_, fname_);
+    return __Finfo__::setLookupValueFinfoItem(oid_, key, val, f_);
 }
 
+bool __Finfo__::setLookupValueFinfoItem(const ObjId& oid, const py::object& key,
+                                        const py::object& val,
+                                        const Finfo* finfo)
+{
+    auto rttType = finfo->rttiType();
+    auto fieldName = finfo->name();
 
-py::object __Finfo__::getLookupValueFinfoItem(const ObjId& oid, const string& fname,
-        const py::object& key, const Finfo* f)
+    vector<string> srcDestType;
+    moose::tokenize(rttType, ",", srcDestType);
+    assert(srcDestType.size() == 2);
+
+    auto srcType = srcDestType[0];
+    auto destType = srcDestType[1];
+
+    if (srcType == "unsigned int") {
+        if (destType == "double")
+            return LookupField<unsigned int, double>::set(
+                oid, fieldName, py::cast<unsigned int>(key), py::cast<double>(val));
+    }
+
+    py::print("NotImplemented::setLookupValueFinfoItem:", key, "to value", val,
+              "for object", oid.path(), "and fieldName=", fieldName, "rttiType=",
+              rttType, srcDestType);
+    throw runtime_error("NotImplemented");
+    return true;
+}
+
+py::object __Finfo__::getLookupValueFinfoItem(const ObjId& oid,
+                                              const py::object& key,
+                                              const Finfo* f)
 {
     auto rttType = f->rttiType();
+    auto fname = f->name();
     vector<string> srcDestType;
     moose::tokenize(rttType, ",", srcDestType);
     string srcType = srcDestType[0];
@@ -52,32 +79,36 @@ py::object __Finfo__::getLookupValueFinfoItem(const ObjId& oid, const string& fn
     if (srcType == "string") {
         auto k = py::cast<string>(key);
         r = getLookupValueFinfoItemInner<string>(oid, fname, k, tgtType);
-    }
-    else if (srcType == "unsigned int") {
+    } else if (srcType == "unsigned int") {
         auto k = py::cast<unsigned int>(key);
-        r = getLookupValueFinfoItemInner<unsigned int>(oid, fname, k,
-                tgtType);
+        r = getLookupValueFinfoItemInner<unsigned int>(oid, fname, k, tgtType);
     }
 
     if (r.is(py::none())) {
         py::print("getLookupValueFinfoItem::NotImplemented for key:", key,
-                "srcType:", srcType, "and tgtType:", tgtType,
-                "path: ", oid.path());
-        throw runtime_error(
-                "getLookupValueFinfoItem::NotImplemented error");
+                  "srcType:", srcType, "and tgtType:", tgtType, "path: ",
+                  oid.path());
+        throw runtime_error("getLookupValueFinfoItem::NotImplemented error");
     }
     return r;
 }
 
-py::object __Finfo__::getLookupValueFinfo(const ObjId& oid, const string& fname,
-        const Finfo* f)
+py::object __Finfo__::getLookupValueFinfo(const ObjId& oid, const Finfo* f)
 {
     // std::function<py::object(const string&)> f = [oid, fname, rttType](
     //    const string& key) {
     //    return getLookupValueFinfoItem(oid, fname, key, rttType);
     //};
-    return py::cast(__Finfo__(oid, fname, f, "LookupValueFinfo"));
+    return py::cast(__Finfo__(oid, f));
 }
 
-py::object __Finfo__::operator()(const py::object& key) { return func_(key); }
+py::object __Finfo__::getItem(const py::object& key)
+{
+    return func_(key);
+}
+
+py::object __Finfo__::operator()(const py::object& key)
+{
+    return func_(key);
+}
 

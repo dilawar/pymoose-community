@@ -28,7 +28,8 @@ def test_other():
     p = moose.PulseGen('pg1')
     print(p.delay)
     print(p.delay[0])
-    p.delay[1] = 1.0
+    p.delay[1] = 0.99
+    assert p.delay[1] == 0.99, p.delay[1]
 
 
 def test_vec():
