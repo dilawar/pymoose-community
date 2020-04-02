@@ -284,6 +284,7 @@ ObjId Shell::doAddMsg(const string& msgType, ObjId src, const string& srcField,
     }
 
     const Msg* m = innerAddMsg(msgType, src, srcField, dest, destField, 0);
+    cout << "Msg " << m << " mid:" << m->mid() << endl;
 
     SetGet6<string, ObjId, string, ObjId, string, unsigned int>::set(
         ObjId(),   // Apply command to Shell

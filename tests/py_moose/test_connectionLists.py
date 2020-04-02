@@ -45,11 +45,16 @@ params = {
 
 def makeGlobalBalanceNetwork():
     stim = moose.RandSpike( '/model/stim', params['numInputs'] )
+
     inhib = moose.LIF( '/model/inhib', params['numInhib'] )
+
     insyn = moose.SimpleSynHandler(inhib.path + '/syns', params['numInhib'])
+
     moose.connect( insyn, 'activationOut', inhib, 'activation', 'OneToOne' )
     output = moose.LIF( '/model/output', params['numOutput'] )
+
     outsyn = moose.SimpleSynHandler(output.path+'/syns',params['numOutput'])
+
     moose.connect(outsyn, 'activationOut', output, 'activation', 'OneToOne')
     outInhSyn = moose.SimpleSynHandler(output.path+'/inhsyns',params['numOutput'])
     moose.connect(outInhSyn, 'activationOut', output, 'activation', 'OneToOne')
@@ -58,14 +63,8 @@ def makeGlobalBalanceNetwork():
     ov = moose.vec( outsyn.path + '/synapse' )
     oiv = moose.vec( outInhSyn.path + '/synapse' )
 
-    temp = moose.connect( stim, 'spikeOut', iv, 'addSpike', 'Sparse' )
-    print(temp, 'temp')
-    inhibMatrix = moose.element(temp)
-
-    assert inhibMatrix == temp
-    assert id(temp) != id(inhibMatrix)
-
-    print(params['stimToInhProb'], params['stimToOutSeed'])
+    inhibMatrix = moose.connect( stim, 'spikeOut', iv, 'addSpike', 'Sparse' )
+    #  inhibMatrix = moose.element(temp)
 
     inhibMatrix.setRandomConnectivity(params['stimToInhProb'], params['stimToInhSeed'])
     cl = inhibMatrix.connectionList
@@ -78,18 +77,14 @@ def makeGlobalBalanceNetwork():
     assert list(cl) == expectedCl, "Expected %s, got %s" % (expectedCl, cl)
     assert inhibMatrix.numEntries == 7, inhibMatrix.numEntries
 
-    temp = moose.connect( stim, 'spikeOut', ov, 'addSpike', 'Sparse' )
-    excMatrix = moose.element(temp)
-    assert excMatrix == temp
-    assert id(excMatrix) != id(temp)
-
+    excMatrix = moose.connect( stim, 'spikeOut', ov, 'addSpike', 'Sparse' )
+    #  excMatrix = moose.element(temp)
+    print('111',  excMatrix)
     excMatrix.setRandomConnectivity(params['stimToOutProb'], params['stimToOutSeed'])
     assert excMatrix.numEntries == 62, excMatrix.numEntries
 
-    temp = moose.connect( inhib, 'spikeOut', oiv, 'addSpike', 'Sparse' )
-    negFFMatrix = moose.element( temp )
-    assert temp == negFFMatrix
-    assert id(temp) != id(negFFMatrix)
+    negFFMatrix = moose.connect(inhib, 'spikeOut', oiv, 'addSpike', 'Sparse')
+    #  negFFMatrix = moose.element( temp )
     negFFMatrix.setRandomConnectivity(params['inhToOutProb'], params['inhToOutSeed'] )
     assert negFFMatrix.numEntries == 55, negFFMatrix.numEntries
 
@@ -99,13 +94,13 @@ def makeGlobalBalanceNetwork():
     nov = 0
     noiv = 0
 
-    print(insyn, '1111')
     for i in moose.vec(insyn):
-        print('xxx', i.synapse.num)
-        niv += i.synapse.num
-        numInhSyns.append( i.synapse.num)
-        if i.synapse.num > 0:
-            i.synapse.weight = params['wtStimToInh']
+        print(i)
+        #print('xxx', i.synapse.num)
+        #niv += i.synapse.num
+        #numInhSyns.append( i.synapse.num)
+        #if i.synapse.num > 0:
+        #    i.synapse.weight = params['wtStimToInh']
 
     #  expected = [2,1,0,0,2,0,3,1,1,2]
     expected = [1, 0, 1, 2, 1, 1, 0, 0, 1, 0]

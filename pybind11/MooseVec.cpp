@@ -19,36 +19,32 @@ namespace py = pybind11;
 #include "pymoose.h"
 #include "MooseVec.h"
 
-MooseVec::MooseVec(const string& path, unsigned int n = 1,
+MooseVec::MooseVec(const string& path, unsigned int n = 0,
                    const string& dtype = "Neutral")
     : path_(path)
 {
-    if (!mooseExists(path)) {
-        objs_.clear();
+    if (! mooseExists(path)) {
         oid_ = mooseCreate(dtype, path, n);
-        for (unsigned int i = 0; i < n; i++) objs_.push_back(ObjId(oid_.id, i));
     } else {
-        objs_.clear();
         oid_ = ObjId(path);
-        for (unsigned int i = 0; i < oid_.element()->numData(); i++)
-            objs_.push_back(ObjId(oid_.id, i));
+        cout << "Elements: " << oid_.element() -> numData() << endl;
     }
 }
 
 MooseVec::MooseVec(const ObjId& oid) : oid_(oid), path_(oid.path())
 {
-    for (unsigned int i = 0; i < oid.element()->numData(); i++)
-        objs_.push_back(ObjId(oid, i));
 }
 
 const string MooseVec::dtype() const
 {
-    return objs_[0].element()->cinfo()->name();
+    return oid_.element()->cinfo()->name();
 }
 
 const size_t MooseVec::size() const
 {
-    return objs_.size();
+    if(oid_.element()->hasFields())
+        return Field<unsigned int>::get(oid_, "numField");
+    return oid_.element()->numData();
 }
 
 const string MooseVec::path() const
@@ -61,44 +57,35 @@ unsigned int MooseVec::len()
     return (unsigned int)size();
 }
 
-const ObjId& MooseVec::getItemRef(const size_t i) const
-{
-    return objs_[i];
-}
-
 ObjId MooseVec::getItem(const size_t i) const
 {
-    return objs_[i];
+    return ObjId(oid_.path(), i, 0);
 }
 
 void MooseVec::setAttrOneToAll(const string& name, const py::object& val)
 {
-    for (const auto& o : objs_) setFieldGeneric(o, name, val);
+    setFieldGeneric(oid_, name, val);
 }
 
 void MooseVec::setAttrOneToOne(const string& name, const py::sequence& val)
 {
-    if (py::len(val) != objs_.size())
+    if (py::len(val) != size())
         throw runtime_error(
             "Length of sequence on the right hand side "
             "does not match size of vector. "
             "Expected " +
-            to_string(objs_.size()) + ", got " + to_string(py::len(val)));
-    for (size_t i = 0; i < objs_.size(); i++)
-        setFieldGeneric(objs_[i], name, val[i]);
+            to_string(size()) + ", got " + to_string(py::len(val)));
+
+    for (size_t i = 0; i < size(); i++)
+        setFieldGeneric(getItem(i), name, val[i]);
 }
 
 vector<py::object> MooseVec::getAttr(const string& name)
 {
     vector<py::object> res(objs_.size());
-    for (unsigned int i = 0; i < objs_.size(); i++)
-        res[i] = getFieldGeneric(objs_[i], name);
+    for (unsigned int i = 0; i < size(); i++)
+        res[i] = getFieldGeneric(getItem(i), name);
     return res;
-}
-
-const vector<ObjId>& MooseVec::objs() const
-{
-    return objs_;
 }
 
 ObjId MooseVec::connectToSingle(const string& srcfield, const ObjId& tgt,
@@ -110,7 +97,7 @@ ObjId MooseVec::connectToSingle(const string& srcfield, const ObjId& tgt,
 ObjId MooseVec::connectToVec(const string& srcfield, const MooseVec& tgt,
                              const string& tgtfield, const string& msgtype)
 {
-    if (objs_.size() != tgt.size())
+    if (size() != tgt.size())
         throw runtime_error(
             "Length mismatch. Source vector size is " + to_string(size()) +
             " but the target vector size is " + to_string(tgt.size()));
@@ -120,4 +107,17 @@ ObjId MooseVec::connectToVec(const string& srcfield, const MooseVec& tgt,
 const ObjId& MooseVec::obj() const
 {
     return oid_;
+}
+
+vector<ObjId> MooseVec::objs() const
+{
+    vector<ObjId> items;
+    for(size_t i = 0; i < size(); i++)
+        items.push_back(ObjId(oid_.path(), i, 0));
+    return items;
+}
+
+size_t MooseVec::id() const
+{
+    return oid_.id.value();
 }

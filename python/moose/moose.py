@@ -57,7 +57,8 @@ def about():
 
 
 def connect(src, srcfield, dest, destfield, msgtype="Single"):
-    return __Neutral__(src.connect(srcfield, dest, destfield, msgtype))
+    # FIXME: Move to pymoose.cpp
+    return src.connect(srcfield, dest, destfield, msgtype)
 
 def wildcardFind(pattern):
     """wildcardFind.

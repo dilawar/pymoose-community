@@ -37,11 +37,13 @@ public:
 
     vector<py::object> getAttr(const string& name);
 
-    const vector<ObjId>& objs() const;
+    vector<ObjId> objs() const;
 
     ObjId connectToSingle(const string& srcfield, const ObjId& tgt, const string& tgtfield, const string& msgtype);
 
     ObjId connectToVec(const string& srcfield, const MooseVec& tgt, const string& tgtfield, const string& msgtype);
+
+    size_t id() const;
 
 private:
     ObjId oid_;

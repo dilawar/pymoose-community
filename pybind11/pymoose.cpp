@@ -230,7 +230,9 @@ PYBIND11_MODULE(_cmoose, m)
         .def("connect", [](const ObjId &src, const string &srcfield,
                            const MooseVec &tgtvec, const string &tgtfield,
                            const string &type) {
-             return shellConnect(src, srcfield, tgtvec.obj(), tgtfield, type);
+             auto msg = shellConnect(src, srcfield, tgtvec.obj(), tgtfield, type);
+             cout << src.path() << "--" << tgtvec.obj().path() << "msg:" << msg.path() << endl;
+             return msg;
          })
         //---------------------------------------------------------------------
         //  Extra
@@ -285,7 +287,8 @@ PYBIND11_MODULE(_cmoose, m)
         .def("__setattr__", &MooseVec::setAttrOneToAll)
         .def("__getattr__", &MooseVec::getAttr)
         .def("__repr__", [](const MooseVec & v)->string {
-             return "<moose.vec path=" + v.path() + " class=" + v.dtype() +
+             return "<moose.vec class="+v.dtype() + " path=" + v.path() + 
+                    " id=" + std::to_string(v.id()) +
                     " size=" + std::to_string(v.size()) + ">";
          })
         // This is to provide old API support. Some scripts use .vec even on a

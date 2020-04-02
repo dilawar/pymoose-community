@@ -185,7 +185,7 @@ unsigned int SparseMsg::getNumColumns() const
 
 unsigned int SparseMsg::getNumEntries() const
 {
-    cout << "  Getting numentries" << matrix_.nEntries() << endl;
+    cout << this << "  Getting numentries: " << matrix_.nEntries() << endl;
     return matrix_.nEntries();
 }
 
@@ -233,6 +233,7 @@ void SparseMsg::setRandomConnectivity(double probability, unsigned int seed)
 {
     p_ = probability;
     rng_.setSeed(seed);
+    cout << "p=" << probability << " seed " << seed << endl;
     randomConnect(probability);
 }
 
@@ -413,6 +414,7 @@ unsigned int SparseMsg::randomConnect(double probability)
 {
     unsigned int nRows = matrix_.nRows();     // Sources
     unsigned int nCols = matrix_.nColumns();  // Destinations
+    cout << " rows " << nRows <<  " cols " << nCols << endl; 
     matrix_.clear();
     unsigned int totalSynapses = 0;
     vector<unsigned int> sizes(nCols, 0);
