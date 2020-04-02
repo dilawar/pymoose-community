@@ -14,7 +14,6 @@ CHECK_CXX_COMPILER_FLAG("-Wno-strict-aliasing" COMPILER_WARNS_STRICT_ALIASING )
 # versions of compilers. be careful here.
 add_definitions(-Wall
     #-Wno-return-type-c-linkage
-    -fmax-errors=5
     -Wno-unused-variable
     -Wno-unused-function
     #-Wno-unused-private-field
@@ -26,6 +25,7 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         message(FATAL_ERROR "Insufficient gcc version. Minimum requried 5.0")
     endif()
     add_definitions( -Wno-unused-local-typedefs )
+    add_definitions( -fmax-errors=5 )
 elseif(("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang") OR ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang"))
     add_definitions( -Wno-unused-local-typedef )
 endif()
