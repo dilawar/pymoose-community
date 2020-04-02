@@ -64,7 +64,8 @@ bool setFieldGeneric(const ObjId& oid, const string& fieldName,
     if (fieldType == "double")
         return Field<double>::set(oid, fieldName, val.cast<double>());
     if (fieldType == "vector<double>")
-        return Field<vector<double>>::set(oid, fieldName, val.cast<vector<double>>());
+        return Field<vector<double>>::set(oid, fieldName,
+                                          val.cast<vector<double>>());
     if (fieldType == "float")
         return Field<float>::set(oid, fieldName, val.cast<float>());
     if (fieldType == "unsigned int")
@@ -80,13 +81,14 @@ bool setFieldGeneric(const ObjId& oid, const string& fieldName,
     if (fieldType == "string")
         return Field<string>::set(oid, fieldName, val.cast<string>());
     if (fieldType == "vector<string>")
-        return Field<vector<string>>::set(oid, fieldName, val.cast<vector<string>>());
+        return Field<vector<string>>::set(oid, fieldName,
+                                          val.cast<vector<string>>());
     if (fieldType == "char")
         return Field<char>::set(oid, fieldName, val.cast<char>());
     if (fieldType == "ObjId")
         return Field<ObjId>::set(oid, fieldName, val.cast<ObjId>());
     if (fieldType == "Id") {
-        // NB: Note that we cast to ObjId here and not to Id. 
+        // NB: Note that we cast to ObjId here and not to Id.
         return Field<Id>::set(oid.id, fieldName, val.cast<ObjId>());
     }
     if (fieldType == "Variable")
@@ -123,8 +125,9 @@ py::object getFieldGeneric(const ObjId& oid, const string& fieldName)
         return getFieldPropertyDestFinfo(oid, finfo);
     }
 
-    throw runtime_error("getFieldGeneric::NotImplemented : " + fieldName + " with rttType "
-         + finfo->rttiType() + " and type: '" + finfoType + "'");
+    throw runtime_error("getFieldGeneric::NotImplemented : " + fieldName +
+                        " with rttType " + finfo->rttiType() + " and type: '" +
+                        finfoType + "'");
     return pybind11::none();
 }
 
@@ -151,8 +154,7 @@ PYBIND11_MODULE(_cmoose, m)
         .def(py::init<const ObjId&, const Finfo*>())
         .def("__call__", &__Finfo__::operator())
         .def("__getitem__", &__Finfo__::getItem)
-        .def("__setitem__", &__Finfo__::setItem)
-        ;
+        .def("__setitem__", &__Finfo__::setItem);
 
     py::class_<Id>(m, "_Id")
         .def(py::init<>())
@@ -343,8 +345,7 @@ PYBIND11_MODULE(_cmoose, m)
     m.def("create", &mooseCreate);
     m.def("reinit", &mooseReinit);
     m.def("start", &mooseStart, "runtime"_a, "notify"_a = false);
-    m.def("element", overload_cast_<const ObjId&>()(&mooseElement));
-    m.def("element", overload_cast_<const string&>()(&mooseElement));
+    m.def("objid", &mooseElement);
     m.def("exists", &mooseExists);
     m.def("getCwe", &mooseGetCwe);
     m.def("setClock", &mooseSetClock);
@@ -354,6 +355,8 @@ PYBIND11_MODULE(_cmoose, m)
           "finfoType"_a = "");
     m.def("copy", &mooseCopy, "orig"_a, "newParent"_a, "newName"_a, "num"_a = 1,
           "toGlobal"_a = false, "copyExtMsgs"_a = false);
+    m.def("connect", &mooseConnect, "src"_a, "srcfield"_a, "dest"_a,
+          "destfield"_a, "msgtype"_a = "Single");
 
     // Attributes.
     m.attr("NA") = NA;

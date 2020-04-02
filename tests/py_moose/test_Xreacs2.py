@@ -28,11 +28,11 @@ def test_xreac2():
     ks1 = moose.Ksolve( '/model/kinetics/ksolve' )
     ds1 = moose.Dsolve( '/model/kinetics/dsolve' )
     s1 = moose.Stoich( '/model/kinetics/stoich' )
-    s1.compartment = moose.element( '/model/kinetics' ).id
+    s1.compartment = moose.element( '/model/kinetics' )
     print(s1.compartment)
-    s1.ksolve = ks1.id
+    s1.ksolve = ks1
     print(s1.ksolve)
-    s1.dsolve = ds1.id
+    s1.dsolve = ds1
     print(s1.dsolve)
 
 
@@ -41,7 +41,6 @@ def test_xreac2():
         print(r)
         print('subs', r.neighbors['sub'])
         print('prds', r.neighbors['prd'])
-    quit()
 
     # ps = moose.wildcardFind('/model/##')
     # print(len(ps), "Total paths")
@@ -55,9 +54,9 @@ def test_xreac2():
     ks2 = moose.Ksolve( '/model/compartment_1/ksolve' )
     ds2 = moose.Dsolve( '/model/compartment_1/dsolve' )
     s2 = moose.Stoich( '/model/compartment_1/stoich' )
-    s2.compartment = moose.element( '/model/compartment_1' ).id
-    s2.ksolve = ks2.id
-    s2.dsolve = ds2.id
+    s2.compartment = moose.element( '/model/compartment_1' )
+    s2.ksolve = ks2
+    s2.dsolve = ds2
 
 
     s2.path = '/model/compartment_1/##'

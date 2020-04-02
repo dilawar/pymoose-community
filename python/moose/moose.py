@@ -25,7 +25,7 @@ class __Neutral__(_cmoose._ObjId):
     def __init__(self, x, ndata=1):
         if isinstance(x, str):
             if _cmoose.exists(x):
-                obj = _cmoose.element(x)
+                obj = _cmoose.objid(x)
             else:
                 obj = _cmoose.create(self.__metaclass__, x, ndata) 
         elif isinstance(x, _cmoose._ObjId):
@@ -77,7 +77,7 @@ def element(e):
         path = e.path
     else:
         path = e
-    obj = _cmoose.element(path)
+    obj = _cmoose.objid(path)
     return __Neutral__(obj)
 
 def copy(elem, newParent, newName="", n=1):

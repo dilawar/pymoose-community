@@ -30,7 +30,6 @@ Shell* getShellPtr();
 
 bool mooseExists(const string& path);
 
-ObjId mooseElement(const ObjId& oid);
 ObjId mooseElement(const string& path);
 
 ObjId loadModelInternal(const string& fname, const string& modelpath,
@@ -49,7 +48,10 @@ bool mooseDelete(const string& path);
 
 ObjId mooseCreate(const string type, const string& path, unsigned int numdata = 1);
 
-ObjId mooseCopy(const ObjId& orig, ObjId newParent, string newName,
+//ObjId mooseCopy(const ObjId& orig, ObjId newParent, string newName,
+//                unsigned int n, bool toGlobal, bool copyExtMsgs);
+
+ObjId mooseCopy(const py::object& orig, ObjId newParent, string newName,
                 unsigned int n, bool toGlobal, bool copyExtMsgs);
 
 py::object mooseGetCwe();

@@ -148,11 +148,6 @@ bool mooseExists(const string& path)
     return Id(path) != Id() || path == "/" || path == "/root";
 }
 
-ObjId mooseElement(const ObjId& oid)
-{
-    return oid;
-}
-
 ObjId mooseElement(const string& path)
 {
     ObjId oid(path);
@@ -160,7 +155,7 @@ ObjId mooseElement(const string& path)
         cerr << "moose_element: " << path << " does not exist!" << endl;
         return ObjId(Id());
     }
-    return mooseElement(oid);
+    return oid;
 }
 
 ObjId loadModelInternal(const string& fname, const string& modelpath,
@@ -329,14 +324,25 @@ void mooseStart(double runtime, bool notify = false)
 // copyExtMsgs);
 //    return ObjId(id);
 //}
+//
+//ObjId mooseCopy(const ObjId& orig, ObjId newParent, string newName,
+//                unsigned int n = 1, bool toGlobal = false,
+//                bool copyExtMsgs = false)
+//{
+//    return ObjId(getShellPtr()->doCopy(orig, newParent, newName, n, toGlobal,
+//                                       copyExtMsgs));
+//}
 
-ObjId mooseCopy(const ObjId& orig, ObjId newParent, string newName,
+ObjId mooseCopy(const py::object& elem, ObjId newParent, string newName,
                 unsigned int n = 1, bool toGlobal = false,
                 bool copyExtMsgs = false)
 {
-    return ObjId(getShellPtr()->doCopy(orig.id, newParent, newName, n, toGlobal,
+    // py::print("Copyging..", elem);
+    Id orig = py::cast<Id>(elem);
+    return ObjId(getShellPtr()->doCopy(orig, newParent, newName, n, toGlobal,
                                        copyExtMsgs));
 }
+
 
 py::object getValueFinfo(const ObjId& oid, const Finfo* f)
 {
