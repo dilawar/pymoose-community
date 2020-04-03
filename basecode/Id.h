@@ -10,13 +10,12 @@
 #ifndef _ID_H
 #define _ID_H
 
-class ObjId;
-
 /**
  * This class manages id lookups for elements. Ids provide a uniform
  * handle for every object, independent of which node they are located on.
  */
-class Id {
+class Id
+{
 public:
     //////////////////////////////////////////////////////////////
     //	Id creation
@@ -29,24 +28,22 @@ public:
     /**
      * Creates an id with the specified Element number
      */
-    Id(unsigned int id);
+    Id( unsigned int id );
 
     /**
      * Returns an id found by traversing the specified path
      */
-    Id(const std::string& path);
+    Id( const std::string& path, const std::string& separator = "/" );
 
     /**
      * Downconverts an OjbId to an Id
      */
-    Id(const ObjId& oi);
+    Id( const ObjId& oi );
 
     /**
      * Destroys an Id. Doesn't do anything much.
      */
-    ~Id()
-    {
-    }
+    ~Id() {}
 
     /**
      * Reserves an id for assigning to an Element. Each time it is
@@ -54,6 +51,7 @@ public:
      * used yet.
      */
     static Id nextId();
+
 
     /**
      * Returns the number of Ids in use.
@@ -63,6 +61,7 @@ public:
     /**
      * The specified element is placed into current id.
      */
+    void bindIdToElement( Element* e );
 
     /**
      * Cleanly deletes the associated Element, and zeroes out
@@ -77,7 +76,8 @@ public:
     /**
      * Returns the full pathname of the object on the id.
      */
-    std::string path() const;
+    std::string path( const std::string& separator = "/" ) const;
+
 
     /**
      * Returns the Element pointed to by the id
@@ -98,7 +98,7 @@ public:
      */
     Element* element() const;
 
-    //		unsigned int index() const;
+//		unsigned int index() const;
 
     /**
      * Returns the Eref to the element plus index
@@ -109,42 +109,39 @@ public:
      * Returns an id whose value is string-converted from the
      * specified string.
      */
-    static Id str2Id(const std::string& s);
+    static Id str2Id( const std::string& s );
 
     /**
      * Returns a string holding the ascii value of the id_ .
      */
-    static std::string id2str(Id id);
+    static std::string id2str( Id id );
 
     unsigned int value() const;
-
-    void bindIdToElement(Element* e);
 
     //////////////////////////////////////////////////////////////
     //	Comparisons between ids
     //////////////////////////////////////////////////////////////
-    bool operator==(const Id& other) const
+    bool operator==( const Id& other ) const
     {
         // return id_ == other.id_ && index_ == other.index_;
         return id_ == other.id_;
     }
 
-    bool operator!=(const Id& other) const
+    bool operator!=( const Id& other ) const
     {
         // return id_ != other.id_ || index_ != other.index_;
         return id_ != other.id_;
     }
 
-    bool operator<(const Id& other) const
+    bool operator<( const Id& other ) const
     {
         //	return ( id_ < other.id_ ) ||
         //		( id_ == other.id_ && index_ < other.index_ );
-        return (id_ < other.id_);
+        return ( id_ < other.id_ );
     }
 
     // The follwoing two functions check if the Id is associated with
-    // an existing element. Needed for handling objects that have been
-    // destroyed.
+    // an existing element. Needed for handling objects that have been destroyed.
     static bool isValid(Id id)
     {
         return (id.id_ < elements().size()) && (elements()[id.id_] != 0);
@@ -165,30 +162,31 @@ public:
      * Used to clean out any specific Id.
      */
     void zeroOut() const;
-
     //////////////////////////////////////////////////////////////
 
-    friend ostream& operator<<(ostream& s, const Id& i);
-    friend istream& operator>>(istream& s, Id& i);
+    friend ostream& operator <<( ostream& s, const Id& i );
+    friend istream& operator >>( istream& s, Id& i );
 
 private:
     // static void setManager( Manager* m );
-    unsigned int id_;  // Unique identifier for Element*
-    //		unsigned int index_; // Index of array entry within element.
-    static vector<Element*>& elements();
+    unsigned int id_; // Unique identifier for Element*
+//		unsigned int index_; // Index of array entry within element.
+    static vector< Element* >& elements();
 };
 
-// User defined hash function.
+// User defined hash function. 
 // See https://en.cppreference.com/w/cpp/utility/hash for more details.
-namespace std {
-template <>
-struct hash<Id> {
-public:
-    size_t operator()(const Id& x) const
+namespace std 
+{
+    template <> 
+    struct hash<Id> 
     {
-        return std::hash<unsigned int>()(x.value());
-    }
-};
+        public :
+            size_t operator()(const Id &x ) const
+            {
+                return std::hash<unsigned int>()( x.value() );
+            }
+    };
 }
 
-#endif  // _ID_H
+#endif // _ID_H

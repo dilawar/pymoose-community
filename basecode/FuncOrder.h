@@ -11,8 +11,6 @@
  * Used in Element::msgDigest
  */
 
-class OpFunc;
-
 class FuncOrder
 {
 public:
