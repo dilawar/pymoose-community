@@ -29,6 +29,8 @@ class PyObjId(_cmoose._ObjId):
                 obj = _cmoose.create(self.__class__, x, ndata) 
         elif isinstance(x, _cmoose._ObjId):
             obj = x
+        elif isinstance(x, _cmoose._Id):
+            obj = _cmoose._ObjId(x)
         else:
             raise RuntimeError("%s is not supported" % x)
         super().__init__(obj.id)

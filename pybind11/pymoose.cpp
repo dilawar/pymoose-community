@@ -199,8 +199,6 @@ PYBIND11_MODULE(_cmoose, m)
         //  Readonly properties.
         //---------------------------------------------------------------------
         .def_property_readonly("vec", [](const ObjId& oid) { return MooseVec(oid); })
-        .def_property_readonly("value",
-                               [](const ObjId oid) { return oid.id.value(); })
         .def_property_readonly("path", &ObjId::path)
         .def_property_readonly(
              "parent", [](const ObjId &oid) { return Neutral::parent(oid); })
