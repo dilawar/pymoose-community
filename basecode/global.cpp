@@ -265,7 +265,7 @@ string normalizePath(const string& path)
     string s(path);
     static std::regex e0("/+");    // Remove multiple / by single /
     s = std::regex_replace(s, e0, "/");
-    static std::regex e1("(/\\./)+");    // Remove multiple / by single /
+    static std::regex e1("/(\\./)+");    // Remove multiple / by single /
     s = std::regex_replace(s, e1, "/");
     return s;
 }
