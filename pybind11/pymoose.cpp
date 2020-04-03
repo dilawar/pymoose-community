@@ -149,7 +149,7 @@ PYBIND11_MODULE(_cmoose, m)
     py::class_<__Finfo__>(m, "_Finfo", py::dynamic_attr())
         .def(py::init<const ObjId &, const Finfo *, const char *>())
         .def_property_readonly("type", &__Finfo__::type)    
-        .def_property_readonly("num", &__Finfo__::getNumField)   // Only for FieldElementFinfos
+        .def_property("num", &__Finfo__::getNumField, &__Finfo__::setNumField)   // Only for FieldElementFinfos
         .def("__call__", &__Finfo__::operator())
         .def("__call__", &__Finfo__::operator())
         .def("__getitem__", &__Finfo__::getItem)

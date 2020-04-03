@@ -58,8 +58,11 @@ public:
 
     // Get attribute (python api);
     unsigned int getNumField();
+    bool setNumField(unsigned int);
 
     static unsigned int getNumFieldStatic(const ObjId& oid, const Finfo* f);
+    static bool setNumFieldStatic(const ObjId& oid, const Finfo* f,
+                                  unsigned int i);
 
     // Exposed to python as __setitem__
     bool setItem(const py::object& key, const py::object& val);
