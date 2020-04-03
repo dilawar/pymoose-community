@@ -9,7 +9,6 @@ import os
 import pydoc
 import io
 import time
-import copy as _copy
 import moose
 import moose._cmoose as _cmoose
 
@@ -58,6 +57,8 @@ def about():
 
 def connect(src, srcfield, dest, destfield, msgtype="Single"):
     # FIXME: Move to pymoose.cpp
+    if isinstance(dest, str):
+        dest = _cmoose.objid(dest)
     return src.connect(srcfield, dest, destfield, msgtype)
 
 def element(path):
@@ -172,7 +173,7 @@ def showfield(el, field='*', showtype=False):
     if isinstance(el, str):
         if not _cmoose.exists(el):
             raise ValueError('no such element: %s' % el)
-        el = _cmoose.element(el)
+        el = element(el)
     result = []
     if field == '*':
         value_field_dict = _cmoose.getFieldDict(el.className, 'valueFinfo')
@@ -236,7 +237,7 @@ def listmsg(el):
         connections of `el`.
 
     """
-    obj = _cmoose.element(el)
+    obj = element(el)
     ret = []
     for msg in obj.msgIn:
         ret.append(msg)
@@ -258,7 +259,7 @@ def showmsg(el):
     None
 
     """
-    obj = _cmoose.element(el)
+    obj = element(el)
     print('INCOMING:')
     for msg in obj.msgIn:
         print(msg.e2.path, msg.destFieldsOnE2, '<---', msg.e1.path,
@@ -326,13 +327,13 @@ def getFieldDoc(tokens, indent=''):
 def _appendFinfoDocs(classname, docstring, indent):
     """Append list of finfos in class name to docstring"""
     try:
-        classElem = _cmoose.element('/classes/%s' % (classname))
+        classElem = element('/classes/%s' % (classname))
     except ValueError:
         raise NameError('class \'%s\' not defined.' % (classname))
     for ftype, rname in finfotypes:
         docstring.write(u'\n*%s*\n' % (rname.capitalize()))
         try:
-            finfo = _cmoose.element('%s/%s' % (classElem.path, ftype))
+            finfo = element('%s/%s' % (classElem.path, ftype))
             for field in finfo.vec:
                 docstring.write(u'%s%s: %s\n' %
                                 (indent, field.fieldName, field.type))
@@ -350,7 +351,7 @@ def _getMooseDoc(tokens, inherited=False):
         if not tokens:
             return ""
         try:
-            classElem = _cmoose.element('/classes/%s' % (tokens[0]))
+            classElem = element('/classes/%s' % (tokens[0]))
         except ValueError:
             raise NameError("Name '%s' not defined." % (tokens[0]))
 
