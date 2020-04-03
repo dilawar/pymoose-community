@@ -68,7 +68,23 @@ def test_inheritance():
     #  assert a.__class__ == aa.__class__, (a.__class__, aa.__class__)
     #  print(dir(moose.CubeMesh))
     assert isinstance(aa, moose.CubeMesh), (a.__class__, aa.__class__)
-    print(a, aa)
+
+def test_delete():
+    print("Testing create/delete")
+    a = moose.Neutral('/xxx')
+    b = moose.Neutral('/xxx/1')
+    c = moose.Neutral('/xxx/1/2')
+    d = moose.Neutral('/xxx/2')
+    e = moose.Neutral('/xxx/2/2')
+    f = moose.Neutral('/xxx/2/2/3')
+    x = moose.wildcardFind('/xxx/##')
+    assert len(x) == 5
+    moose.delete(e)
+    x = moose.wildcardFind('/xxx/##')
+    assert len(x) == 3
+    moose.delete(a)
+    x = moose.wildcardFind('/xxx/##')
+    assert len(x) == 0
 
 def main():
     test_children()
@@ -76,6 +92,7 @@ def main():
     test_other()
     test_vec()
     test_inheritance()
+    test_delete()
 
 if __name__ == '__main__':
     main()

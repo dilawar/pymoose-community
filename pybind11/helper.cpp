@@ -254,7 +254,8 @@ ObjId mooseCreate(const string type, const string& path, unsigned int numdata)
 {
     auto newpath = moose::normalizePath(path);
     auto p = moose::splitPath(newpath);
-    // cout << "Creating " << newpath << endl;
+    if( ! mooseExists(p.first)) 
+        throw runtime_error("Parent path " + p.first + " does not exists.");
     return getShellPtr()->doCreate2(type, ObjId(p.first), p.second, numdata);
 }
 

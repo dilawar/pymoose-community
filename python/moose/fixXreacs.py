@@ -69,7 +69,7 @@ def proxify(reac, reacc, direction, pool, poolc):
     # Preserve the rates which were set up for the x-compt reacn
     #_cmoose.showfield( reac )
     dupname = pool.name + '_xfer_' + moose.element(poolc).name
-    #print "#############", pool, dupname, poolc
+    print("#############", pool, dupname, poolc)
     if _cmoose.exists(reacc + '/' + dupname):
         duppool = moose.element(reacc + '/' + dupname)
     else:
@@ -196,7 +196,6 @@ def restoreXreacs(basepath):
         msgs = i.notes.split(msgSeparator)
         oldRates = getOldRates(msgs)
         #print( "Deleting {}".format( i.parent.path ) )
-        #print msgs
         _cmoose.delete(i.parent)
         for j in msgs[1:]:
             if len(j) > 0:

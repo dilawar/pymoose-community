@@ -158,7 +158,7 @@ int wildcardFind(const string& path, vector<ObjId>& ret, bool clear)
 vector<ObjId> wildcardFind2(const char* path)
 {
     vector<ObjId> ret;
-    simpleWildcardFind(path, ret);
+    wildcardFind(path, ret, true);
     return ret;
 }
 
