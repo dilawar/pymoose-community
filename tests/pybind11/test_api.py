@@ -55,6 +55,12 @@ def test_finfos():
     else:
         raise Exception("This should have failed");
 
+    a = moose.Pool('x13213')
+    a.concInit = 0.1
+    print(moose.getField(a, 'concInit'))
+    quit()
+
+
 def test_inheritance():
     print("Testing metaclass attributes")
     a = moose.CubeMesh('/dadada')

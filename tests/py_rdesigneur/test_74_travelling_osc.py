@@ -65,6 +65,7 @@ def test_travelling_osc():
     u = np.std(data, axis=0)
     # The expected values are computed with GSL solver. These values will vary
     # a little with BOOST solver. Give some leeway for these tests.
+    print(expected[0], m)
     assert np.allclose(expected[0], m, rtol=1e-2), "Error is %s " % (expected[0]-m)
     A, B = expected[1], u
     assert np.allclose(B, A, rtol=1e-1), "Error is %s, base=%s" % ((A-B), B)

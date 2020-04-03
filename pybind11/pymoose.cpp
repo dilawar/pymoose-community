@@ -88,7 +88,8 @@ bool setFieldGeneric(const ObjId &oid, const string &fieldName,
     if (fieldType == "ObjId")
         return Field<ObjId>::set(oid, fieldName, val.cast<ObjId>());
     if (fieldType == "vector<ObjId>")
-        return Field<vector<ObjId>>::set(oid, fieldName, val.cast<vector<ObjId>>());
+        return Field<vector<ObjId>>::set(oid, fieldName,
+                                         val.cast<vector<ObjId>>());
     if (fieldType == "Id") {
         // NB: Note that we cast to ObjId here and not to Id.
         return Field<Id>::set(oid.id, fieldName, val.cast<ObjId>());
@@ -150,14 +151,16 @@ PYBIND11_MODULE(_cmoose, m)
     // now.
     py::class_<__Finfo__>(m, "_Finfo", py::dynamic_attr())
         .def(py::init<const ObjId &, const Finfo *, const char *>())
-        .def_property_readonly("type", &__Finfo__::type)    
-        .def_property_readonly("vec", [](const __Finfo__& finfo){ return MooseVec(finfo.getObjId()); })
-        .def_property("num", &__Finfo__::getNumField, &__Finfo__::setNumField)   // Only for FieldElementFinfos
+        .def_property_readonly("type", &__Finfo__::type)
+        .def_property_readonly("vec", [](const __Finfo__ &finfo) {
+             return MooseVec(finfo.getObjId());
+         })
+        .def_property("num", &__Finfo__::getNumField,
+                      &__Finfo__::setNumField)  // Only for FieldElementFinfos
         .def("__call__", &__Finfo__::operator())
         .def("__call__", &__Finfo__::operator())
         .def("__getitem__", &__Finfo__::getItem)
-        .def("__setitem__", &__Finfo__::setItem)    
-        ;
+        .def("__setitem__", &__Finfo__::setItem);
 
     py::class_<Id>(m, "_Id")
         .def(py::init<>())
@@ -170,7 +173,7 @@ PYBIND11_MODULE(_cmoose, m)
         .def_property_readonly(
              "name", [](const Id &id) { return id.element()->getName(); })
         .def_property_readonly("id", &Id::value)
-        .def("__getitem__", [](const Id& id, size_t i){ return ObjId(id, i); })
+        .def("__getitem__", [](const Id &id, size_t i) { return ObjId(id, i); })
         .def_property_readonly("cinfo",
                                [](Id &id) { return id.element()->cinfo(); },
                                py::return_value_policy::reference)
@@ -184,8 +187,7 @@ PYBIND11_MODULE(_cmoose, m)
         *  Override __eq__ etc.
         */
         .def("__eq__", [](const Id &a, const Id &b) { return a == b; })
-        .def("__ne__", [](const Id &a, const Id &b) { return a != b; })
-    ;
+        .def("__ne__", [](const Id &a, const Id &b) { return a != b; });
 
     // I can use py::metaclass here to generate moose.Neutral etc types but
     // lets do it in moose.py.
@@ -198,7 +200,8 @@ PYBIND11_MODULE(_cmoose, m)
         //---------------------------------------------------------------------
         //  Readonly properties.
         //---------------------------------------------------------------------
-        .def_property_readonly("vec", [](const ObjId& oid) { return MooseVec(oid); })
+        .def_property_readonly("vec",
+                               [](const ObjId &oid) { return MooseVec(oid); })
         .def_property_readonly("path", &ObjId::path)
         .def_property_readonly(
              "parent", [](const ObjId &oid) { return Neutral::parent(oid); })
@@ -241,8 +244,10 @@ PYBIND11_MODULE(_cmoose, m)
         .def("connect", [](const ObjId &src, const string &srcfield,
                            const MooseVec &tgtvec, const string &tgtfield,
                            const string &type) {
-             auto msg = shellConnect(src, srcfield, tgtvec.obj(), tgtfield, type);
-             cout << src.path() << "--" << tgtvec.obj().path() << "msg:" << msg.path() << endl;
+             auto msg =
+                 shellConnect(src, srcfield, tgtvec.obj(), tgtfield, type);
+             cout << src.path() << "--" << tgtvec.obj().path()
+                  << "msg:" << msg.path() << endl;
              return msg;
          })
         //---------------------------------------------------------------------
@@ -289,17 +294,16 @@ PYBIND11_MODULE(_cmoose, m)
         .def("__setattr__", &MooseVec::setAttrOneToAll)
         .def("__getattr__", &MooseVec::getAttr)
         .def("__repr__", [](const MooseVec & v)->string {
-             return "<moose.vec class="+v.dtype() + " path=" + v.path() + 
-                    " id=" + std::to_string(v.id()) +
-                    " size=" + std::to_string(v.size()) + ">";
+             return "<moose.vec class=" + v.dtype() + " path=" + v.path() +
+                    " id=" + std::to_string(v.id()) + " size=" +
+                    std::to_string(v.size()) + ">";
          })
         // This is to provide old API support. Some scripts use .vec even on a
         // vec to get a vec. So silly or so Zen?!
         .def_property_readonly("vec", [](const MooseVec &vec) { return &vec; },
                                py::return_value_policy::reference_internal)
-        .def_property_readonly("type", [](const MooseVec &v) { return "moose.vec"; })
-        ;
-
+        .def_property_readonly("type",
+                               [](const MooseVec &v) { return "moose.vec"; });
 
     // Module functions.
     m.def("getShell",
@@ -325,6 +329,12 @@ PYBIND11_MODULE(_cmoose, m)
     m.def("setClock", &mooseSetClock);
     m.def("useClock", &mooseUseClock);
     m.def("loadModelInternal", &loadModelInternal);
+    m.def("getField",
+          [](const ObjId &oid, const string &fieldName, const string &ftype) {
+              // ftype is not needed anymore.
+              return getFieldGeneric(oid, fieldName);
+          },
+          "el"_a, "fieldname"_a, "ftype"_a = "");
     m.def("getFieldDict", &mooseGetFieldDict, "className"_a,
           "finfoType"_a = "");
     m.def("copy", &mooseCopy, "orig"_a, "newParent"_a, "newName"_a, "num"_a = 1,

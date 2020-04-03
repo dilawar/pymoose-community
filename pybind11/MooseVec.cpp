@@ -23,12 +23,10 @@ MooseVec::MooseVec(const string& path, unsigned int n = 0,
                    const string& dtype = "Neutral")
     : path_(path)
 {
-    if (! mooseExists(path)) {
+    if (!mooseExists(path))
         oid_ = mooseCreate(dtype, path, n);
-    } else {
+    else
         oid_ = ObjId(path);
-        cout << "Elements: " << oid_.element() -> numData() << endl;
-    }
 }
 
 MooseVec::MooseVec(const ObjId& oid) : oid_(oid), path_(oid.path())
@@ -42,7 +40,7 @@ const string MooseVec::dtype() const
 
 const size_t MooseVec::size() const
 {
-    if(oid_.element()->hasFields())
+    if (oid_.element()->hasFields())
         return Field<unsigned int>::get(oid_, "numField");
     return oid_.element()->numData();
 }
@@ -64,8 +62,7 @@ ObjId MooseVec::getItem(const size_t i) const
 
 void MooseVec::setAttrOneToAll(const string& name, const py::object& val)
 {
-    for(size_t i = 0; i < size(); i++)
-        setFieldGeneric(getItem(i), name, val);
+    for (size_t i = 0; i < size(); i++) setFieldGeneric(getItem(i), name, val);
 }
 
 void MooseVec::setAttrOneToOne(const string& name, const py::sequence& val)
@@ -85,7 +82,7 @@ vector<py::object> MooseVec::getAttr(const string& name)
 {
     vector<py::object> res(size());
     for (unsigned int i = 0; i < size(); i++)
-       res[i] = getFieldGeneric(getItem(i), name);
+        res[i] = getFieldGeneric(getItem(i), name);
     return res;
 }
 
@@ -113,7 +110,7 @@ const ObjId& MooseVec::obj() const
 vector<ObjId> MooseVec::objs() const
 {
     vector<ObjId> items;
-    for(size_t i = 0; i < size(); i++)
+    for (size_t i = 0; i < size(); i++)
         items.push_back(ObjId(oid_.path(), i, 0));
     return items;
 }
@@ -126,8 +123,7 @@ size_t MooseVec::id() const
 void MooseVec::generateIterator()
 {
     iterator_.resize(size());
-    for(size_t i = 0; i < size(); i++)
-        iterator_[i] = getItem(i);
+    for (size_t i = 0; i < size(); i++) iterator_[i] = getItem(i);
 }
 
 const vector<ObjId>& MooseVec::objref() const
