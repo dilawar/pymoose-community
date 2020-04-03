@@ -73,7 +73,7 @@ def test():
             mat.append(t.vector)
     mat = np.matrix(mat)
     exMean, exStd = 1.1619681711817156, 0.6944155817587526
-    assert np.isclose( np.mean(mat), exMean), mp.mean(mat)
+    assert np.isclose( np.mean(mat), exMean), (np.mean(mat), exMean)
     assert np.isclose( np.std(mat), exStd), mp.std(mat)
     assert( np.isclose(np.mean(mat, axis=0), exMean).all() )
     assert( np.isclose(np.std(mat, axis=0), exStd).all() )

@@ -38,8 +38,14 @@ public:
     /**
      * Creates a ObjId using specified Id and DataIndex
      */
-    ObjId( Id i, unsigned int d, unsigned int f = 0 )
+    ObjId( Id i, unsigned int d, unsigned int f)
         : id( i ), dataIndex( d ), fieldIndex( f )
+    {
+        ;
+    }
+
+    ObjId( Id i, unsigned int d)
+        : id( i ), dataIndex( d ), fieldIndex(0)
     {
         ;
     }

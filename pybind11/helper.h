@@ -30,6 +30,8 @@ Shell* getShellPtr();
 
 bool mooseExists(const string& path);
 
+void mooseMove(const Id& a, const ObjId& b);
+
 ObjId mooseElement(const string& path);
 
 ObjId loadModelInternal(const string& fname, const string& modelpath,

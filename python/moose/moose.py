@@ -73,19 +73,19 @@ def wildcardFind(pattern):
         paths.append(__Neutral__(p))
     return paths
 
-def element(e):
-    if not isinstance(e, str):
-        path = e.path
-    else:
-        path = e
+def element(path):
+    if not isinstance(path, str):
+        path = path.path
     obj = _cmoose.objid(path)
     return __Neutral__(obj)
 
 def copy(elem, newParent, newName="", n=1):
-    if not newName:
-        newName = elem.name
+    if isinstance(elem, str):
+        elem = _cmoose.objid(elem)
     if isinstance(newName, str):
         newParent = __Neutral__(newParent)
+    if not newName:
+        newName = elem.name
     return _cmoose.copy(elem.id, newParent, newName, n, False, False) 
 
 def getCwe():

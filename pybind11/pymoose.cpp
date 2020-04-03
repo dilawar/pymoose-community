@@ -87,6 +87,8 @@ bool setFieldGeneric(const ObjId &oid, const string &fieldName,
         return Field<char>::set(oid, fieldName, val.cast<char>());
     if (fieldType == "ObjId")
         return Field<ObjId>::set(oid, fieldName, val.cast<ObjId>());
+    if (fieldType == "vector<ObjId>")
+        return Field<vector<ObjId>>::set(oid, fieldName, val.cast<vector<ObjId>>());
     if (fieldType == "Id") {
         // NB: Note that we cast to ObjId here and not to Id.
         return Field<Id>::set(oid.id, fieldName, val.cast<ObjId>());
@@ -168,6 +170,7 @@ PYBIND11_MODULE(_cmoose, m)
         .def_property_readonly(
              "name", [](const Id &id) { return id.element()->getName(); })
         .def_property_readonly("id", &Id::value)
+        .def("__getitem__", [](const Id& id, size_t i){ return ObjId(id, i); })
         .def_property_readonly("cinfo",
                                [](Id &id) { return id.element()->cinfo(); },
                                py::return_value_policy::reference)
@@ -316,6 +319,7 @@ PYBIND11_MODULE(_cmoose, m)
     m.def("delete", overload_cast_<const ObjId &>()(&mooseDelete));
     m.def("delete", overload_cast_<const string &>()(&mooseDelete));
     m.def("create", &mooseCreate);
+    m.def("move", &mooseMove);
     m.def("reinit", &mooseReinit);
     m.def("start", &mooseStart, "runtime"_a, "notify"_a = false);
     m.def("objid", &mooseElement);

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """test_muparser.py:
 
-odified from https://elifesciences.org/articles/25827 
+Modified from https://elifesciences.org/articles/25827 
 Fig4.py
 """
-import sys
+
 import re
 import numpy as np
 import moose
@@ -83,7 +83,6 @@ def makeChemProto( name, Aexpr, Bexpr, params ):
     moose.connect( B, 'nOut', Bdot.x[1], 'input' )
     moose.connect( Z, 'nOut', Bdot.x[2], 'input' )
     moose.connect( Bdot, 'valueOut', B, 'increment' )
-
     CaStim.x.num = 3
     moose.connect( phase, 'nOut', CaStim.x[0], 'input' )
     moose.connect( vel, 'nOut', CaStim.x[1], 'input' )

@@ -38,6 +38,15 @@ public:
         return py::none();
     }
 
+    template <typename T>
+    static std::function<bool(T)> getSetGetFunc1(const ObjId& oid, const string& fname)
+    {
+        std::function<bool(T)> func = [oid, fname](const T& val) {
+            return SetGet1<T>::set(oid, fname, val);
+        };
+        return func;
+    }
+
     static py::cpp_function getDestFinfoSetterFunc(const ObjId& oid,
                                                    const Finfo* finfo);
 

@@ -166,6 +166,7 @@ py::cpp_function __Finfo__::getDestFinfoSetterFunc2(const ObjId& oid,
                         oid.path());
 }
 
+
 // Get DestFinfo1.
 py::cpp_function __Finfo__::getDestFinfoSetterFunc1(const ObjId& oid,
                                                     const Finfo* finfo,
@@ -178,6 +179,8 @@ py::cpp_function __Finfo__::getDestFinfoSetterFunc1(const ObjId& oid,
         };
         return func;
     }
+    if (ftype == "double") 
+        return getSetGetFunc1<double>(oid, fname);
     if (ftype == "vector<Id>") {
         std::function<bool(const vector<Id>&)> func = [oid, fname](
             const vector<Id>& ids) {
