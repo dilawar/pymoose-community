@@ -186,6 +186,7 @@ PYBIND11_MODULE(_cmoose, m)
         //---------------------------------------------------------------------
         //  Readonly properties.
         //---------------------------------------------------------------------
+        .def_property_readonly("vec", [](const ObjId& oid) { return MooseVec(oid); })
         .def_property_readonly("value",
                                [](const ObjId oid) { return oid.id.value(); })
         .def_property_readonly("path", &ObjId::path)
@@ -278,8 +279,11 @@ PYBIND11_MODULE(_cmoose, m)
         .def("connect", &MooseVec::connectToVec)
         .def("__len__", &MooseVec::len)
         .def("__iter__",
-             [](const MooseVec &v) {
-                 return py::make_iterator(v.objs().begin(), v.objs().end());
+             [](MooseVec &v) {
+                 // Generate an iterator which is a vector<ObjId>. And then
+                 // pass the reference to the objects.
+                 v.generateIterator();
+                 return py::make_iterator(v.objref().begin(), v.objref().end());
              },
              py::keep_alive<0, 1>())
         .def("__getitem__", &MooseVec::getItem)

@@ -39,16 +39,23 @@ public:
 
     vector<ObjId> objs() const;
 
+
     ObjId connectToSingle(const string& srcfield, const ObjId& tgt, const string& tgtfield, const string& msgtype);
 
     ObjId connectToVec(const string& srcfield, const MooseVec& tgt, const string& tgtfield, const string& msgtype);
 
     size_t id() const;
 
+    // Iterator interface. Create copy of ObjId 
+    void generateIterator();
+    const vector<ObjId>& objref() const;
+
 private:
     ObjId oid_;
     std::string path_;
-    std::vector<ObjId> objs_;
+
+    // Iterator interface.
+    vector<ObjId> iterator_;
 };
 
 #endif /* end of include guard: MOOSE_VEC_H */

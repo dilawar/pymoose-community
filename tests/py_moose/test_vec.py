@@ -10,7 +10,13 @@ def test_vec():
 
 def test_vec2():
     iaf = moose.vec('/iaf', n=10, dtype='IntFire')
+    v1 = iaf.vec
+    v2 = iaf.vec
+    assert v1 == v2
+    assert id(v1) == id(v2)
     iaf.Vm = range(10)
+    print(iaf.Vm)
+    print("All done")
     assert iaf[5].Vm == 5, iaf[5].Vm
     print(iaf.Vm)
 

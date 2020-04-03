@@ -82,9 +82,9 @@ void MooseVec::setAttrOneToOne(const string& name, const py::sequence& val)
 
 vector<py::object> MooseVec::getAttr(const string& name)
 {
-    vector<py::object> res(objs_.size());
+    vector<py::object> res(size());
     for (unsigned int i = 0; i < size(); i++)
-        res[i] = getFieldGeneric(getItem(i), name);
+       res[i] = getFieldGeneric(getItem(i), name);
     return res;
 }
 
@@ -120,4 +120,16 @@ vector<ObjId> MooseVec::objs() const
 size_t MooseVec::id() const
 {
     return oid_.id.value();
+}
+
+void MooseVec::generateIterator()
+{
+    iterator_.resize(size());
+    for(size_t i = 0; i < size(); i++)
+        iterator_[i] = getItem(i);
+}
+
+const vector<ObjId>& MooseVec::objref() const
+{
+    return iterator_;
 }
