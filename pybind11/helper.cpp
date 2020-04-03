@@ -235,9 +235,14 @@ bool mooseDelete(const string& path)
     return getShellPtr()->doDelete(ObjId(path));
 }
 
-void mooseMove(const Id& a, const ObjId& b)
+void mooseMoveId(const Id& a, const ObjId& b)
 {
     getShellPtr()->doMove(a, b);
+}
+
+void mooseMoveObjId(const ObjId& a, const ObjId& b)
+{
+    getShellPtr()->doMove(a.id, b);
 }
 
 ObjId mooseCreate(const string type, const string& path, unsigned int numdata)

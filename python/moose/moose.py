@@ -60,19 +60,6 @@ def connect(src, srcfield, dest, destfield, msgtype="Single"):
     # FIXME: Move to pymoose.cpp
     return src.connect(srcfield, dest, destfield, msgtype)
 
-def wildcardFind(pattern):
-    """wildcardFind.
-
-    Parameters
-    ----------
-    pattern :
-        pattern
-    """
-    paths = []
-    for p in _cmoose.wildcardFind(pattern):
-        paths.append(__Neutral__(p))
-    return paths
-
 def element(path):
     if not isinstance(path, str):
         path = path.path

@@ -319,7 +319,8 @@ PYBIND11_MODULE(_cmoose, m)
     m.def("delete", overload_cast_<const ObjId &>()(&mooseDelete));
     m.def("delete", overload_cast_<const string &>()(&mooseDelete));
     m.def("create", &mooseCreate);
-    m.def("move", &mooseMove);
+    m.def("move", &mooseMoveId);
+    m.def("move", &mooseMoveObjId);
     m.def("reinit", &mooseReinit);
     m.def("start", &mooseStart, "runtime"_a, "notify"_a = false);
     m.def("objid", &mooseElement);
