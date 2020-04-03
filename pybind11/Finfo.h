@@ -39,7 +39,8 @@ public:
     }
 
     template <typename T>
-    static std::function<bool(T)> getSetGetFunc1(const ObjId& oid, const string& fname)
+    static std::function<bool(T)> getSetGetFunc1(const ObjId& oid,
+                                                 const string& fname)
     {
         std::function<bool(T)> func = [oid, fname](const T& val) {
             return SetGet1<T>::set(oid, fname, val);

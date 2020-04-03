@@ -53,7 +53,7 @@ def test_xreac2():
     s2.path = '/model/compartment_1/##'
 
     print(ds1)
-    ds2.buildMeshJunctions( ds1.id )
+    ds2.buildMeshJunctions( ds1 )
 
     moose.reinit()
     moose.start( runtime )

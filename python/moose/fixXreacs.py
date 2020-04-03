@@ -119,7 +119,7 @@ def disconnectReactant(reacOrEnz, reactant, duppool):
     if _cmoose.exists(infoPath):
         info = moose.element(infoPath)
     else:
-        info = _cmoose.Annotator(infoPath)
+        info = moose.Annotator(infoPath)
 
     #_cmoose.le( reactant )
     notes = ""

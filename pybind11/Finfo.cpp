@@ -182,10 +182,10 @@ py::cpp_function __Finfo__::getDestFinfoSetterFunc1(const ObjId& oid,
 
     if (ftype == "double") 
         return getSetGetFunc1<double>(oid, fname);
-    if (ftype == "Id") 
-        return getSetGetFunc1<Id>(oid, fname);
     if (ftype == "ObjId") 
         return getSetGetFunc1<ObjId>(oid, fname);
+    if (ftype == "Id")
+       return getSetGetFunc1<Id>(oid, fname);
     if (ftype == "vector<Id>") 
         return getSetGetFunc1<vector<Id>>(oid, fname);
     if (ftype == "vector<ObjId>") 
