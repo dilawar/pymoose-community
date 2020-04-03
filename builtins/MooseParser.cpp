@@ -12,8 +12,9 @@
 #include <regex>
 #include <algorithm>
 
-#include "../basecode/global.h"
 #include "../basecode/header.h"
+
+#include "../randnum/randnum.h"
 
 #include "../utility/testing_macros.hpp"
 #include "../utility/print_function.hpp"

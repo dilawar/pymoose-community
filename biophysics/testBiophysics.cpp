@@ -9,7 +9,7 @@
 
 
 #include "../basecode/header.h"
-#include "../basecode/global.h"
+#include "../randnum/randnum.h"
 #include "../shell/Shell.h"
 #include "../utility/testing_macros.hpp"
 

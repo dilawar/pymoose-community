@@ -8,8 +8,11 @@
 **********************************************************************/
 
 #include <queue>
-#include "../basecode/global.h"
+#include <numeric>
+
+#include "../randnum/randnum.h"
 #include "../basecode/header.h"
+
 #include "Synapse.h"
 #include "SynEvent.h"
 #include "SynHandlerBase.h"
@@ -278,7 +281,7 @@ void SeqSynHandler::fixSynapseOrder()
 {
     unsigned int sz = synapseOrder_.size();
     vector< unsigned int > availableEntries( sz );
-    iota( availableEntries.begin(), availableEntries.end(), 0 );
+    std::iota( availableEntries.begin(), availableEntries.end(), 0 );
     for( unsigned int i = 0; i < sz; ++i )
     {
         if ( synapseOrder_[i] < sz )

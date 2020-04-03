@@ -194,7 +194,6 @@ std::pair<std::string, std::string> splitPath(const std::string& path)
     string p(path);
     if (p[0] != '/')
         p = '/' + path;
-
     auto i = p.find_last_of('/');
     auto parentPath = i > 0 ? p.substr(0, i) : "/";
     return std::make_pair(parentPath, p.substr(i + 1));

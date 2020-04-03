@@ -20,7 +20,12 @@ def test_path():
     print(expectedPath)
 
     for p in paths:
-        print(moose.Neutral(p))
+        print("[INFO ] Creating %s" % p)
+        if not moose.exists(p):
+            p = moose.Neutral(p)
+        else:
+            p = moose.element(p)
+        print(p)
 
     foundPath = []
     for p in moose.wildcardFind('/##'):

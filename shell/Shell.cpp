@@ -199,8 +199,7 @@ Id Shell::doCreate(string type, ObjId parent, string name, unsigned int numData,
         // future.
         if (Neutral::child(parent.eref(), name) != Id()) {
             stringstream ss;
-            ss << "Object with same path already present : " << parent.path()
-               << "/" << name;
+            ss << "Object with same path already present : " << parent.path() << "/" << name;
             moose::showError(ss.str());
             throw runtime_error(ss.str());
             return Id();

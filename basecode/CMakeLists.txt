@@ -26,3 +26,9 @@ add_library(basecode
 	doubleEq.cpp
 	testAsync.cpp
     )
+
+add_executable(test_globals testGlobals.cpp global.cpp)
+
+enable_testing()
+add_test(NAME cpp_test_globals  COMMAND $<TARGET_FILE:test_globals>)
+

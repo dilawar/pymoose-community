@@ -97,11 +97,14 @@ Id initShell(void)
 */
 ObjId createIdFromPath(string path, string type, unsigned int numData)
 {
+    path = moose::fix(path);
+
     Shell* pShell = reinterpret_cast<Shell*>(Id().eref().data());
     string parent_path;
     string name;
 
     string trimmed_path = moose::trim(path);
+
     unsigned int pos = trimmed_path.rfind("/");
     if (pos != string::npos) {
         name = trimmed_path.substr(pos + 1);
@@ -211,8 +214,9 @@ ObjId getElementFieldItem(const ObjId& objid, const string& fname,
 ObjId shellConnect(const ObjId& src, const string& srcField, const ObjId& tgt,
                    const string& tgtField, const string& msgType)
 {
-    // cout << "[" << msgType << "] Connect " << src.path() << "." << srcField << " --> " << tgt.path()
-        // << "." << tgtField << endl;
+    // cout << "[" << msgType << "] Connect " << src.path() << "." << srcField
+    // << " --> " << tgt.path()
+    // << "." << tgtField << endl;
     return getShellPtr()->doAddMsg(msgType, src, srcField, tgt, tgtField);
 }
 
@@ -247,7 +251,8 @@ void mooseMoveObjId(const ObjId& a, const ObjId& b)
 
 ObjId mooseCreate(const string type, const string& path, unsigned int numdata)
 {
-    auto p = moose::splitPath(path);
+    auto newpath = moose::normalizePath(path);
+    auto p = moose::splitPath(newpath);
     return getShellPtr()->doCreate2(type, ObjId(p.first), p.second, numdata);
 }
 

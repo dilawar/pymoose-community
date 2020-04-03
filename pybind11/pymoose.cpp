@@ -26,7 +26,7 @@ template <typename... Args>
 using overload_cast_ = pybind11::detail::overload_cast_impl<Args...>;
 
 #include "../basecode/header.h"
-#include "../basecode/global.h"
+#include "../randnum/randnum.h"
 #include "../basecode/Cinfo.h"
 #include "../builtins/Variable.h"
 #include "../shell/Neutral.h"
@@ -261,18 +261,6 @@ PYBIND11_MODULE(_cmoose, m)
         // .def("findFinfo", &Cinfo::findFinfoWrapper)
         .def("baseCinfo", &Cinfo::baseCinfo, py::return_value_policy::reference)
         .def("isA", &Cinfo::isA);
-
-    // Shell
-    py::class_<Shell>(m, "_Shell")
-        .def(py::init<>())
-        .def("create", &Shell::doCreate2)
-        .def("addMsg", &Shell::doAddMsg)
-        .def("getCwe", &Shell::getCwe)
-        .def("setClock", &Shell::doSetClock)
-        .def("reinit", &Shell::doReinit)
-        .def("delete", &Shell::doDelete)
-        .def("start", &Shell::doStart, "runtime"_a, "notify"_a = false)
-        .def("quit", &Shell::doQuit);
 
     // Vec
     py::class_<MooseVec>(m, "vec", py::dynamic_attr())
