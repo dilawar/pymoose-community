@@ -64,6 +64,8 @@ def wildcardFind(pattern):
 
 def connect(src, srcfield, dest, destfield, msgtype="Single"):
     # FIXME: Move to pymoose.cpp
+    if isinstance(src, str):
+        src = _cmoose.objid(src)
     if isinstance(dest, str):
         dest = _cmoose.objid(dest)
     return src.connect(srcfield, dest, destfield, msgtype)
