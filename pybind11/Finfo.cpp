@@ -179,29 +179,19 @@ py::cpp_function __Finfo__::getDestFinfoSetterFunc1(const ObjId& oid,
         };
         return func;
     }
+
     if (ftype == "double") 
         return getSetGetFunc1<double>(oid, fname);
-    if (ftype == "vector<Id>") {
-        std::function<bool(const vector<Id>&)> func = [oid, fname](
-            const vector<Id>& ids) {
-            return SetGet1<vector<Id>>::set(oid, fname, ids);
-        };
-        return func;
-    }
-    if (ftype == "vector<ObjId>") {
-        std::function<bool(const vector<ObjId>&)> func = [oid, fname](
-            const vector<ObjId>& ids) {
-            return SetGet1<vector<ObjId>>::set(oid, fname, ids);
-        };
-        return func;
-    }
-    if (ftype == "vector<double>") {
-        std::function<bool(const vector<double>&)> func = [oid, fname](
-            const vector<double>& data) {
-            return SetGet1<vector<double>>::set(oid, fname, data);
-        };
-        return func;
-    }
+    if (ftype == "Id") 
+        return getSetGetFunc1<Id>(oid, fname);
+    if (ftype == "ObjId") 
+        return getSetGetFunc1<ObjId>(oid, fname);
+    if (ftype == "vector<Id>") 
+        return getSetGetFunc1<vector<Id>>(oid, fname);
+    if (ftype == "vector<ObjId>") 
+        return getSetGetFunc1<vector<ObjId>>(oid, fname);
+    if (ftype == "vector<double>") 
+        return getSetGetFunc1<vector<double>>(oid, fname);
 
     throw runtime_error("getFieldPropertyDestFinfo1::NotImplemented " + fname +
                         " for rttType " + ftype + " for oid " + oid.path());
@@ -243,6 +233,8 @@ py::object __Finfo__::getFieldValue(const ObjId& oid, const Finfo* f)
         r = py::cast(getField<vector<Id>>(oid, fname));
     else if (rttType == "vector<ObjId>")
         r = py::cast(getField<vector<ObjId>>(oid, fname));
+    else if (rttType == "vector<string>")
+        r = py::cast(getField<vector<string>>(oid, fname));
     else {
         MOOSE_WARN("Warning: getValueFinfo:: Unsupported type '" + rttType +
                    "'");

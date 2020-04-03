@@ -69,7 +69,7 @@ def proxify(reac, reacc, direction, pool, poolc):
     # Preserve the rates which were set up for the x-compt reacn
     #_cmoose.showfield( reac )
     dupname = pool.name + '_xfer_' + moose.element(poolc).name
-    print("#############", pool, dupname, poolc)
+    #  print("#############", pool, dupname, poolc)
     if _cmoose.exists(reacc + '/' + dupname):
         duppool = moose.element(reacc + '/' + dupname)
     else:
@@ -125,7 +125,9 @@ def disconnectReactant(reacOrEnz, reactant, duppool):
     notes = ""
     #_cmoose.showmsg( reacOrEnz )
     for i in outMsgs:
-        #print "killing msg from {} to {}\nfor {} and {}".format( reacOrEnz.path, reactant.path, i.srcFieldsOnE1[0], i.srcFieldsOnE2[0] )
+        #print("killing msg from {} to {}\nfor {} and {}".format(
+        #    reacOrEnz.path, reactant.path, i.srcFieldsOnE1,
+        #    i.srcFieldsOnE2))
         if i.e1 == reactant:
             msgStr = identifyMsg(i.e2, i.e2.srcFieldsOnE2[0], i.e1)
             if len(msgStr) > 0:
@@ -136,9 +138,8 @@ def disconnectReactant(reacOrEnz, reactant, duppool):
             if len(msgStr) > 0:
                 notes += msgStr
                 _cmoose.delete(i)
-    #print "MSGS to rebuild:", notes
+    #  print("MSGS to rebuild:", notes)
     info.notes += notes
-
 
 def fixXreacs(basepath):
     xr = findXreacs(basepath, 'Reac')

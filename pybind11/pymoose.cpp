@@ -179,7 +179,13 @@ PYBIND11_MODULE(_cmoose, m)
         .def("__repr__", [](const Id &id) {
              return "<Id id=" + std::to_string(id.value()) + " path=" +
                     id.path() + " class=" + id.element()->cinfo()->name() + ">";
-         });
+         })
+        /**
+        *  Override __eq__ etc.
+        */
+        .def("__eq__", [](const Id &a, const Id &b) { return a == b; })
+        .def("__ne__", [](const Id &a, const Id &b) { return a != b; })
+    ;
 
     // I can use py::metaclass here to generate moose.Neutral etc types but
     // lets do it in moose.py.

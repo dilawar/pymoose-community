@@ -20,10 +20,10 @@ def test_xreac2():
     compt1.x1 += kin.x1
     compt1.x0 += kin.x1
 
-    for r in moose.wildcardFind('/##[TYPE=Reac]'):
-        print("---", r)
-        print(r.neighbors['sub'])
-        print(r.neighbors['prd'])
+    # for r in moose.wildcardFind('/##[TYPE=Reac]'):
+    #     print("---", r)
+    #     print(r.neighbors['sub'])
+    #     print(r.neighbors['prd'])
 
     fixXreacs.fixXreacs( '/model' )
     #fixXreacs.restoreXreacs( '/model' )
@@ -52,7 +52,8 @@ def test_xreac2():
     s2.dsolve = ds2
     s2.path = '/model/compartment_1/##'
 
-    ds2.buildMeshJunctions( ds1 )
+    print(ds1)
+    ds2.buildMeshJunctions( ds1.id )
 
     moose.reinit()
     moose.start( runtime )
