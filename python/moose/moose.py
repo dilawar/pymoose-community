@@ -86,7 +86,7 @@ def copy(elem, newParent, newName="", n=1):
         newName = elem.name
     if isinstance(newName, str):
         newParent = __Neutral__(newParent)
-    return _cmoose.copy(elem, newParent, newName, n, False, False) 
+    return _cmoose.copy(elem.id, newParent, newName, n, False, False) 
 
 def getCwe():
     return __Neutral__(_cmoose.getCwe())

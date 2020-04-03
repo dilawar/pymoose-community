@@ -154,6 +154,7 @@ PYBIND11_MODULE(_cmoose, m)
         .def("__call__", &__Finfo__::operator())
         .def("__getitem__", &__Finfo__::getItem)
         .def("__setitem__", &__Finfo__::setItem)    
+        .def("vec", [](const __Finfo__& finfo){ return MooseVec(finfo.getObjId()); })
         ;
 
     py::class_<Id>(m, "_Id")
@@ -299,8 +300,9 @@ PYBIND11_MODULE(_cmoose, m)
         // vec to get a vec. So silly or so Zen?!
         .def_property_readonly("vec", [](const MooseVec &vec) { return &vec; },
                                py::return_value_policy::reference_internal)
-        .def_property_readonly("type",
-                               [](const MooseVec &v) { return "moose.vec"; });
+        .def_property_readonly("type", [](const MooseVec &v) { return "moose.vec"; })
+        ;
+
 
     // Module functions.
     m.def("getShell",

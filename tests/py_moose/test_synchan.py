@@ -28,8 +28,9 @@ def make_synapse(path):
     ## syn.bufferTime = 1.0 # ms
     synH.synapse.delay = 1.0
     synH.synapse.weight = 1.0
-    synH.connect('activationOut', syn, 'activation')
-    print(('Synapses:', len(synH.synapse), 'w=', synH.synapse[0].weight ))
+    #  synH.connect('activationOut', syn, 'activation')
+    moose.connect(synH, 'activationOut', syn, 'activation')
+    print(('Synapses:', synH.synapse.num, 'w=', synH.synapse[0].weight ))
 
     spikegen = moose.SpikeGen('%s/spike' % (syn.parent.path))
     spikegen.edgeTriggered = False # Make it fire continuously when input is high
@@ -41,6 +42,7 @@ def make_synapse(path):
     spike_stim.level[0] = 1.0
     spike_stim.width[0] = 100.0
     moose.connect(spike_stim, 'output', spikegen, 'Vm')
+    print(synH.synapse, synH.synapse.vec)
     m = moose.connect(spikegen, 'spikeOut', synH.synapse.vec, 'addSpike', 'Sparse')
     m.setRandomConnectivity(1.0, 1)
     m = moose.connect(spikegen, 'spikeOut', synH.synapse[0], 'addSpike') # this causes segfault

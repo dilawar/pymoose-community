@@ -292,13 +292,25 @@ bool __Finfo__::setNumField(unsigned int num)
 
 unsigned int __Finfo__::getNumFieldStatic(const ObjId& oid, const Finfo* f)
 {
-    auto o = ObjId(oid.path() + '/' + f->name());
+    auto o = __Finfo__::getObjIdStatic(oid, f);
     return Field<unsigned int>::get(o, "numField");
 }
 
 bool __Finfo__::setNumFieldStatic(const ObjId& oid, const Finfo* f,
                                   unsigned int num)
 {
-    auto o = ObjId(oid.path() + '/' + f->name());
+    auto o = __Finfo__::getObjIdStatic(oid, f);
     return Field<unsigned int>::set(o, "numField", num);
+}
+
+// Static function.
+ObjId __Finfo__::getObjIdStatic(const ObjId& oid, const Finfo* f)
+{
+    return ObjId(oid.path() + '/' + f->name());
+}
+
+// Non static function.
+ObjId __Finfo__::getObjId() const
+{
+    return ObjId(oid_.path() + '/' + f_->name());
 }

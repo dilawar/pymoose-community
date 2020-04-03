@@ -81,6 +81,10 @@ public:
 
     string type() const;
 
+    // Finfo Id.
+    static ObjId getObjIdStatic(const ObjId& oid, const Finfo* f);
+    ObjId getObjId() const;
+
 public:
     ObjId oid_;
     const Finfo* f_;
