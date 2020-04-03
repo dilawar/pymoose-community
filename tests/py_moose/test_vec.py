@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import moose
+import numpy as np
 
 def test_vec():
     foo = moose.Pool('/foo1', 500)
@@ -20,7 +21,16 @@ def test_vec2():
     assert iaf[5].Vm == 5, iaf[5].Vm
     print(iaf.Vm)
 
+def test_vec3():
+    print("test vec3")
+    foo = moose.Pool('/foo1', 500)
+    foo.vec.concInit = 0.123
+    print(foo.vec)
+    assert foo.concInit == 0.123, foo.concInit
+    assert np.allclose(foo.vec.concInit, [0.123]*500)
+
 
 if __name__ == '__main__':
     test_vec()
     test_vec2()
+    test_vec3()

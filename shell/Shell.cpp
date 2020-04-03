@@ -284,7 +284,6 @@ ObjId Shell::doAddMsg(const string& msgType, ObjId src, const string& srcField,
     }
 
     const Msg* m = innerAddMsg(msgType, src, srcField, dest, destField, 0);
-    cout << "Msg " << m << " mid:" << m->mid() << endl;
 
     SetGet6<string, ObjId, string, ObjId, string, unsigned int>::set(
         ObjId(),   // Apply command to Shell
@@ -387,9 +386,7 @@ void Shell::doMove(Id orig, ObjId newParent)
         warning(ss.str());
         return;
     }
-
     SetGet2<Id, ObjId>::set(ObjId(), "move", orig, newParent);
-    // innerMove( orig, newParent );
 }
 
 bool extractIndex(const string& s, unsigned int& index)

@@ -64,7 +64,8 @@ ObjId MooseVec::getItem(const size_t i) const
 
 void MooseVec::setAttrOneToAll(const string& name, const py::object& val)
 {
-    setFieldGeneric(oid_, name, val);
+    for(size_t i = 0; i < size(); i++)
+        setFieldGeneric(getItem(i), name, val);
 }
 
 void MooseVec::setAttrOneToOne(const string& name, const py::sequence& val)

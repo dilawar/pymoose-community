@@ -29,23 +29,24 @@ __Finfo__::__Finfo__(const ObjId& oid, const Finfo* f, const string& finfoType)
 {
     // cout << " __Finfo__ type " << finfoType << endl;
 
-    if(finfoType == "DestFinfo")
+    if (finfoType == "DestFinfo")
         func_ = [oid, f, this](const py::object& key) {
             return getLookupValueFinfoItem(oid, f, key);
         };
-    else if(finfoType == "FieldElementFinfo")
+    else if (finfoType == "FieldElementFinfo")
         func_ = [oid, f, this](const py::object& index) {
             // this is essential of make this function static.
             return getElementFinfoItem(oid, f, py::cast<unsigned int>(index));
         };
-    else if(finfoType == "LookupValueFinfo")
+    else if (finfoType == "LookupValueFinfo")
         func_ = [oid, f, this](const py::object& key) {
             // Assigning is essential or make these functions static.
             return this->getLookupValueFinfoItem(oid, f, key);
         };
     else
         func_ = [this](const py::object& key) {
-            throw runtime_error("Not supported for Finfo type '"+finfoType_+"'");
+            throw runtime_error("Not supported for Finfo type '" + finfoType_ +
+                                "'");
             return py::none();
         };
 }
@@ -84,7 +85,8 @@ bool __Finfo__::setLookupValueFinfoItem(const ObjId& oid, const py::object& key,
     return true;
 }
 
-py::object __Finfo__::getLookupValueFinfoItem(const ObjId& oid, const Finfo* f, const py::object& key)
+py::object __Finfo__::getLookupValueFinfoItem(const ObjId& oid, const Finfo* f,
+                                              const py::object& key)
 {
     auto rttType = f->rttiType();
     auto fname = f->name();
@@ -130,8 +132,7 @@ py::cpp_function __Finfo__::getDestFinfoSetterFunc(const ObjId& oid,
     vector<string> types;
     moose::tokenize(rttType, ",", types);
 
-    if (types.size() == 1)
-        return getDestFinfoSetterFunc1(oid, finfo, types[0]);
+    if (types.size() == 1) return getDestFinfoSetterFunc1(oid, finfo, types[0]);
 
     assert(types.size() == 2);
     return getDestFinfoSetterFunc2(oid, finfo, types[0], types[1]);
@@ -147,8 +148,15 @@ py::cpp_function __Finfo__::getDestFinfoSetterFunc2(const ObjId& oid,
     if (ftype1 == "double") {
         if (ftype2 == "unsigned int") {
             std::function<bool(double, unsigned int)> func = [oid, fname](
-                const double a, const long b) {
+                const double a, const unsigned int b) {
                 return SetGet2<double, unsigned int>::set(oid, fname, a, b);
+            };
+            return func;
+        }
+        if (ftype2 == "long") {
+            std::function<bool(double, long)> func = [oid, fname](
+                const double a, const long b) {
+                return SetGet2<double, long>::set(oid, fname, a, b);
             };
             return func;
         }
@@ -251,10 +259,11 @@ py::list __Finfo__::getElementFinfo(const ObjId& objid, const Finfo* f)
     return py::cast(res);
 }
 
-py::object __Finfo__::getElementFinfoItem(const ObjId& oid, const Finfo* f, unsigned int index)
+py::object __Finfo__::getElementFinfoItem(const ObjId& oid, const Finfo* f,
+                                          unsigned int index)
 {
     // cout << "Fetching at index " << index << " " << getNumField() << endl ;
-    if(index >= getNumFieldStatic(oid, f)) {
+    if (index >= getNumFieldStatic(oid, f)) {
         throw py::index_error("Index " + to_string(index) + " out of range.");
     }
     auto o = ObjId(oid.path() + '/' + f->name());
@@ -268,18 +277,17 @@ string __Finfo__::type() const
 
 // py::object __Finfo__::getAttr(const string& key)
 // {
-    // std::cout << "Accessing " << key << std::endl;
+// std::cout << "Accessing " << key << std::endl;
 // }
 
-unsigned int __Finfo__::getNumField() 
+unsigned int __Finfo__::getNumField()
 {
     return __Finfo__::getNumFieldStatic(oid_, f_);
 }
 
-unsigned int __Finfo__::getNumFieldStatic(const ObjId& oid, const Finfo* f) 
+unsigned int __Finfo__::getNumFieldStatic(const ObjId& oid, const Finfo* f)
 {
     auto o = ObjId(oid.path() + '/' + f->name());
     return Field<unsigned int>::get(o, "numField");
 }
-
 
