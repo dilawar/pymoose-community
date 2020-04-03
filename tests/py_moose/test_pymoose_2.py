@@ -38,20 +38,8 @@ def library1():
     moose.showfield('/a')
     moose.showfields('/a')
 
-def library_doc():
-    print("=== Testing documents.")
-    d1 = moose.getFieldDoc(('Pool', 'conc'))
-    d2 = moose.getFieldDoc(('Ksolve', 'numThreads'))
-    assert d1
-    assert d1 != d2
-    moose.doc(('Ksolve.numThreads'))
-    moose.doc('Ksolve')
-
-
 def test_library():
     library1()
-    library_doc()
-    
 
 def main():
     test_library()

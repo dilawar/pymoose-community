@@ -8,7 +8,7 @@ import warnings
 import os
 import pydoc
 import io
-import time
+import contextlib
 import moose
 import moose._cmoose as _cmoose
 
@@ -310,7 +310,8 @@ def getFieldDoc(tokens, indent=''):
         try:
             classelement = element('/classes/' + classname)
             for finfo in classelement.children:
-                # FIXME me
+                # FIXME
+                print(finfo, 'x')
                 return
                 for fieldelement in finfo:
                     baseinfo = ''
@@ -356,7 +357,7 @@ def _getMooseDoc(tokens, inherited=False):
     """
     indent = '  '
     docstring = io.StringIO()
-    with closing(docstring):
+    with contextlib.closing(docstring):
         if not tokens:
             return ""
         try:
