@@ -151,12 +151,12 @@ PYBIND11_MODULE(_cmoose, m)
     py::class_<__Finfo__>(m, "_Finfo", py::dynamic_attr())
         .def(py::init<const ObjId &, const Finfo *, const char *>())
         .def_property_readonly("type", &__Finfo__::type)    
+        .def_property_readonly("vec", [](const __Finfo__& finfo){ return MooseVec(finfo.getObjId()); })
         .def_property("num", &__Finfo__::getNumField, &__Finfo__::setNumField)   // Only for FieldElementFinfos
         .def("__call__", &__Finfo__::operator())
         .def("__call__", &__Finfo__::operator())
         .def("__getitem__", &__Finfo__::getItem)
         .def("__setitem__", &__Finfo__::setItem)    
-        .def("vec", [](const __Finfo__& finfo){ return MooseVec(finfo.getObjId()); })
         ;
 
     py::class_<Id>(m, "_Id")
