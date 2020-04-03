@@ -181,6 +181,8 @@ PYBIND11_MODULE(_cmoose, m)
                     id.path() + " class=" + id.element()->cinfo()->name() + ">";
          });
 
+    // I can use py::metaclass here to generate moose.Neutral etc types but
+    // lets do it in moose.py.
     py::class_<ObjId>(m, "_ObjId")
         .def(py::init<>())
         .def(py::init<Id>())
@@ -303,6 +305,8 @@ PYBIND11_MODULE(_cmoose, m)
     m.def("seed", [](unsigned int a) { moose::mtseed(a); });
     m.def("rand", [](double a, double b) { return moose::mtrand(a, b); },
           "a"_a = 0, "b"_a = 1);
+    // This is a wrapper to Shell::wildcardFind. The python interface must
+    // override it.
     m.def("wildcardFind", &wildcardFind2);
     m.def("delete", overload_cast_<const ObjId &>()(&mooseDelete));
     m.def("delete", overload_cast_<const string &>()(&mooseDelete));

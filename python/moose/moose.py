@@ -15,30 +15,34 @@ import moose._cmoose as _cmoose
 import logging
 logger_ = logging.getLogger('moose')
 
-t0 = time.time()
+# Keep mapping for cinfo name's to MOOSE classes. E.g. {'Neutral': Neutral}
+# etc.
+__class_types__ = {}
 
-class __Neutral__(_cmoose._ObjId):
-
-    __metaclass__ = None
-
+class PyObjId(_cmoose._ObjId):
+    __class__ = None
     def __init__(self, x, ndata=1):
         if isinstance(x, str):
             if _cmoose.exists(x):
                 obj = _cmoose.objid(x)
             else:
-                obj = _cmoose.create(self.__metaclass__, x, ndata) 
+                obj = _cmoose.create(self.__class__, x, ndata) 
         elif isinstance(x, _cmoose._ObjId):
             obj = x
         else:
             raise RuntimeError("%s is not supported" % x)
-        super(__Neutral__, self).__init__(obj.id)
+        super().__init__(obj.id)
+
+    @classmethod
+    def toMooseClass(cls, obj):
+        global __class_types__
+        return __class_types__[obj.type](obj)
 
 for p in _cmoose.wildcardFind('/##[TYPE=Cinfo]'):
-    # create a class.
-    cls = type(p.name, (__Neutral__,), dict(__metaclass__=p.name))
+    # create a class declaration and add to moose.
+    cls = type(p.name, (PyObjId,), {"__class__" : p.name})
     setattr(moose, cls.__name__, cls)
-
-logger_.info("Declarting classes took %f sec" % (time.time() - t0))
+    __class_types__[cls.__name__] = cls
 
 #############################################################################
 #                             API                                           #
@@ -54,6 +58,8 @@ def about():
                 version=_cmoose.VERSION,
                 docs='https://moose.readthedocs.io/en/latest/')
 
+def wildcardFind(pattern):
+    return [PyObjId.toMooseClass(x) for x in _cmoose.wildcardFind(pattern)]
 
 def connect(src, srcfield, dest, destfield, msgtype="Single"):
     # FIXME: Move to pymoose.cpp
@@ -65,19 +71,19 @@ def element(path):
     if not isinstance(path, str):
         path = path.path
     obj = _cmoose.objid(path)
-    return __Neutral__(obj)
+    return PyObjId(obj)
 
 def copy(elem, newParent, newName="", n=1):
     if isinstance(elem, str):
         elem = _cmoose.objid(elem)
     if isinstance(newName, str):
-        newParent = __Neutral__(newParent)
+        newParent = PyObjId(newParent)
     if not newName:
         newName = elem.name
     return _cmoose.copy(elem.id, newParent, newName, n, False, False) 
 
 def getCwe():
-    return __Neutral__(_cmoose.getCwe())
+    return PyObjId(_cmoose.getCwe())
 
 def pwe():
     """Print present working element. Convenience function for GENESIS

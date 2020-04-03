@@ -146,8 +146,9 @@ Shell* getShellPtr(void)
     return reinterpret_cast<Shell*>(Id().eref().data());
 }
 
-bool mooseExists(const string& path)
+bool mooseExists(const string& p)
 {
+    string path = moose::normalizePath(p);
     return Id(path) != Id() || path == "/" || path == "/root";
 }
 
@@ -253,6 +254,7 @@ ObjId mooseCreate(const string type, const string& path, unsigned int numdata)
 {
     auto newpath = moose::normalizePath(path);
     auto p = moose::splitPath(newpath);
+    // cout << "Creating " << newpath << endl;
     return getShellPtr()->doCreate2(type, ObjId(p.first), p.second, numdata);
 }
 

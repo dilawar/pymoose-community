@@ -20,8 +20,9 @@ def test_path():
     print(expectedPath)
 
     for p in paths:
-        print("[INFO ] Creating %s" % p)
+        print("-- Creating %s" % p)
         if not moose.exists(p):
+            print('exists')
             p = moose.Neutral(p)
         else:
             p = moose.element(p)

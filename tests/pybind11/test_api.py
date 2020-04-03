@@ -55,11 +55,27 @@ def test_finfos():
     else:
         raise Exception("This should have failed");
 
+def test_inheritance():
+    print("Testing metaclass attributes")
+    a = moose.CubeMesh('/dadada')
+    isinstance(a, moose.CubeMesh)
+    assert isinstance(a, moose.CubeMesh)
+    aa = moose.wildcardFind('/##[TYPE=CubeMesh]')[0]
+    assert a == aa
+    print("a.__class__", a.__class__, type(a.__class__))
+    print(a.__class__, type(a.__class__))
+    print(aa.__class__, type(aa.__class__))
+    #  assert a.__class__ == aa.__class__, (a.__class__, aa.__class__)
+    #  print(dir(moose.CubeMesh))
+    assert isinstance(aa, moose.CubeMesh), (a.__class__, aa.__class__)
+    print(a, aa)
+
 def main():
     test_children()
     test_finfos()
     test_other()
     test_vec()
+    test_inheritance()
 
 if __name__ == '__main__':
     main()
