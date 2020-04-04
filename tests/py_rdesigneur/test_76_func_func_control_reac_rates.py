@@ -93,6 +93,7 @@ def test_reac_rates():
     A = []
     for t in moose.wildcardFind('/##[TYPE=Table2]'):
         A.append(t.vector)
+
     m = np.mean(A, axis=1)
     u = np.std(A, axis=1)
 
