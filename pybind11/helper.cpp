@@ -26,9 +26,9 @@
 // https://pybind11.readthedocs.io/en/stable/advanced/cast/stl.html#binding-stl-containers
 // #include "../external/pybind11/include/pybind11/stl_bind.h"
 
-#include "../randnum/randnum.h"
+#include "../basecode/header.h"
+#include "../basecode/global.h"
 
-#include "../basecode/Cinfo.h"
 #include "../builtins/Variable.h"
 #include "../mpi/PostMaster.h"
 #include "../scheduling/Clock.h"
@@ -36,10 +36,11 @@
 #include "../shell/Shell.h"
 #include "../shell/Wildcard.h"
 #include "../utility/strutil.h"
+#include "../randnum/randnum.h"
 
-#include "Finfo.h"
 #include "helper.h"
 #include "pymoose.h"
+#include "Finfo.h"
 
 using namespace std;
 
@@ -101,7 +102,7 @@ ObjId createIdFromPath(string path, string type, unsigned int numData)
 
     string trimmed_path = moose::trim(path);
 
-    unsigned int pos = trimmed_path.rfind("/");
+    auto pos = trimmed_path.rfind("/");
     if (pos != string::npos) {
         name = trimmed_path.substr(pos + 1);
         parent_path = trimmed_path.substr(0, pos);
@@ -345,6 +346,7 @@ ObjId mooseCopy(const py::object& elem, ObjId newParent, string newName,
                                        copyExtMsgs));
 }
 
+#if 0
 /**
   Return a vector of field names of specified finfo type. This is from Subha.
 */
@@ -395,3 +397,5 @@ vector<string> mooseGetFieldNames(string className, string finfoType)
     }
     return ret;
 }
+
+#endif

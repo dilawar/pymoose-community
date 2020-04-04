@@ -62,8 +62,7 @@ void mooseSetClock(const unsigned int clockId, double dt);
 
 void mooseUseClock(size_t tick, const string& path, const string& field);
 
-vector<string> mooseGetFieldNames(const string& className,
-                                  const string& finfoType);
+// vector<string> mooseGetFieldNames(const string& className, const string& finfoType);
 
 map<string, string> mooseGetFieldDict(const string& className,
                                       const string& finfoType);
