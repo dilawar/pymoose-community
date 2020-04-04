@@ -137,7 +137,13 @@ py::object getFieldGeneric(const ObjId &oid, const string &fieldName)
     return pybind11::none();
 }
 
-PYBIND11_MODULE(_cmoose, m)
+
+/* --------------------------------------------------------------------------*/
+/**
+ * @Synopsis  MOOSE extension module _moose.so.
+ */
+/* ----------------------------------------------------------------------------*/
+PYBIND11_MODULE(_moose, m)
 {
     m.doc() = R"moosedoc(moose module.)moosedoc";
 

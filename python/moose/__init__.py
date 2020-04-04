@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from moose._cmoose import *
-
 # Bring everything from moose.py to global namespace.
 # IMP: It will overwrite any c++ function with the same name.  We can override
 # some C++ here.
@@ -15,4 +13,4 @@ from moose.model_utils import *
 # Import moose test.
 from moose.moose_test import test
 
-__version__ = _cmoose.__version__
+__version__ = _moose.__version__

@@ -55,6 +55,7 @@ if( CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR AND NOT MSVC_IDE )
 endif()
 
 ################################ CMAKE OPTIONS ##################################
+option(WITH_PYBIND11        "Use pybind11 to generate python binding (beta)" ON)
 option(WITH_NSDF            "Enable NSDF support. Requires hdf5" OFF )
 
 option(DEBUG                "Build with debug support" OFF)
@@ -303,14 +304,16 @@ if( WITH_BOOST )
     target_link_libraries( moose.bin ${Boost_LIBRARIES} )
 endif( WITH_BOOST )
 
-########################### PYTHON BINDING  USING PYBIND11 ####################
-
-# This target is built by pymoose/CMakeLists.txt file.
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/pybind11)
-add_subdirectory(pybind11)
-
 ######################### BUILD PYMOOSE ########################################
-# add_subdirectory(pymoose)
+
+if(WITH_PYBIND11)
+    message(STATUS "Using pybind11 to generate python extension module")
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/pybind11)
+    add_subdirectory(pybind11)
+else()
+    add_subdirectory(pymoose)
+endif()
+
 
 # always override debian default installation directory. It will be installed in
 # site-packages instead of dist-packages.
