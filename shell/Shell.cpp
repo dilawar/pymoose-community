@@ -242,7 +242,7 @@ ObjId Shell::doCreate2(string type, ObjId parent, string name, unsigned int numD
         throw runtime_error(message);
         return Id();
     }
-    return ObjId(doCreate(type, parent, name, numData, MooseBlockBalance, 1));
+    return doCreate(type, parent, name, numData, MooseBlockBalance, 1);
 }
 
 bool Shell::doDelete(ObjId oid)

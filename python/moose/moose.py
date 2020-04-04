@@ -21,11 +21,12 @@ __class_types__ = {}
 
 class PyObjId(_cmoose._ObjId):
     __class__ = None
-    def __init__(self, x, ndata=1):
+    def __init__(self, x, ndata=1, **kwargs):
         if isinstance(x, str):
             if _cmoose.exists(x):
                 obj = _cmoose.objid(x)
             else:
+                #  print('Creating %s %s with numdata=%d' % (self.__class__, x, ndata))
                 obj = _cmoose.create(self.__class__, x, ndata) 
         elif isinstance(x, _cmoose._ObjId):
             obj = x
@@ -33,6 +34,9 @@ class PyObjId(_cmoose._ObjId):
             obj = _cmoose._ObjId(x)
         else:
             raise RuntimeError("%s is not supported" % x)
+
+        for k, v in kwargs.items():
+            obj.setField(k, v)
         super().__init__(obj.id)
 
     @classmethod
@@ -40,11 +44,13 @@ class PyObjId(_cmoose._ObjId):
         global __class_types__
         return __class_types__[obj.type](obj)
 
+# Create MOOSE classes from available Cinfos.
 for p in _cmoose.wildcardFind('/##[TYPE=Cinfo]'):
     # create a class declaration and add to moose.
     cls = type(p.name, (PyObjId,), {"__class__" : p.name})
     setattr(moose, cls.__name__, cls)
     __class_types__[cls.__name__] = cls
+
 
 #############################################################################
 #                             API                                           #
@@ -62,7 +68,9 @@ def about():
                 docs='https://moose.readthedocs.io/en/latest/')
 
 def wildcardFind(pattern):
-    return [PyObjId.toMooseClass(x) for x in _cmoose.wildcardFind(pattern)]
+    #  for x in _cmoose.wildcardFind(pattern):
+    #  return [PyObjId.toMooseClass(x) for x in _cmoose.wildcardFind(pattern)]
+    return _cmoose.wildcardFind(pattern)
 
 def connect(src, srcfield, dest, destfield, msgtype="Single"):
     # FIXME: Move to pymoose.cpp

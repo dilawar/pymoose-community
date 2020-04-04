@@ -211,6 +211,7 @@ PYBIND11_MODULE(_cmoose, m)
              return oid.element()->cinfo()->name();
          })
         .def_property_readonly("id", [](ObjId &oid) { return oid.id; })
+        .def_property_readonly("dataIndex", [](ObjId &oid) { return oid.eref().dataIndex(); })
         .def_property_readonly(
              "type", [](ObjId &oid) { return oid.element()->cinfo()->name(); })
 
@@ -218,6 +219,7 @@ PYBIND11_MODULE(_cmoose, m)
         // Set/Get
         //--------------------------------------------------------------------
         .def("getField", &getFieldGeneric)
+        .def("setField", &setFieldGeneric)
         //.def("getNumpy", &getFieldNumpy<double>)
 
         /**

@@ -58,8 +58,6 @@ def test_finfos():
     a = moose.Pool('x13213')
     a.concInit = 0.1
     print(moose.getField(a, 'concInit'))
-    quit()
-
 
 def test_inheritance():
     print("Testing metaclass attributes")
@@ -92,6 +90,14 @@ def test_delete():
     x = moose.wildcardFind('/xxx/##')
     assert len(x) == 0
 
+def test_wrapper():
+    a = moose.Pool('/dadadada', concInit = 9.99, nInit=10)
+    assert a.nInit == 10
+    f = moose.Function('/fun1', expr='x0+x1+A+B')
+    assert f.expr == 'x0+x1+A+B'
+    print(f.numVars)
+    assert f.numVars == 4
+
 def main():
     test_children()
     test_finfos()
@@ -99,6 +105,7 @@ def main():
     test_vec()
     test_inheritance()
     test_delete()
+    test_wrapper()
 
 if __name__ == '__main__':
     main()
