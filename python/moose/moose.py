@@ -26,10 +26,9 @@ class PyObjId(_cmoose._ObjId):
             if _cmoose.exists(x):
                 obj = _cmoose.objid(x)
             else:
-                #  print('Creating %s %s with numdata=%d' % (self.__class__, x, ndata))
                 obj = _cmoose.create(self.__class__, x, ndata) 
         elif isinstance(x, _cmoose._ObjId):
-            obj = x
+            obj = x #_cmoose._ObjId(x.id, x.dataIndex)
         elif isinstance(x, _cmoose._Id):
             obj = _cmoose._ObjId(x)
         else:
@@ -37,12 +36,14 @@ class PyObjId(_cmoose._ObjId):
 
         for k, v in kwargs.items():
             obj.setField(k, v)
-        super().__init__(obj.id)
+
+        super().__init__(obj.id, obj.dataIndex)
 
     @classmethod
     def toMooseClass(cls, obj):
         global __class_types__
-        return __class_types__[obj.type](obj)
+        mc = __class_types__[obj.type](obj)
+        return mc
 
 # Create MOOSE classes from available Cinfos.
 for p in _cmoose.wildcardFind('/##[TYPE=Cinfo]'):
@@ -69,8 +70,8 @@ def about():
 
 def wildcardFind(pattern):
     #  for x in _cmoose.wildcardFind(pattern):
-    #  return [PyObjId.toMooseClass(x) for x in _cmoose.wildcardFind(pattern)]
-    return _cmoose.wildcardFind(pattern)
+    return [PyObjId.toMooseClass(x) for x in _cmoose.wildcardFind(pattern)]
+    # return _cmoose.wildcardFind(pattern)
 
 def connect(src, srcfield, dest, destfield, msgtype="Single"):
     # FIXME: Move to pymoose.cpp

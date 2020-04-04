@@ -60,18 +60,28 @@ def test_finfos():
     print(moose.getField(a, 'concInit'))
 
 def test_inheritance():
+    print("\n\n======================")
     print("Testing metaclass attributes")
+
+    ta = moose.Table2('/tab2', 10)
+
+    tb = moose.wildcardFind('/##[TYPE=Table2]')
+    assert len(tb) == len(ta.vec)
+    for i, (t1, t2) in enumerate(zip(tb, ta.vec)):
+        print(i, t1, t2)
+        assert t1 == t2, (t1, t2)
+        assert t1.id == t2.id
+        assert t1.dataIndex == t2.dataIndex
+        assert t1.path == t2.path
+
     a = moose.CubeMesh('/dadada')
     isinstance(a, moose.CubeMesh)
     assert isinstance(a, moose.CubeMesh)
     aa = moose.wildcardFind('/##[TYPE=CubeMesh]')[0]
     assert a == aa
-    print("a.__class__", a.__class__, type(a.__class__))
-    print(a.__class__, type(a.__class__))
-    print(aa.__class__, type(aa.__class__))
-    #  assert a.__class__ == aa.__class__, (a.__class__, aa.__class__)
-    #  print(dir(moose.CubeMesh))
+    # This must be true for isinstance to work.
     assert isinstance(aa, moose.CubeMesh), (a.__class__, aa.__class__)
+
 
 def test_delete():
     print("Testing create/delete")
@@ -103,9 +113,9 @@ def main():
     test_finfos()
     test_other()
     test_vec()
-    test_inheritance()
     test_delete()
     test_wrapper()
+    test_inheritance()
 
 if __name__ == '__main__':
     main()
