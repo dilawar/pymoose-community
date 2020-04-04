@@ -149,7 +149,7 @@ bool mooseExists(const string& p)
     return Id(path) != Id() || path == "/" || path == "/root";
 }
 
-ObjId mooseElement(const string& path)
+ObjId mooseObjId(const string& path)
 {
     ObjId oid(path);
     if (oid.bad()) {

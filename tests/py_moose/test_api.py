@@ -12,63 +12,51 @@ def test_children():
     moose.Neutral('/a/b/c2')
     assert len(a1.children) == 1
     assert len(a2.children) == 2
-    print(type(a1), a1)
     moose.le(a1)
     moose.le(a2)
     moose.le(a3)
+    moose.setCwe(a3)
     s = moose.getCwe()
-    print(type(s), s)
+    assert s == a3, (s, a3)
 
 def test_other():
-    print(f"[INFO ] Testing other...")
     a1 = moose.Pool('/ada')
-    print('classname', a1.className)
+    assert a1.className == 'Pool', a1.className
     finfo = moose.getFieldDict(a1.className)
     s = moose.Streamer('/asdada')
     p = moose.PulseGen('pg1')
-    print(p.delay, p.delay.type)
-    print(p.delay[0])
+    assert p.delay[0] == 0.0
     p.delay[1] = 0.99
     assert p.delay[1] == 0.99, p.delay[1]
 
 def test_vec():
     a = moose.Pool('/p111', 100)
     v = moose.vec(a)
-    print(v, 'vvv')
     assert len(v) == 100, len(v)
-    print(v)
-    print(v.vec)
     assert v == v.vec
     assert v[0] == v.vec[0], (v[0], v.vec[0])
 
 def test_finfos():
     s = moose.SimpleSynHandler('synh')
-    print('synapse.num', s.synapse.num)
-    print('synapse.num', s.synapse.num)
-    print('synapse.num', s.synapse.num)
-    print('synapse: ', s.synapse)
     try:
         print(s.synapse[0])
     except Exception as e:
-        print(e, "Must get an exception here")
-        pass
+        assert True
+        #  print(e, "Great. We must got an exception here")
     else:
         raise Exception("This should have failed");
-
     a = moose.Pool('x13213')
     a.concInit = 0.1
-    print(moose.getField(a, 'concInit'))
+    assert 0.1 == moose.getField(a, 'concInit')
+
+    # Now get some finfos.
+    a = moose.element('/classes/Compartment')
 
 def test_inheritance():
-    print("\n\n======================")
-    print("Testing metaclass attributes")
-
     ta = moose.Table2('/tab2', 10)
-
     tb = moose.wildcardFind('/##[TYPE=Table2]')
     assert len(tb) == len(ta.vec)
     for i, (t1, t2) in enumerate(zip(tb, ta.vec)):
-        print(i, t1, t2)
         assert t1 == t2, (t1, t2)
         assert t1.id == t2.id
         assert t1.dataIndex == t2.dataIndex
@@ -82,9 +70,7 @@ def test_inheritance():
     # This must be true for isinstance to work.
     assert isinstance(aa, moose.CubeMesh), (a.__class__, aa.__class__)
 
-
 def test_delete():
-    print("Testing create/delete")
     a = moose.Neutral('/xxx')
     b = moose.Neutral('/xxx/1')
     c = moose.Neutral('/xxx/1/2')
@@ -105,8 +91,7 @@ def test_wrapper():
     assert a.nInit == 10
     f = moose.Function('/fun1', expr='x0+x1+A+B')
     assert f.expr == 'x0+x1+A+B'
-    print(f.numVars)
-    assert f.numVars == 4
+    assert f.numVars == 4, f.numVars
 
 def main():
     test_children()

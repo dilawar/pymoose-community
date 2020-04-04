@@ -33,7 +33,9 @@ bool mooseExists(const string& path);
 void mooseMoveId(const Id& a, const ObjId& b);
 void mooseMoveObjId(const ObjId& a, const ObjId& b);
 
-ObjId mooseElement(const string& path);
+ObjId mooseObjId(const string& path);
+
+py::object mooseElement(const py::object& elem);
 
 ObjId loadModelInternal(const string& fname, const string& modelpath,
                         const string& solverclass);

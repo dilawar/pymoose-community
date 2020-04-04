@@ -82,11 +82,11 @@ def connect(src, srcfield, dest, destfield, msgtype="Single"):
         dest = _moose.objid(dest)
     return src.connect(srcfield, dest, destfield, msgtype)
 
-def element(path):
-    if not isinstance(path, str):
-        path = path.path
-    obj = _moose.objid(path)
-    return PyObjId(obj)
+# def element(path):
+#     if not isinstance(path, str):
+#         path = path.path
+#     obj = _moose.objid(path)
+#     return PyObjId(obj)
 
 def copy(elem, newParent, newName="", n=1):
     if isinstance(elem, str):
@@ -133,7 +133,7 @@ def le(el=None):
     elif isinstance(el, str):
         if not _moose.exists(el):
             raise ValueError('no such element')
-        el = element(el)
+        el = _moose.element(el)
     #elif isinstance(el, _moose.vec):
     #    el = el[0]
     print("Elements under '%s'" % el)
@@ -194,7 +194,7 @@ def showfield(el, field='*', showtype=False):
     if isinstance(el, str):
         if not _moose.exists(el):
             raise ValueError('no such element: %s' % el)
-        el = element(el)
+        el = _moose.element(el)
     result = []
     if field == '*':
         value_field_dict = _moose.getFieldDict(el.className, 'valueFinfo')
@@ -258,7 +258,7 @@ def listmsg(el):
         connections of `el`.
 
     """
-    obj = element(el)
+    obj = _moose.objid(el)
     ret = []
     for msg in obj.msgIn:
         ret.append(msg)
@@ -280,7 +280,7 @@ def showmsg(el):
     None
 
     """
-    obj = element(el)
+    obj = _moose.objid(el)
     print('INCOMING:')
     for msg in obj.msgIn:
         print(msg.e2.path, msg.destFieldsOnE2, '<---', msg.e1.path,
@@ -320,7 +320,7 @@ def getFieldDoc(tokens, indent=''):
     fieldname = tokens[1]
     while True:
         try:
-            classelement = element('/classes/' + classname)
+            classelement = _moose.element('/classes/' + classname)
             for finfo in classelement.children:
                 # FIXME
                 print(finfo, 'x')
@@ -349,14 +349,14 @@ def getFieldDoc(tokens, indent=''):
 def _appendFinfoDocs(classname, docstring, indent):
     """Append list of finfos in class name to docstring"""
     try:
-        classElem = element('/classes/%s' % (classname))
+        classElem = _moose.element('/classes/%s' % (classname))
     except ValueError:
         raise NameError('class \'%s\' not defined.' % (classname))
 
     for ftype, rname in finfotypes:
         print(ftype, rname)
         docstring.write(u'\n*%s*\n' % (rname.capitalize()))
-        finfo = element('%s/%s' % (classElem.path, ftype))
+        finfo = _moose.element('%s/%s' % (classElem.path, ftype))
         print('111', finfo)
         for field in finfo.vec:
             docstring.write(u'%s%s: %s\n' %
@@ -370,7 +370,7 @@ def _getMooseDoc(tokens, inherited=False):
     indent = '  '
     docstring = io.StringIO()
     with contextlib.closing(docstring):
-        classElem = element('/classes/%s' % tokens[0])
+        classElem = _moose.element('/classes/%s' % tokens[0])
         if len(tokens) > 1:
             print('getting field', tokens[1])
             docstring.write(getFieldDoc(tokens))

@@ -137,6 +137,20 @@ py::object getFieldGeneric(const ObjId &oid, const string &fieldName)
     return pybind11::none();
 }
 
+template<typename T>
+py::object mooseElementItem(const T& elem)
+{
+
+}
+
+py::object mooseElement(const py::object& elem)
+{
+    if(py::isinstance<py::str>(elem)) {
+        string e = elem.cast<string>();
+        return py::cast(mooseObjId(e));
+    }
+    return elem;
+}
 
 /* --------------------------------------------------------------------------*/
 /**
@@ -335,6 +349,7 @@ PYBIND11_MODULE(_moose, m)
     m.def("objid", &mooseElement);
     m.def("exists", &mooseExists);
     m.def("getCwe", &mooseGetCwe);
+    m.def("element", &mooseElement);
     m.def("setCwe", &mooseSetCwe);
     m.def("setClock", &mooseSetClock);
     m.def("useClock", &mooseUseClock);

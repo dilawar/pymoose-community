@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, division, absolute_import
 
-# Wrappers around _cmoose.so classes. These wrappers accomplish the following.
+# Wrappers around _moose.so classes. These wrappers accomplish the following.
 #
 # 1. When `moose.MooseClass(path)` is called and pass already exsists,
 #    `moose.element(path)` is returned.
@@ -14,7 +14,7 @@ __maintainer__ = "Dilawar Singh"
 __email__ = "dilawars@ncbs.res.in"
 
 import difflib
-import moose._cmoose as _cmoose
+import moose._moose as _moose
 import pprint
 
 import logging
@@ -62,7 +62,7 @@ def _prettifyExpr(expr):
 
 
 # Generic wrapper around moose.Neutral
-class Neutral(_cmoose.Neutral):
+class Neutral(_moose.Neutral):
     def __init__(self, path, n=1, g=0, dtype="Neutral", **kwargs):
         super(Neutral, self).__init__(path, n, g, dtype)
         for k in kwargs:
@@ -75,9 +75,9 @@ class Neutral(_cmoose.Neutral):
         path = pathOrObject
         if not isinstance(pathOrObject, str):
             path = pathOrObject.path
-        if _cmoose.exists(path):
+        if _moose.exists(path):
             #  logger_.info("%s already exists. Returning old element."%path)
-            return _cmoose.element(path)
+            return _moose.element(path)
         return super(Neutral, cls).__new__(cls, pathOrObject, n, g, dtype)
 
     def connect(self, srcField, dest, destField):
@@ -108,10 +108,10 @@ class Neutral(_cmoose.Neutral):
             raise NameError("Failed to connect")
 
         # Everything looks fine. Connect now.
-        _cmoose.connect(self, srcField, dest, destField)
+        _moose.connect(self, srcField, dest, destField)
 
 
-class Function(_cmoose.Function, Neutral):
+class Function(_moose.Function, Neutral):
     """Overides moose._Function
 
     Provides a convinient way to set expression and connect variables.
@@ -182,9 +182,9 @@ def addAttrib(mooseObject, **kwargs):
             logger_.warn("Attribute {0} not found on {1}".format(k, v))
 
 
-class StimulusTable(_cmoose.StimulusTable, Neutral):
+class StimulusTable(_moose.StimulusTable, Neutral):
     """StimulusTable
-    Wrapper around _cmoose.StimulusTable
+    Wrapper around _moose.StimulusTable
     """
 
     def __init__(self, path, n=1, g=0, dtype="StimulusTable", **kwargs):
@@ -192,9 +192,9 @@ class StimulusTable(_cmoose.StimulusTable, Neutral):
         addAttrib(self, **kwargs)
 
 
-class IntFire(_cmoose.IntFire, Neutral):
+class IntFire(_moose.IntFire, Neutral):
     """IntFire
-    Wrapper around _cmoose.IntFire
+    Wrapper around _moose.IntFire
     """
 
     def __init__(self, path, n=1, g=0, dtype="IntFire", **kwargs):
@@ -202,9 +202,9 @@ class IntFire(_cmoose.IntFire, Neutral):
         addAttrib(self, **kwargs)
 
 
-class PulseGen(_cmoose.PulseGen, Neutral):
+class PulseGen(_moose.PulseGen, Neutral):
     """PulseGen
-    Wrapper around _cmoose.PulseGen
+    Wrapper around _moose.PulseGen
     """
 
     def __init__(self, path, n=1, g=0, dtype="PulseGen", **kwargs):

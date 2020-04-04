@@ -4,7 +4,7 @@ try:
     from future_builtins import zip
 except ImportError:
     pass
-from . import moose as _cmoose
+from . import moose as _moose
 
 _tick = 8
 _base = '/_utils'
@@ -12,33 +12,33 @@ _path = _base + '/y{0}'
 _counter = 0
 _plots = []
 
-_cmoose.Neutral( _base )
+_moose.Neutral( _base )
 
 _defaultFields = {
-	_cmoose.Compartment : 'Vm',
-	_cmoose.ZombieCompartment : 'Vm',
+	_moose.Compartment : 'Vm',
+	_moose.ZombieCompartment : 'Vm',
 
-	_cmoose.HHChannel: 'Gk',
-	_cmoose.ZombieHHChannel: 'Gk',
+	_moose.HHChannel: 'Gk',
+	_moose.ZombieHHChannel: 'Gk',
 
-	_cmoose.HHChannel2D: 'Gk',
+	_moose.HHChannel2D: 'Gk',
 
-	_cmoose.SynChan: 'Gk',
+	_moose.SynChan: 'Gk',
 
-	_cmoose.CaConc: 'Ca',
-	_cmoose.ZombieCaConc: 'Ca',
+	_moose.CaConc: 'Ca',
+	_moose.ZombieCaConc: 'Ca',
 
-	_cmoose.Pool: 'conc',
-	_cmoose.ZombiePool: 'conc',
-	_cmoose.ZPool: 'conc',
+	_moose.Pool: 'conc',
+	_moose.ZombiePool: 'conc',
+	_moose.ZPool: 'conc',
 
-	_cmoose.BufPool: 'conc',
-	_cmoose.ZombieBufPool: 'conc',
-	_cmoose.ZBufPool: 'conc',
+	_moose.BufPool: 'conc',
+	_moose.ZombieBufPool: 'conc',
+	_moose.ZBufPool: 'conc',
 
-	_cmoose.FuncPool: 'conc',
-	_cmoose.ZombieFuncPool: 'conc',
-	_cmoose.ZFuncPool: 'conc',
+	_moose.FuncPool: 'conc',
+	_moose.ZombieFuncPool: 'conc',
+	_moose.ZFuncPool: 'conc',
 }
 
 def _defaultField( obj ):
@@ -59,7 +59,7 @@ def setDt( dt ):
 	Returns
 	-------
 	Nothing.'''
-	_cmoose.setClock( _tick, dt )
+	_moose.setClock( _tick, dt )
 
 class SetupError( Exception ):
 	pass
@@ -77,15 +77,15 @@ def _time( npoints = None ):
 			)
 
 	begin   = 0.0
-	end     = _cmoose.Clock( '/clock' ).currentTime
+	end     = _moose.Clock( '/clock' ).currentTime
 
 	return numpy.linspace( begin, end, npoints )
 
-class _Plot( _cmoose.Table ):
+class _Plot( _moose.Table ):
 	def __init__( self, path, obj, field, label ):
-		_cmoose.Table.__init__( self, path )
+		_moose.Table.__init__( self, path )
 
-		self._table = _cmoose.Table( path )
+		self._table = _moose.Table( path )
 
 		self.obj    = obj
 		self.field  = field
@@ -116,7 +116,7 @@ def record( obj, field = None, label = None ):
 		return [ record( o, field, label ) for o in obj ]
 
 	if isinstance( obj, str ):
-		obj = _cmoose.element( obj )
+		obj = _moose.element( obj )
 
 	if field is None:
 		field = _defaultField( obj )
@@ -127,8 +127,8 @@ def record( obj, field = None, label = None ):
 	p = _Plot( path, obj, field, label )
 	_plots.append( p )
 
-	_cmoose.connect( p, "requestData", obj, 'get_' + field )
-	_cmoose.useClock( _tick, path, "process" )
+	_moose.connect( p, "requestData", obj, 'get_' + field )
+	_moose.useClock( _tick, path, "process" )
 
 	return p
 

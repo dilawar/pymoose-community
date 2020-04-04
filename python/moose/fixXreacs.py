@@ -13,7 +13,7 @@ from __future__ import print_function, division, absolute_import
 # This program carries no warranty whatsoever.
 ####################################################################
 
-import moose._cmoose as _cmoose
+import moose._moose as _moose
 import moose
 
 msgSeparator = "_xMsg_"
@@ -35,7 +35,7 @@ def checkEqual(lst):
 
 
 def findXreacs(basepath, reacType):
-    reacs = _cmoose.wildcardFind(basepath + '/##[ISA=' + reacType + 'Base]')
+    reacs = _moose.wildcardFind(basepath + '/##[ISA=' + reacType + 'Base]')
     ret = []
     for i in reacs:
         reacc = findCompt(i)
@@ -53,12 +53,12 @@ def findXreacs(basepath, reacType):
 
 
 def removeEnzFromPool(pool):
-    kids = _cmoose.wildcardFind(pool.path + "/#")
+    kids = _moose.wildcardFind(pool.path + "/#")
     for i in kids:
         if i.isA['EnzBase']:
-            _cmoose.delete(i)
+            _moose.delete(i)
         elif i.isA['Function']:
-            _cmoose.delete(i)
+            _moose.delete(i)
 
 
 # If a pool is not in the same compt as reac, make a proxy in the reac
@@ -67,20 +67,20 @@ def proxify(reac, reacc, direction, pool, poolc):
     reacc_elm = moose.element(reacc)
     reac_elm = moose.element(reac)
     # Preserve the rates which were set up for the x-compt reacn
-    #_cmoose.showfield( reac )
+    #_moose.showfield( reac )
     dupname = pool.name + '_xfer_' + moose.element(poolc).name
     #  print("#############", pool, dupname, poolc)
-    if _cmoose.exists(reacc + '/' + dupname):
+    if _moose.exists(reacc + '/' + dupname):
         duppool = moose.element(reacc + '/' + dupname)
     else:
         # This also deals with cases where the duppool is buffered.
-        duppool = _cmoose.copy(pool, reacc_elm, dupname)
+        duppool = _moose.copy(pool, reacc_elm, dupname)
     duppool.diffConst = 0  # diffusion only happens in original compt
     removeEnzFromPool(duppool)
     disconnectReactant(reac, pool, duppool)
     moose.connect(reac, direction, duppool, 'reac')
-    #_cmoose.showfield( reac )
-    #_cmoose.showmsg( reac )
+    #_moose.showfield( reac )
+    #_moose.showmsg( reac )
 
 
 def enzProxify(enz, enzc, direction, pool, poolc):
@@ -116,14 +116,14 @@ def identifyMsg(src, srcOut, dest):
 def disconnectReactant(reacOrEnz, reactant, duppool):
     outMsgs = reacOrEnz.msgOut
     infoPath = duppool.path + '/info'
-    if _cmoose.exists(infoPath):
+    if _moose.exists(infoPath):
         info = moose.element(infoPath)
     else:
         info = moose.Annotator(infoPath)
 
-    #_cmoose.le( reactant )
+    #_moose.le( reactant )
     notes = ""
-    #_cmoose.showmsg( reacOrEnz )
+    #_moose.showmsg( reacOrEnz )
     for i in outMsgs:
         #print("killing msg from {} to {}\nfor {} and {}".format(
         #    reacOrEnz.path, reactant.path, i.srcFieldsOnE1,
@@ -132,12 +132,12 @@ def disconnectReactant(reacOrEnz, reactant, duppool):
             msgStr = identifyMsg(i.e2, i.e2.srcFieldsOnE2[0], i.e1)
             if len(msgStr) > 0:
                 notes += msgStr
-                _cmoose.delete(i)
+                _moose.delete(i)
         elif i.e2 == reactant:
             msgStr = identifyMsg(i.e1[0], i.srcFieldsOnE1[0], i.e2[0])
             if len(msgStr) > 0:
                 notes += msgStr
-                _cmoose.delete(i)
+                _moose.delete(i)
     #  print("MSGS to rebuild:", notes)
     info.notes += notes
 
@@ -192,21 +192,21 @@ def restoreOldRates(oldRates, msgs):
 
 
 def restoreXreacs(basepath):
-    proxyInfo = _cmoose.wildcardFind(basepath + "/##/#_xfer_#/info")
+    proxyInfo = _moose.wildcardFind(basepath + "/##/#_xfer_#/info")
     for i in proxyInfo:
         msgs = i.notes.split(msgSeparator)
         oldRates = getOldRates(msgs)
         #print( "Deleting {}".format( i.parent.path ) )
-        _cmoose.delete(i.parent)
+        _moose.delete(i.parent)
         for j in msgs[1:]:
             if len(j) > 0:
                 args = j.split(' ')
                 assert (len(args) == 4)
-                #_cmoose.showfield( args[0] )
+                #_moose.showfield( args[0] )
                 #check to see if object exist before moose.connect, cases where object is deleted but
                 #_xref_ annotation info field still holds the reference
-                if (_cmoose.exists(args[0]) and _cmoose.exists(args[2])):
+                if (_moose.exists(args[0]) and _moose.exists(args[2])):
                     moose.connect(args[0], args[1], args[2], args[3])
                 #print( "Reconnecting {}".format( args ) )
-                #_cmoose.showfield( args[0] )
+                #_moose.showfield( args[0] )
         restoreOldRates(oldRates, msgs)

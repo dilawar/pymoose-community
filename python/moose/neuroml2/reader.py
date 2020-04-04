@@ -170,7 +170,7 @@ class NML2Reader(object):
             logger_.setLevel( logging.DEBUG )
         self.doc = None
         self.filename = None        
-        self.nml_to_cmoose = {} # NeuroML object to MOOSE object
+        self.nml_to_moose = {} # NeuroML object to MOOSE object
         self.moose_to_nml = {} # Moose object to NeuroML object
         self.proto_cells = {}  # map id to prototype cell in moose
         self.proto_chans = {}  # map id to prototype channels in moose
@@ -270,7 +270,7 @@ class NML2Reader(object):
         ep = '%s/%s' % (self.lib.path, cell.id)
         nrn = moose.element(ep) if moose.exists(ep) else moose.Neuron(ep)
         self.proto_cells[cell.id] = nrn
-        self.nml_to_cmoose[cell.id] = nrn
+        self.nml_to_moose[cell.id] = nrn
         self.moose_to_nml[nrn] = cell
         self.createMorphology(cell, nrn, symmetric=symmetric)
         self.importBiophysics(cell, nrn)
@@ -317,7 +317,7 @@ class NML2Reader(object):
             except AttributeError:
                 parent = None
             self.moose_to_nml[comp] = segment
-            self.nml_to_cmoose[segment.id] = comp            
+            self.nml_to_moose[segment.id] = comp            
             p0 = segment.proximal            
             if p0 is None:
                 if parent:
@@ -378,7 +378,7 @@ class NML2Reader(object):
         for specific_cm in specificCapacitances:
             cm = SI(specific_cm.value)
             for seg in sg_to_segments[specific_cm.segment_groups]:
-                comp = self.nml_to_cmoose[seg.id]
+                comp = self.nml_to_moose[seg.id]
                 comp.Cm = sarea(comp) * cm
                 
     def importInitMembPotential(self, nmlcell, moosecell, membraneProperties):
@@ -386,7 +386,7 @@ class NML2Reader(object):
         for imp in membraneProperties.init_memb_potentials:
             initv = SI(imp.value)
             for seg in sg_to_segments[imp.segment_groups]:
-                comp = self.nml_to_cmoose[seg.id]
+                comp = self.nml_to_moose[seg.id]
                 comp.initVm = initv 
 
     def importIntracellularProperties(self, nmlcell, moosecell, properties):
@@ -405,7 +405,7 @@ class NML2Reader(object):
                 continue
             segments = getSegments(nmlcell, species, sg_to_segments)
             for seg in segments:
-                comp = self.nml_to_cmoose[seg.id]    
+                comp = self.nml_to_moose[seg.id]    
                 self.copySpecies(species, comp)
 
     def copySpecies(self, species, compartment):
@@ -437,7 +437,7 @@ class NML2Reader(object):
         for r in intracellularProperties.resistivities:
             segments = getSegments(nmlcell, r, sg_to_segments)
             for seg in segments:
-                comp = self.nml_to_cmoose[seg.id]
+                comp = self.nml_to_moose[seg.id]
                 setRa(comp, SI(r.value))     
                 
     def isPassiveChan(self,chan):
@@ -447,7 +447,7 @@ class NML2Reader(object):
             return len(chan.gate_hh_rates)+len(chan.gates)==0
         return False
 
-    def evaluate_cmoose_component(self, ct, variables):
+    def evaluate_moose_component(self, ct, variables):
         print( "[INFO ] Not implemented." )
         return False
     
@@ -515,14 +515,14 @@ class NML2Reader(object):
             
             if self.isPassiveChan(ionChannel):
                 for seg in segments:
-                    #  comp = self.nml_to_cmoose[seg]
-                    setRm(self.nml_to_cmoose[seg.id], condDensity)
-                    setEk(self.nml_to_cmoose[seg.id], erev)
+                    #  comp = self.nml_to_moose[seg]
+                    setRm(self.nml_to_moose[seg.id], condDensity)
+                    setEk(self.nml_to_moose[seg.id], erev)
             else:
                 for seg in segments:
-                    self.copyChannel(chdens, self.nml_to_cmoose[seg.id], condDensity, erev)
-            '''moose.le(self.nml_to_cmoose[seg])
-            moose.showfield(self.nml_to_cmoose[seg], field="*", showtype=True)'''
+                    self.copyChannel(chdens, self.nml_to_moose[seg.id], condDensity, erev)
+            '''moose.le(self.nml_to_moose[seg])
+            moose.showfield(self.nml_to_moose[seg], field="*", showtype=True)'''
 
     def copyChannel(self, chdens, comp, condDensity, erev):
         """Copy moose prototype for `chdens` condutcance density to `comp`
@@ -681,7 +681,7 @@ class NML2Reader(object):
                 mchan = self.createHHChannel(chan)
                 
             self.id_to_ionChannel[chan.id] = chan
-            self.nml_to_cmoose[chan.id] = mchan
+            self.nml_to_moose[chan.id] = mchan
             self.proto_chans[chan.id] = mchan
             logger_.info(self.filename + ': Created ion channel %s for %s %s'%( 
                     mchan.path, chan.type, chan.id))
@@ -705,6 +705,6 @@ class NML2Reader(object):
                       # shell and d is thickness - must divide by 
                       # shell volume when copying
         self.proto_pools[concModel.id] = ca
-        self.nml_to_cmoose[name] = ca
+        self.nml_to_moose[name] = ca
         self.moose_to_nml[ca] = concModel
         logger_.debug('Created moose element: %s for nml conc %s' % (ca.path, concModel.id))

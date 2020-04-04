@@ -3,6 +3,7 @@
 # Bring everything from moose.py to global namespace.
 # IMP: It will overwrite any c++ function with the same name.  We can override
 # some C++ here.
+from moose._moose import *
 from moose.moose import *
 
 from moose.server import *
