@@ -106,8 +106,7 @@ ObjId createIdFromPath(string path, string type, unsigned int numData)
     if (pos != string::npos) {
         name = trimmed_path.substr(pos + 1);
         parent_path = trimmed_path.substr(0, pos);
-    }
-    else {
+    } else {
         name = trimmed_path;
     }
     // handle relative path
@@ -117,8 +116,7 @@ ObjId createIdFromPath(string path, string type, unsigned int numData)
             parent_path = current_path + "/" + parent_path;
         else
             parent_path = current_path + parent_path;
-    }
-    else if (parent_path.empty())
+    } else if (parent_path.empty())
         parent_path = "/";
 
     ObjId parent_id(parent_path);
@@ -167,8 +165,7 @@ ObjId loadModelInternal(const string& fname, const string& modelpath,
     Id model;
     if (solverclass.empty()) {
         model = getShellPtr()->doLoadModel(fname, modelpath);
-    }
-    else {
+    } else {
         model = getShellPtr()->doLoadModel(fname, modelpath, solverclass);
     }
 
@@ -205,8 +202,8 @@ ObjId getElementFieldItem(const ObjId& objid, const string& fname,
         index += len;
     }
     if (index < 0) {
-        throw runtime_error(
-            "ElementField.getItem: invalid index: " + to_string(index) + ".");
+        throw runtime_error("ElementField.getItem: invalid index: " +
+                            to_string(index) + ".");
         return ObjId();
     }
     return ObjId(oid.id, oid.dataIndex, index);
@@ -230,14 +227,20 @@ ObjId shellConnect(const ObjId& src, const string& srcField, const ObjId& tgt,
 //    // return src.connect(srcField, tgt, tgtField, msgType);
 //}
 
-bool mooseDelete(const ObjId& oid) { return getShellPtr()->doDelete(oid); }
+bool mooseDelete(const ObjId& oid)
+{
+    return getShellPtr()->doDelete(oid);
+}
 
 bool mooseDelete(const string& path)
 {
     return getShellPtr()->doDelete(ObjId(path));
 }
 
-void mooseMoveId(const Id& a, const ObjId& b) { getShellPtr()->doMove(a, b); }
+void mooseMoveId(const Id& a, const ObjId& b)
+{
+    getShellPtr()->doMove(a, b);
+}
 
 void mooseMoveObjId(const ObjId& a, const ObjId& b)
 {
@@ -270,7 +273,15 @@ void mooseUseClock(size_t tick, const string& path, const string& field)
  * @Returns  cwe.
  */
 /* ----------------------------------------------------------------------------*/
-py::object mooseGetCwe() { return py::cast(getShellPtr()->getCwe()); }
+py::object mooseGetCwe()
+{
+    return py::cast(getShellPtr()->getCwe());
+}
+
+void mooseSetCwe(const ObjId& oid)
+{
+    return getShellPtr()->setCwe(oid);
+}
 
 map<string, string> mooseGetFieldDict(const string& className,
                                       const string& finfoType = "")
@@ -295,33 +306,28 @@ map<string, string> mooseGetFieldDict(const string& className,
             auto* finfo = cinfo->getValueFinfo(ii);
             fieldDict[finfo->name()] = finfo->rttiType();
         }
-    }
-    else if (finfoType == "srcFinfo" || finfoType == "src") {
+    } else if (finfoType == "srcFinfo" || finfoType == "src") {
         for (unsigned int ii = 0; ii < cinfo->getNumSrcFinfo(); ++ii) {
             auto* finfo = cinfo->getSrcFinfo(ii);
             fieldDict[finfo->name()] = finfo->rttiType();
         }
-    }
-    else if (finfoType == "destFinfo" || finfoType == "dest") {
+    } else if (finfoType == "destFinfo" || finfoType == "dest") {
         for (unsigned int ii = 0; ii < cinfo->getNumDestFinfo(); ++ii) {
             auto* finfo = cinfo->getDestFinfo(ii);
             fieldDict[finfo->name()] = finfo->rttiType();
         }
-    }
-    else if (finfoType == "lookupFinfo" || finfoType == "lookup") {
+    } else if (finfoType == "lookupFinfo" || finfoType == "lookup") {
         for (unsigned int ii = 0; ii < cinfo->getNumLookupFinfo(); ++ii) {
             auto* finfo = cinfo->getLookupFinfo(ii);
             fieldDict[finfo->name()] = finfo->rttiType();
         }
-    }
-    else if (finfoType == "sharedFinfo" || finfoType == "shared") {
+    } else if (finfoType == "sharedFinfo" || finfoType == "shared") {
         for (unsigned int ii = 0; ii < cinfo->getNumSrcFinfo(); ++ii) {
             auto* finfo = cinfo->getSrcFinfo(ii);
             fieldDict[finfo->name()] = finfo->rttiType();
         }
-    }
-    else if (finfoType == "fieldElementFinfo" || finfoType == "field" ||
-             finfoType == "fieldElement") {
+    } else if (finfoType == "fieldElementFinfo" || finfoType == "field" ||
+               finfoType == "fieldElement") {
         for (unsigned int ii = 0; ii < cinfo->getNumFieldElementFinfo(); ++ii) {
             auto* finfo = cinfo->getFieldElementFinfo(ii);
             fieldDict[finfo->name()] = finfo->rttiType();
@@ -330,11 +336,19 @@ map<string, string> mooseGetFieldDict(const string& className,
     return fieldDict;
 }
 
-void mooseReinit() { getShellPtr()->doReinit(); }
+void mooseReinit()
+{
+    getShellPtr()->doReinit();
+}
 
 void mooseStart(double runtime, bool notify = false)
 {
     getShellPtr()->doStart(runtime, notify);
+}
+
+void mooseStop()
+{
+    getShellPtr()->doStop();
 }
 
 ObjId mooseCopy(const py::object& elem, ObjId newParent, string newName,
@@ -346,15 +360,15 @@ ObjId mooseCopy(const py::object& elem, ObjId newParent, string newName,
                                        copyExtMsgs));
 }
 
-#if 0
 /**
   Return a vector of field names of specified finfo type. This is from Subha.
 */
-vector<string> mooseGetFieldNames(string className, string finfoType)
+vector<string> mooseGetFieldNames(const string& className,
+                                  const string& finfoType)
 {
     vector<string> ret;
     const Cinfo* cinfo = Cinfo::find(className);
-    if (cinfo == NULL) {
+    if (!cinfo) {
         cerr << "Invalid class name." << endl;
         return ret;
     }
@@ -364,32 +378,28 @@ vector<string> mooseGetFieldNames(string className, string finfoType)
             Finfo* finfo = cinfo->getValueFinfo(ii);
             ret.push_back(finfo->name());
         }
-    }
-    else if (finfoType == "srcFinfo" || finfoType == "src") {
+    } else if (finfoType == "srcFinfo" || finfoType == "src") {
         for (unsigned int ii = 0; ii < cinfo->getNumSrcFinfo(); ++ii) {
             Finfo* finfo = cinfo->getSrcFinfo(ii);
             ret.push_back(finfo->name());
         }
-    }
-    else if (finfoType == "destFinfo" || finfoType == "dest") {
+    } else if (finfoType == "destFinfo" || finfoType == "dest") {
         for (unsigned int ii = 0; ii < cinfo->getNumDestFinfo(); ++ii) {
             Finfo* finfo = cinfo->getDestFinfo(ii);
             ret.push_back(finfo->name());
         }
-    }
-    else if (finfoType == "lookupFinfo" || finfoType == "lookup") {
+    } else if (finfoType == "lookupFinfo" || finfoType == "lookup") {
         for (unsigned int ii = 0; ii < cinfo->getNumLookupFinfo(); ++ii) {
             Finfo* finfo = cinfo->getLookupFinfo(ii);
             ret.push_back(finfo->name());
         }
-    }
-    else if (finfoType == "sharedFinfo" || finfoType == "shared") {
+    } else if (finfoType == "sharedFinfo" || finfoType == "shared") {
         for (unsigned int ii = 0; ii < cinfo->getNumSrcFinfo(); ++ii) {
             Finfo* finfo = cinfo->getSrcFinfo(ii);
             ret.push_back(finfo->name());
         }
-    }
-    else if (finfoType == "fieldElementFinfo" || finfoType == "fieldElement") {
+    } else if (finfoType == "fieldElementFinfo" ||
+               finfoType == "fieldElement") {
         for (unsigned int ii = 0; ii < cinfo->getNumFieldElementFinfo(); ++ii) {
             Finfo* finfo = cinfo->getFieldElementFinfo(ii);
             ret.push_back(finfo->name());
@@ -397,5 +407,3 @@ vector<string> mooseGetFieldNames(string className, string finfoType)
     }
     return ret;
 }
-
-#endif

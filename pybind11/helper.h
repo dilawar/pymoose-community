@@ -57,19 +57,23 @@ ObjId mooseCopy(const py::object& orig, ObjId newParent, string newName,
                 unsigned int n, bool toGlobal, bool copyExtMsgs);
 
 py::object mooseGetCwe();
+void mooseSetCwe(const ObjId& oid);
 
 void mooseSetClock(const unsigned int clockId, double dt);
 
 void mooseUseClock(size_t tick, const string& path, const string& field);
 
-// vector<string> mooseGetFieldNames(const string& className, const string& finfoType);
-
 map<string, string> mooseGetFieldDict(const string& className,
                                       const string& finfoType);
 
 void mooseReinit();
+
 void mooseStart(double runtime, bool notify);
 
+void mooseStop();
+
 py::cpp_function getPropertyDestFinfo(const ObjId& oid, const Finfo* finfo);
+
+vector<string> mooseGetFieldNames(const string& className, const string& finfoType);
 
 #endif /* end of include guard: HELPER_H */

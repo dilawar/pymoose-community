@@ -325,13 +325,15 @@ PYBIND11_MODULE(_cmoose, m)
     m.def("move", &mooseMoveObjId);
     m.def("reinit", &mooseReinit);
     m.def("start", &mooseStart, "runtime"_a, "notify"_a = false);
+    m.def("stop", &mooseStop);
     m.def("objid", &mooseElement);
     m.def("exists", &mooseExists);
     m.def("getCwe", &mooseGetCwe);
+    m.def("setCwe", &mooseSetCwe);
     m.def("setClock", &mooseSetClock);
     m.def("useClock", &mooseUseClock);
     m.def("loadModelInternal", &loadModelInternal);
-    // m.def("getFieldNames", &mooseGetFieldNames);
+    m.def("getFieldNames", &mooseGetFieldNames);
     m.def("getField",
           [](const ObjId &oid, const string &fieldName, const string &ftype) {
               // ftype is not needed anymore.
