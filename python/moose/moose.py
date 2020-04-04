@@ -9,7 +9,6 @@ import os
 import pydoc
 import io
 import contextlib
-import textwrap
 
 import moose
 import moose._moose as _moose
@@ -70,6 +69,27 @@ def about():
                 version=_moose.__version__,
                 docs='https://moose.readthedocs.io/en/latest/')
 
+def element(path):
+    """moose.element(arg) -> moose object
+    Convert a path or an object to the appropriate builtin moose class
+    instance.
+
+    Parameters
+    ----------
+    arg : str/vec/moose object"
+        path of the moose element to be converted or another element (possibly
+        available as a superclass instance).
+
+    Returns"
+    -------"
+        MOOSE element (object) corresponding to the `arg` converted to an
+        appropriate class.
+    """
+    if not isinstance(path, str):
+        path = path.path
+    obj = _moose.objid(path)
+    return PyObjId(obj)
+
 def wildcardFind(pattern):
     # return _moose.wildcardFind(pattern)
     return [PyObjId.toMooseClass(x) for x in _moose.wildcardFind(pattern)]
@@ -81,12 +101,6 @@ def connect(src, srcfield, dest, destfield, msgtype="Single"):
     if isinstance(dest, str):
         dest = _moose.objid(dest)
     return src.connect(srcfield, dest, destfield, msgtype)
-
-# def element(path):
-#     if not isinstance(path, str):
-#         path = path.path
-#     obj = _moose.objid(path)
-#     return PyObjId(obj)
 
 def copy(elem, newParent, newName="", n=1):
     if isinstance(elem, str):
@@ -133,7 +147,7 @@ def le(el=None):
     elif isinstance(el, str):
         if not _moose.exists(el):
             raise ValueError('no such element')
-        el = _moose.element(el)
+        el = _moose.objid(el)
     #elif isinstance(el, _moose.vec):
     #    el = el[0]
     print("Elements under '%s'" % el)
@@ -194,7 +208,7 @@ def showfield(el, field='*', showtype=False):
     if isinstance(el, str):
         if not _moose.exists(el):
             raise ValueError('no such element: %s' % el)
-        el = _moose.element(el)
+        el = _moose.objid(el)
     result = []
     if field == '*':
         value_field_dict = _moose.getFieldDict(el.className, 'valueFinfo')
@@ -258,7 +272,9 @@ def listmsg(el):
         connections of `el`.
 
     """
-    obj = _moose.objid(el)
+    obj = el
+    if isinstance(el, str):
+        obj = _moose.objid(el)
     ret = []
     for msg in obj.msgIn:
         ret.append(msg)
@@ -320,7 +336,7 @@ def getFieldDoc(tokens, indent=''):
     fieldname = tokens[1]
     while True:
         try:
-            classelement = _moose.element('/classes/' + classname)
+            classelement = _moose.objid('/classes/' + classname)
             for finfo in classelement.children:
                 # FIXME
                 print(finfo, 'x')
@@ -349,14 +365,14 @@ def getFieldDoc(tokens, indent=''):
 def _appendFinfoDocs(classname, docstring, indent):
     """Append list of finfos in class name to docstring"""
     try:
-        classElem = _moose.element('/classes/%s' % (classname))
+        classElem = _moose.objid('/classes/%s' % (classname))
     except ValueError:
         raise NameError('class \'%s\' not defined.' % (classname))
 
     for ftype, rname in finfotypes:
         print(ftype, rname)
         docstring.write(u'\n*%s*\n' % (rname.capitalize()))
-        finfo = _moose.element('%s/%s' % (classElem.path, ftype))
+        finfo = _moose.objid('%s/%s' % (classElem.path, ftype))
         print('111', finfo)
         for field in finfo.vec:
             docstring.write(u'%s%s: %s\n' %
@@ -370,7 +386,7 @@ def _getMooseDoc(tokens, inherited=False):
     indent = '  '
     docstring = io.StringIO()
     with contextlib.closing(docstring):
-        classElem = _moose.element('/classes/%s' % tokens[0])
+        classElem = _moose.objid('/classes/%s' % tokens[0])
         if len(tokens) > 1:
             print('getting field', tokens[1])
             docstring.write(getFieldDoc(tokens))
@@ -434,13 +450,9 @@ def doc(arg, inherited=True, paged=True):
     #    tokens = [arg.className]
     #print(tokens)
     assert tokens
-    print('xxx', tokens)
     text += _getMooseDoc(tokens, inherited=inherited)
 
-    #else:
-    #    text += pydoc.getdoc(arg)
-    #if __pager:
-    #    __pager(text)
-    #else:
-    #    print(text)
-    print(text)
+    if __pager:
+        __pager(text)
+    else:
+        print(text)
