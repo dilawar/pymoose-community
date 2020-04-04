@@ -213,7 +213,9 @@ const Cinfo * Function::initCinfo()
 
     static LookupValueFinfo< Function, string, unsigned int > xindex(
         "xindex",
-        "Return the index of given variable. It can be used with field `x`",
+        "(developer only) Returns the index of a given variable which can be used with field `x`."
+        " Note that we have a mechanism to map string (variable name) to integer "
+        " (variable index).",
         &Function::setVarIndex,
         &Function::getVarIndex
     );
