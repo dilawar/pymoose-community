@@ -18,7 +18,7 @@
 #include "../external/pybind11/include/pybind11/pybind11.h"
 #include "../external/pybind11/include/pybind11/stl.h"
 #include "../external/pybind11/include/pybind11/numpy.h"
-// #include "../external/pybind11/include/pybind11/functional.h"
+
 namespace py = pybind11;
 
 // See https://pybind11.readthedocs.io/en/master/classes.html#overloaded-methods
@@ -145,7 +145,11 @@ py::object getFieldGeneric(const ObjId &oid, const string &fieldName)
 /* ----------------------------------------------------------------------------*/
 PYBIND11_MODULE(_moose, m)
 {
-    m.doc() = R"moosedoc(moose module.)moosedoc";
+    m.doc() = R"moosedoc(
+
+    pyMOOSE: Multiscale Object-Oriented Simulation Environment.
+
+    )moosedoc";
 
     initModule(m);
 
