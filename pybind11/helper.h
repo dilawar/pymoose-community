@@ -50,7 +50,8 @@ ObjId shellConnect(const ObjId& src, const string& srcField, const ObjId& tgt,
 bool mooseDelete(const ObjId& oid);
 bool mooseDelete(const string& path);
 
-ObjId mooseCreate(const string type, const string& path, unsigned int numdata = 1);
+ObjId mooseCreate(const string type, const string& path,
+                  unsigned int numdata = 1);
 
 ObjId mooseCopy(const py::object& orig, ObjId newParent, string newName,
                 unsigned int n, bool toGlobal, bool copyExtMsgs);
@@ -60,6 +61,9 @@ py::object mooseGetCwe();
 void mooseSetClock(const unsigned int clockId, double dt);
 
 void mooseUseClock(size_t tick, const string& path, const string& field);
+
+vector<string> mooseGetFieldNames(const string& className,
+                                  const string& finfoType);
 
 map<string, string> mooseGetFieldDict(const string& className,
                                       const string& finfoType);
