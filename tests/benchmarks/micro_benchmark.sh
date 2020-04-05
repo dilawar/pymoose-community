@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-
 # set -x
+
+python3 -c "import moose;print(moose.__file__)"
 
 function run_str() {
     echo "- Timeit: $*" && python3 -m timeit -s "import moose" "$*"
