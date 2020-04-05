@@ -17,19 +17,20 @@
 #ifndef HELPER_H
 #define HELPER_H
 
+#include "../shell/Shell.h"
+
 namespace py = pybind11;
 using namespace std;
-
-class Shell;
-
-Id initShell();
-
-ObjId createIdFromPath(string path, string type, unsigned int numData = 1);
 
 inline Shell* getShellPtr(void)
 {
     return reinterpret_cast<Shell*>(Id().eref().data());
 }
+
+Id initShell();
+
+ObjId createIdFromPath(string path, string type, unsigned int numData = 1);
+
 
 bool mooseExists(const string& path);
 

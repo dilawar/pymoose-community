@@ -21,8 +21,8 @@
 
 namespace py = pybind11;
 
-#include "../basecode/header.h"
 #include "../basecode/global.h"
+#include "../basecode/header.h"
 #include "../builtins/Variable.h"
 #include "../randnum/randnum.h"
 #include "../shell/Neutral.h"
@@ -250,7 +250,8 @@ PYBIND11_MODULE(_moose, m)
             "connect",
             [](const ObjId &src, const string &srcfield, const MooseVec &tgtvec,
                const string &tgtfield, const string &type) {
-                return shellConnect(src, srcfield, tgtvec.obj(), tgtfield, type);
+                return shellConnect(src, srcfield, tgtvec.obj(), tgtfield,
+                                    type);
             })
         //---------------------------------------------------------------------
         //  Extra

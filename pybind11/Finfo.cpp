@@ -30,11 +30,11 @@ __Finfo__::__Finfo__(const ObjId& oid, const Finfo* f, const string& finfoType)
     // cout << " __Finfo__ type " << finfoType << endl;
 
     if (finfoType == "DestFinfo")
-        func_ = [oid, f, this](const py::object& key) {
+        func_ = [oid, f](const py::object& key) {
             return getLookupValueFinfoItem(oid, f, key);
         };
     else if (finfoType == "FieldElementFinfo")
-        func_ = [oid, f, this](const py::object& index) {
+        func_ = [oid, f](const py::object& index) {
             // this is essential of make this function static.
             return getElementFinfoItem(oid, f, py::cast<unsigned int>(index));
         };
