@@ -237,11 +237,11 @@ Id Shell::doCreate(string type, ObjId parent, string name, unsigned int numData,
 
 ObjId Shell::doCreate2(string type, ObjId parent, string name, unsigned int numData)
 {
-    if (parent.bad()) {
-        string message = "Parent element does not exist: " + parent.path();
-        throw runtime_error(message);
-        return Id();
-    }
+    //if (parent.bad()) {
+    //    string message = "Parent element does not exist: " + parent.path();
+    //    throw runtime_error(message);
+    //    return Id();
+    //}
     return doCreate(type, parent, name, numData, MooseBlockBalance, 1);
 }
 

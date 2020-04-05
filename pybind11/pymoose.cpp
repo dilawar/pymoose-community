@@ -21,10 +21,6 @@
 
 namespace py = pybind11;
 
-// See https://pybind11.readthedocs.io/en/master/classes.html#overloaded-methods
-template <typename... Args>
-using overload_cast_ = pybind11::detail::overload_cast_impl<Args...>;
-
 #include "../basecode/header.h"
 #include "../basecode/global.h"
 #include "../builtins/Variable.h"
@@ -327,8 +323,8 @@ PYBIND11_MODULE(_moose, m)
     // This is a wrapper to Shell::wildcardFind. The python interface must
     // override it.
     m.def("wildcardFind", &wildcardFind2);
-    m.def("delete", overload_cast_<const ObjId &>()(&mooseDelete));
-    m.def("delete", overload_cast_<const string &>()(&mooseDelete));
+    m.def("delete", &mooseDeleteStr);
+    m.def("delete", &mooseDeleteObj);
     m.def("create", &mooseCreate);
     m.def("move", &mooseMoveId);
     m.def("move", &mooseMoveObjId);

@@ -15,6 +15,8 @@ set_target_properties(_moose PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/python/moose)
     # SUFFIX ".so")
 
+set_target_properties(_moose PROPERTIES COMPILE_FLAGS "-O3")
+
 add_dependencies(_moose libmoose)
 
 if(APPLE)

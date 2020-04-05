@@ -26,7 +26,10 @@ Id initShell();
 
 ObjId createIdFromPath(string path, string type, unsigned int numData = 1);
 
-Shell* getShellPtr();
+inline Shell* getShellPtr(void)
+{
+    return reinterpret_cast<Shell*>(Id().eref().data());
+}
 
 bool mooseExists(const string& path);
 
@@ -47,8 +50,16 @@ ObjId getElementFieldItem(const ObjId& objid, const string& fname,
 ObjId shellConnect(const ObjId& src, const string& srcField, const ObjId& tgt,
                    const string& tgtField, const string& msgType);
 
-bool mooseDelete(const ObjId& oid);
-bool mooseDelete(const string& path);
+inline bool mooseDeleteObj(const ObjId& oid)
+{
+    return getShellPtr()->doDelete(oid);
+}
+
+inline bool mooseDeleteStr(const string& path)
+{
+    return getShellPtr()->doDelete(ObjId(path));
+}
+
 
 ObjId mooseCreate(const string type, const string& path,
                   unsigned int numdata = 1);

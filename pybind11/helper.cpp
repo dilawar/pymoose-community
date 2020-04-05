@@ -138,10 +138,6 @@ ObjId createIdFromPath(string path, string type, unsigned int numData)
     return nId;
 }
 
-Shell* getShellPtr(void)
-{
-    return reinterpret_cast<Shell*>(Id().eref().data());
-}
 
 bool mooseExists(const string& p)
 {
@@ -227,16 +223,6 @@ ObjId shellConnect(const ObjId& src, const string& srcField, const ObjId& tgt,
 //    // return src.connect(srcField, tgt, tgtField, msgType);
 //}
 
-bool mooseDelete(const ObjId& oid)
-{
-    return getShellPtr()->doDelete(oid);
-}
-
-bool mooseDelete(const string& path)
-{
-    return getShellPtr()->doDelete(ObjId(path));
-}
-
 void mooseMoveId(const Id& a, const ObjId& b)
 {
     getShellPtr()->doMove(a, b);
@@ -249,10 +235,10 @@ void mooseMoveObjId(const ObjId& a, const ObjId& b)
 
 ObjId mooseCreate(const string type, const string& path, unsigned int numdata)
 {
-    auto newpath = moose::normalizePath(path);
-    auto p = moose::splitPath(newpath);
-    if (!mooseExists(p.first))
-        throw runtime_error("Parent path " + p.first + " does not exists.");
+    //auto newpath = moose::normalizePath(path);
+    auto p = moose::splitPath(path);
+    //if (!mooseExists(p.first))
+    //    throw runtime_error("Parent path " + p.first + " does not exists.");
     return getShellPtr()->doCreate2(type, ObjId(p.first), p.second, numdata);
 }
 
