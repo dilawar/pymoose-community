@@ -11,6 +11,10 @@
 #define _CINFO_H
 
 class DinfoBase;
+class Finfo;
+class OpFunc;
+class FinfoWrapper;
+
 
 /**
  * Class to manage class information for all the other classes.

@@ -10,8 +10,6 @@
 #ifndef _OBJ_ID_H
 #define _OBJ_ID_H
 
-#include "Id.h"
-
 /**
  * This class manages lookups for specific data entries in elements,
  * in a node-independent manner.

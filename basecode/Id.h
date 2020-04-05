@@ -10,6 +10,10 @@
 #ifndef _ID_H
 #define _ID_H
 
+class ObjId;
+class Element;
+class Eref;
+
 /**
  * This class manages id lookups for elements. Ids provide a uniform
  * handle for every object, independent of which node they are located on.

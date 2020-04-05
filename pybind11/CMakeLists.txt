@@ -12,8 +12,8 @@ pybind11_add_module(_moose
 
 # set_target_properties(_moose PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/python/moose)
 set_target_properties(_moose PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/python/moose
-    SUFFIX ".so")
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/python/moose)
+    # SUFFIX ".so")
 
 add_dependencies(_moose libmoose)
 
