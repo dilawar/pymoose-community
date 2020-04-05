@@ -37,7 +37,20 @@ bool mooseExists(const string& path);
 void mooseMoveId(const Id& a, const ObjId& b);
 void mooseMoveObjId(const ObjId& a, const ObjId& b);
 
-ObjId mooseObjId(const string& path);
+inline ObjId mooseObjIdPath(const string& path)
+{
+    ObjId oid(path);
+    if (oid.bad()) {
+        cerr << "moose_element: " << path << " does not exist!" << endl;
+        return ObjId(Id());
+    }
+    return oid;
+}
+
+inline ObjId mooseObjIdObj(const ObjId& obj)
+{
+    return ObjId(obj.id, obj.dataIndex, obj.fieldIndex);
+}
 
 ObjId loadModelInternal(const string& fname, const string& modelpath,
                         const string& solverclass);

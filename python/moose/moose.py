@@ -64,26 +64,26 @@ def about():
                 version=_moose.__version__,
                 docs='https://moose.readthedocs.io/en/latest/')
 
-def element(path):
-    """moose.element(arg) -> moose object
-    Convert a path or an object to the appropriate builtin moose class
-    instance.
-
-    Parameters
-    ----------
-    arg : str/vec/moose object"
-        path of the moose element to be converted or another element (possibly
-        available as a superclass instance).
-
-    Returns"
-    -------"
-        MOOSE element (object) corresponding to the `arg` converted to an
-        appropriate class.
-    """
-    if not isinstance(path, str):
-        path = path.path
-    obj = _moose.objid(path)
-    return PyObjId(obj)
+#def element(arg):
+#    """moose.element(arg) -> moose object
+#    Convert a path or an object to the appropriate builtin moose class
+#    instance.
+#
+#    Parameters
+#    ----------
+#    arg : str/vec/moose object"
+#        path of the moose element to be converted or another element (possibly
+#        available as a superclass instance).
+#
+#    Returns"
+#    -------"
+#        MOOSE element (object) corresponding to the `arg` converted to an
+#        appropriate class.
+#    """
+#    #if not isinstance(path, str):
+#    #    path = path.path
+#    #obj = _moose.objid(path)
+#    return PyObjId(_moose.objid(arg))
 
 def wildcardFind(pattern):
     # return _moose.wildcardFind(pattern)

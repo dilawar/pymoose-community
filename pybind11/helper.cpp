@@ -145,15 +145,6 @@ bool mooseExists(const string& p)
     return Id(path) != Id() || path == "/" || path == "/root";
 }
 
-ObjId mooseObjId(const string& path)
-{
-    ObjId oid(path);
-    if (oid.bad()) {
-        cerr << "moose_element: " << path << " does not exist!" << endl;
-        return ObjId(Id());
-    }
-    return oid;
-}
 
 ObjId loadModelInternal(const string& fname, const string& modelpath,
                         const string& solverclass = "")

@@ -332,7 +332,8 @@ PYBIND11_MODULE(_moose, m)
     m.def("reinit", &mooseReinit);
     m.def("start", &mooseStart, "runtime"_a, "notify"_a = false);
     m.def("stop", &mooseStop);
-    m.def("objid", &mooseObjId);
+    m.def("element", &mooseObjIdPath);
+    m.def("element", &mooseObjIdObj);
     m.def("exists", &mooseExists);
     m.def("getCwe", &mooseGetCwe);
     m.def("setCwe", &mooseSetCwe);
