@@ -21,7 +21,8 @@ __class_types__ = {}
 
 
 class PyObjId(_moose._ObjId):
-    __class__ = None
+
+    __class__ = 'Unknown'
 
     def __init__(self, x, ndata=1, **kwargs):
         """
@@ -39,6 +40,9 @@ class PyObjId(_moose._ObjId):
         else:
             raise RuntimeError("%s is not supported" % x)
         """
+        #if self.__class__ is None:
+        #    self.__class__ = x.className
+        #  assert self.__class__,  x.className
         obj = _moose.create(self.__class__, x, ndata)
         for k, v in kwargs.items():
             obj.setField(k, v)

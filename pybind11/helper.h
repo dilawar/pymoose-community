@@ -89,7 +89,7 @@ inline ObjId mooseCreateFromObjId(const string& type, const ObjId& oid, unsigned
 
 inline ObjId mooseCreateFromId(const string& type, const Id& id, unsigned int numData)
 {
-    return mooseCreateFromObjId(type, ObjId(id), numData);
+    return ObjId(id);
 }
 
 
