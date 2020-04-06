@@ -24,17 +24,22 @@ class PyObjId(_moose._ObjId):
     __class__ = ''
 
     def __init__(self, x, ndata=1, **kwargs):
-        #if isinstance(x, str):
-        #    obj = _moose.element(x) if moose.exists(x) else _moose.create(
-        #        self.__class__, x, ndata)
-        #elif isinstance(x, _moose._ObjId):
-        #    obj = x
-        #elif isinstance(x, _moose._Id):
-        #    obj = _moose._ObjId(x)
-        #else:
-        #    raise RuntimeError("%s is not supported" % x)
+        """
+        This function is overloaded. x could be string, ObjId, Id. 
 
-        # This function is overloaded. x could be string, ObjId, Id.
+        It is equivalent to the following: 
+
+        if isinstance(x, str):
+            obj = _moose.element(x) if moose.exists(x) else _moose.create(
+                self.__class__, x, ndata)
+        elif isinstance(x, _moose._ObjId):
+            obj = x
+        elif isinstance(x, _moose._Id):
+            obj = _moose._ObjId(x)
+        else:
+            raise RuntimeError("%s is not supported" % x)
+        """
+
         obj = _moose.create(self.__class__, x, ndata)
         for k, v in kwargs.items():
             obj.setField(k, v)
