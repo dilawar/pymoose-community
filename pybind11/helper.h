@@ -29,9 +29,6 @@ inline Shell* getShellPtr(void)
 
 Id initShell();
 
-ObjId createIdFromPath(string path, string type, unsigned int numData = 1);
-
-
 bool mooseExists(const string& path);
 
 void mooseMoveId(const Id& a, const ObjId& b);
@@ -55,6 +52,44 @@ inline ObjId mooseObjIdObj(const ObjId& obj)
 inline ObjId mooseObjIdId(const Id& id)
 {
     return ObjId(id);
+}
+
+inline ObjId mooseCreateFromPath(const string type, const string& path, unsigned int numdata)
+{
+
+#if 0
+    // NOTE: This function is costly because of regex use. But it can be
+    // enabled later.
+    auto newpath = moose::normalizePath(path);
+#endif
+
+    // If path exists and user is asking for the same type then return the
+    // object else raise exception.
+    if(mooseExists(path)) {
+        auto oid = ObjId(path);
+        if(oid.element()->cinfo()->name() == type)
+            return oid;
+    }
+
+    // Split into dirname and basename component.
+    auto p = moose::splitPath(path);
+
+    // Name must not end with [\d*] etc.  normalizePath takes care of it if
+    // enabled. 
+    string name(p.second);
+    if(name.back() == ']')
+        name = name.substr(0, name.find_last_of('['));
+    return getShellPtr()->doCreate2(type, ObjId(p.first), name, numdata);
+}
+
+inline ObjId mooseCreateFromObjId(const string& type, const ObjId& oid, unsigned int numData)
+{
+    return oid;
+}
+
+inline ObjId mooseCreateFromId(const string& type, const Id& id, unsigned int numData)
+{
+    return mooseCreateFromObjId(type, ObjId(id), numData);
 }
 
 

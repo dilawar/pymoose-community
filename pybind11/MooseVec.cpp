@@ -15,6 +15,7 @@ using namespace std;
 #include "../external/pybind11/include/pybind11/numpy.h"
 namespace py = pybind11;
 
+#include "../utility/strutil.h"
 #include "helper.h"
 #include "pymoose.h"
 #include "MooseVec.h"
@@ -24,7 +25,7 @@ MooseVec::MooseVec(const string& path, unsigned int n = 0,
     : path_(path)
 {
     if (!mooseExists(path))
-        oid_ = mooseCreate(dtype, path, n);
+        oid_ = mooseCreateFromPath(dtype, path, n);
     else
         oid_ = ObjId(path);
 }

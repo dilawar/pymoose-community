@@ -318,7 +318,9 @@ PYBIND11_MODULE(_moose, m)
     m.def("wildcardFind", &wildcardFind2);
     m.def("delete", &mooseDeleteStr);
     m.def("delete", &mooseDeleteObj);
-    m.def("create", &mooseCreate);
+    m.def("create", &mooseCreateFromPath);
+    m.def("create", &mooseCreateFromObjId);
+    m.def("create", &mooseCreateFromId);
     m.def("move", &mooseMoveId);
     m.def("move", &mooseMoveObjId);
     m.def("reinit", &mooseReinit);
