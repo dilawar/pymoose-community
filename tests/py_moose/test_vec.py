@@ -4,7 +4,8 @@ import numpy as np
 
 def test_vec():
     foo = moose.Pool('/foo1', 500)
-    bar = moose.vec('/foo1')
+    #  bar = moose.vec('/foo1')
+    bar = moose.vec(foo)
     assert len(bar) == 500, len(bar)
     for i in range(len(bar)):
         print(bar[i])
@@ -23,7 +24,7 @@ def test_vec2():
 
 def test_vec3():
     print("test vec3")
-    foo = moose.Pool('/foo1', 500)
+    foo = moose.Pool('/foo3', 500)
     foo.vec.concInit = 0.123
     print(foo.vec)
     assert foo.concInit == 0.123, foo.concInit

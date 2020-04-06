@@ -19,20 +19,23 @@ logger_ = logging.getLogger('moose')
 # etc.
 __class_types__ = {}
 
+
 class PyObjId(_moose._ObjId):
     __class__ = None
+
     def __init__(self, x, ndata=1, **kwargs):
         if isinstance(x, str):
-            obj = _moose.create(self.__class__, x, ndata) 
+            obj = _moose.element(x) if moose.exists(x) else _moose.create(
+                self.__class__, x, ndata)
         elif isinstance(x, _moose._ObjId):
-            obj = x #_moose._ObjId(x.id, x.dataIndex)
-        #elif isinstance(x, _moose._Id):
-        #    obj = _moose._ObjId(x)
+            obj = x
+        elif isinstance(x, _moose._Id):
+            obj = _moose._ObjId(x)
         else:
             raise RuntimeError("%s is not supported" % x)
 
-        #for k, v in kwargs.items():
-        #    obj.setField(k, v)
+        for k, v in kwargs.items():
+            obj.setField(k, v)
         super().__init__(obj.id, obj.dataIndex)
 
     @classmethod
@@ -41,21 +44,23 @@ class PyObjId(_moose._ObjId):
         mc = __class_types__[obj.type](obj)
         return mc
 
+
 # Create MOOSE classes from available Cinfos.
 for p in _moose.wildcardFind('/##[TYPE=Cinfo]'):
     # create a class declaration and add to moose.
-    cls = type(p.name, (PyObjId,), {"__class__" : p.name})
+    cls = type(p.name, (PyObjId, ), {"__class__": p.name})
     setattr(moose, cls.__name__, cls)
     __class_types__[cls.__name__] = cls
-
 
 #############################################################################
 #                             API                                           #
 #############################################################################
 
+
 def version():
     # Show user version.
     return _moose.__version__
+
 
 def about():
     """info: Return some 'about me' information.
@@ -63,6 +68,7 @@ def about():
     return dict(path=os.path.dirname(__file__),
                 version=_moose.__version__,
                 docs='https://moose.readthedocs.io/en/latest/')
+
 
 #def element(arg):
 #    """moose.element(arg) -> moose object
@@ -82,32 +88,37 @@ def about():
 #    """
 #    #if not isinstance(path, str):
 #    #    path = path.path
-#    #obj = _moose.objid(path)
-#    return PyObjId(_moose.objid(arg))
+#    #obj = _moose.element(path)
+#    return PyObjId(_moose.element(arg))
+
 
 def wildcardFind(pattern):
     # return _moose.wildcardFind(pattern)
     return [PyObjId.toMooseClass(x) for x in _moose.wildcardFind(pattern)]
 
+
 def connect(src, srcfield, dest, destfield, msgtype="Single"):
     # FIXME: Move to pymoose.cpp
     if isinstance(src, str):
-        src = _moose.objid(src)
+        src = _moose.element(src)
     if isinstance(dest, str):
-        dest = _moose.objid(dest)
+        dest = _moose.element(dest)
     return src.connect(srcfield, dest, destfield, msgtype)
+
 
 def copy(elem, newParent, newName="", n=1):
     if isinstance(elem, str):
-        elem = _moose.objid(elem)
+        elem = _moose.element(elem)
     if isinstance(newName, str):
         newParent = PyObjId(newParent)
     if not newName:
         newName = elem.name
-    return _moose.copy(elem.id, newParent, newName, n, False, False) 
+    return _moose.copy(elem.id, newParent, newName, n, False, False)
+
 
 def getCwe():
     return PyObjId(_moose.getCwe())
+
 
 def pwe():
     """Print present working element. Convenience function for GENESIS
@@ -142,7 +153,7 @@ def le(el=None):
     elif isinstance(el, str):
         if not _moose.exists(el):
             raise ValueError('no such element')
-        el = _moose.objid(el)
+        el = _moose.element(el)
     #elif isinstance(el, _moose.vec):
     #    el = el[0]
     print("Elements under '%s'" % el)
@@ -203,7 +214,7 @@ def showfield(el, field='*', showtype=False):
     if isinstance(el, str):
         if not _moose.exists(el):
             raise ValueError('no such element: %s' % el)
-        el = _moose.objid(el)
+        el = _moose.element(el)
     result = []
     if field == '*':
         value_field_dict = _moose.getFieldDict(el.className, 'valueFinfo')
@@ -269,7 +280,7 @@ def listmsg(el):
     """
     obj = el
     if isinstance(el, str):
-        obj = _moose.objid(el)
+        obj = _moose.element(el)
     ret = []
     for msg in obj.msgIn:
         ret.append(msg)
@@ -291,7 +302,7 @@ def showmsg(el):
     None
 
     """
-    obj = _moose.objid(el)
+    obj = _moose.element(el)
     print('INCOMING:')
     for msg in obj.msgIn:
         print(msg.e2.path, msg.destFieldsOnE2, '<---', msg.e1.path,
@@ -331,7 +342,7 @@ def getFieldDoc(tokens, indent=''):
     fieldname = tokens[1]
     while True:
         try:
-            classelement = _moose.objid('/classes/' + classname)
+            classelement = _moose.element('/classes/' + classname)
             for finfo in classelement.children:
                 # FIXME
                 print(finfo, 'x')
@@ -357,22 +368,22 @@ def getFieldDoc(tokens, indent=''):
             raise NameError('`%s` has no field called `%s`' %
                             (tokens[0], tokens[1]))
 
+
 def _appendFinfoDocs(classname, docstring, indent):
     """Append list of finfos in class name to docstring"""
     try:
-        classElem = _moose.objid('/classes/%s' % (classname))
+        classElem = _moose.element('/classes/%s' % (classname))
     except ValueError:
         raise NameError('class \'%s\' not defined.' % (classname))
 
     for ftype, rname in finfotypes:
         print(ftype, rname)
         docstring.write(u'\n*%s*\n' % (rname.capitalize()))
-        finfo = _moose.objid('%s/%s' % (classElem.path, ftype))
+        finfo = _moose.element('%s/%s' % (classElem.path, ftype))
         print('111', finfo)
         for field in finfo.vec:
             docstring.write(u'%s%s: %s\n' %
                             (indent, field.fieldName, field.type))
-
 
 
 def _getMooseDoc(tokens, inherited=False):
@@ -381,7 +392,7 @@ def _getMooseDoc(tokens, inherited=False):
     indent = '  '
     docstring = io.StringIO()
     with contextlib.closing(docstring):
-        classElem = _moose.objid('/classes/%s' % tokens[0])
+        classElem = _moose.element('/classes/%s' % tokens[0])
         if len(tokens) > 1:
             print('getting field', tokens[1])
             docstring.write(getFieldDoc(tokens))
@@ -393,6 +404,7 @@ def _getMooseDoc(tokens, inherited=False):
 
 
 __pager = None
+
 
 def doc(arg, inherited=True, paged=True):
     """Display the documentation for class or field in a class.

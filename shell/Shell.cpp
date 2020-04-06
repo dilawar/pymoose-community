@@ -170,8 +170,8 @@ Id Shell::doCreate(string type, ObjId parent, string name, unsigned int numData,
     const Cinfo* c = Cinfo::find(type);
     if (!isNameValid(name)) {
         stringstream ss;
-        ss << "Shell::doCreate: bad character in name'" << name
-           << "'. No Element created";
+        ss << "Shell::doCreate: bad character in the name '" << name
+           << "'. No Element created.";
         warning(ss.str());
         return Id();
     }
@@ -199,10 +199,10 @@ Id Shell::doCreate(string type, ObjId parent, string name, unsigned int numData,
         // melements.cpp . Calling this section should become an error in
         // future.
         if (Neutral::child(parent.eref(), name) != Id()) {
-            stringstream ss;
-            ss << "Object with same path already present : " << parent.path() << "/" << name;
-            moose::showError(ss.str());
-            throw runtime_error(ss.str());
+            string msg = "Object with path '" + parent.path() + "/" +
+                         name + "' already exists. "
+                         " Use `moose.element` to access the existing element.";
+            throw runtime_error(msg);
             return Id();
         }
         // Get the new Id ahead of time and pass to all nodes.
@@ -235,9 +235,10 @@ Id Shell::doCreate(string type, ObjId parent, string name, unsigned int numData,
     return Id();
 }
 
-ObjId Shell::doCreate2(string type, ObjId parent, string name, unsigned int numData)
+ObjId Shell::doCreate2(string type, ObjId parent, string name,
+                       unsigned int numData)
 {
-    //if (parent.bad()) {
+    // if (parent.bad()) {
     //    string message = "Parent element does not exist: " + parent.path();
     //    throw runtime_error(message);
     //    return Id();
@@ -328,8 +329,7 @@ void Shell::doStart(double runtime, bool notify)
 
     // Print the stats collected by profiling map.
     char* p = getenv("MOOSE_SHOW_SOLVER_PERF");
-    if (p != NULL)
-        moose::printSolverProfMap();
+    if (p != NULL) moose::printSolverProfMap();
 }
 
 bool isDoingReinit()
@@ -412,10 +412,8 @@ bool extractIndex(const string& s, unsigned int& index)
             close.push_back(i);
     }
 
-    if (open.size() != close.size())
-        return false;
-    if (open.size() == 0)
-        return true;  // the index was set already to zero.
+    if (open.size() != close.size()) return false;
+    if (open.size() == 0) return true;  // the index was set already to zero.
     int j = atoi(s.c_str() + open[0]);
     if (j >= 0) {
         index = j;
@@ -437,15 +435,13 @@ bool Shell::chopString(const string& path, vector<string>& ret, char separator)
     // /
     // ..
     ret.resize(0);
-    if (path.length() == 0)
-        return 1;  // Treat it as an absolute path
+    if (path.length() == 0) return 1;  // Treat it as an absolute path
 
     bool isAbsolute = 0;
     string temp = path;
     if (path[0] == separator) {
         isAbsolute = 1;
-        if (path.length() == 1)
-            return 1;
+        if (path.length() == 1) return 1;
         temp = temp.substr(1);
     }
 
@@ -453,8 +449,7 @@ bool Shell::chopString(const string& path, vector<string>& ret, char separator)
     ret.push_back(temp.substr(0, pos));
     while (pos != string::npos) {
         temp = temp.substr(pos + 1);
-        if (temp.length() == 0)
-            break;
+        if (temp.length() == 0) break;
         pos = temp.find_first_of(separator);
         ret.push_back(temp.substr(0, pos));
     }
@@ -488,8 +483,7 @@ bool Shell::chopPath(const string& path, vector<string>& ret,
     }
     for (unsigned int i = 0; i < ret.size(); ++i) {
         index.push_back(0);
-        if (ret[i] == ".")
-            continue;
+        if (ret[i] == ".") continue;
         if (ret[i] == "..") {
             continue;
         }
@@ -510,8 +504,7 @@ bool Shell::chopPath(const string& path, vector<string>& ret,
 
 ObjId Shell::doFind(const string& path) const
 {
-    if (path == "/" || path == "/root")
-        return ObjId();
+    if (path == "/" || path == "/root") return ObjId();
 
     ObjId curr;
     vector<string> names;
@@ -519,8 +512,7 @@ ObjId Shell::doFind(const string& path) const
     bool isAbsolute = chopPath(path, names, indices);
     assert(names.size() == indices.size());
 
-    if (!isAbsolute)
-        curr = cwe_;
+    if (!isAbsolute) curr = cwe_;
 
     for (unsigned int i = 0; i < names.size(); ++i) {
         if (names[i] == ".") {
@@ -543,8 +535,7 @@ ObjId Shell::doFind(const string& path) const
     }
 
     assert(curr.element());
-    if (curr.element()->numData() <= curr.dataIndex)
-        return ObjId(0, BADINDEX);
+    if (curr.element()->numData() <= curr.dataIndex) return ObjId(0, BADINDEX);
     if (curr.fieldIndex > 0 && !curr.element()->hasFields())
         return ObjId(0, BADINDEX);
 
@@ -672,8 +663,7 @@ void Shell::destroy(const Eref& e, ObjId oid)
     // cout << myNode_ << ": Shell::destroy done for element id: " << eid << ",
     // name = " << eid.element()->getName() << endl;
     n->destroy(oid.eref(), 0);
-    if (cwe_.id == oid.id)
-        cwe_ = ObjId();
+    if (cwe_.id == oid.id) cwe_ = ObjId();
 }
 
 /**
@@ -713,11 +703,9 @@ const Msg* Shell::innerAddMsg(string msgType, ObjId src, string srcField,
         ", dest =" << dest << "." << destField << "\n";
         */
     const Finfo* f1 = src.id.element()->cinfo()->findFinfo(srcField);
-    if (f1 == 0)
-        return 0;
+    if (f1 == 0) return 0;
     const Finfo* f2 = dest.id.element()->cinfo()->findFinfo(destField);
-    if (f2 == 0)
-        return 0;
+    if (f2 == 0) return 0;
 
     // Should have been done before msgs request went out.
     assert(f1->checkTarget(f2));
@@ -844,8 +832,7 @@ void Shell::dropClockMsgs(const vector<ObjId>& list, const string& field)
 void Shell::addClockMsgs(const vector<ObjId>& list, const string& field,
                          unsigned int tick, unsigned int msgIndex)
 {
-    if (!Id(1).element())
-        return;
+    if (!Id(1).element()) return;
     ObjId clockId(1);
     dropClockMsgs(list, field);  // Forbid duplicate PROCESS actions.
     for (vector<ObjId>::const_iterator i = list.begin(); i != list.end(); ++i) {
@@ -854,8 +841,7 @@ void Shell::addClockMsgs(const vector<ObjId>& list, const string& field,
             ss << "proc" << tick;
             const Msg* m = innerAddMsg("OneToAll", clockId, ss.str(), *i, field,
                                        msgIndex++);
-            if (m)
-                i->element()->innerSetTick(tick);
+            if (m) i->element()->innerSetTick(tick);
         }
     }
 }

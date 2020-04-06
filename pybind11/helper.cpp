@@ -205,15 +205,6 @@ ObjId shellConnect(const ObjId& src, const string& srcField, const ObjId& tgt,
     return getShellPtr()->doAddMsg(msgType, src, srcField, tgt, tgtField);
 }
 
-//// Python API.
-// ObjId mooseConnect(const py::object& src, const string& srcField,
-//                   const py::object& tgt, const string& tgtField,
-//                   const string& msgType)
-//{
-//    // py::print("src", src, src.attr("type"));
-//    // return src.connect(srcField, tgt, tgtField, msgType);
-//}
-
 void mooseMoveId(const Id& a, const ObjId& b)
 {
     getShellPtr()->doMove(a, b);
@@ -226,11 +217,22 @@ void mooseMoveObjId(const ObjId& a, const ObjId& b)
 
 ObjId mooseCreate(const string type, const string& path, unsigned int numdata)
 {
-    //auto newpath = moose::normalizePath(path);
+
+#if 0
+    // NOTE: This function is costly because of regex use. But it can be
+    // enabled later.
+    auto newpath = moose::normalizePath(path);
+#endif
+
+    // Split into dirname and basename component.
     auto p = moose::splitPath(path);
-    //if (!mooseExists(p.first))
-    //    throw runtime_error("Parent path " + p.first + " does not exists.");
-    return getShellPtr()->doCreate2(type, ObjId(p.first), p.second, numdata);
+
+    // Name must not end with [\d*] etc.  normalizePath takes care of it if
+    // enabled. 
+    string name(p.second);
+    if(name.back() == ']')
+        name = name.substr(0, name.find_last_of('['));
+    return getShellPtr()->doCreate2(type, ObjId(p.first), name, numdata);
 }
 
 void mooseSetClock(const unsigned int clockId, double dt)

@@ -52,6 +52,12 @@ inline ObjId mooseObjIdObj(const ObjId& obj)
     return ObjId(obj.id, obj.dataIndex, obj.fieldIndex);
 }
 
+inline ObjId mooseObjIdId(const Id& id)
+{
+    return ObjId(id);
+}
+
+
 ObjId loadModelInternal(const string& fname, const string& modelpath,
                         const string& solverclass);
 

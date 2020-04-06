@@ -37,7 +37,10 @@ namespace py = pybind11;
 using namespace std;
 using namespace pybind11::literals;
 
-Id initModule(py::module &m) { return initShell(); }
+Id initModule(py::module &m)
+{
+    return initShell();
+}
 
 bool setFieldGeneric(const ObjId &oid, const string &fieldName,
                      const py::object &val)
@@ -112,12 +115,10 @@ py::object getFieldGeneric(const ObjId &oid, const string &fieldName)
         return __Finfo__::getFieldValue(oid, finfo);
     else if (finfoType == "FieldElementFinfo") {
         return py::cast(__Finfo__(oid, finfo, "FieldElementFinfo"));
-    }
-    else if (finfoType == "LookupValueFinfo") {
+    } else if (finfoType == "LookupValueFinfo") {
         // Return function.
         return py::cast(__Finfo__(oid, finfo, "LookupValueFinfo"));
-    }
-    else if (finfoType == "DestFinfo") {
+    } else if (finfoType == "DestFinfo") {
         // Return a setter function. It can be used to set field on DestFinfo.
         return __Finfo__::getDestFinfoSetterFunc(oid, finfo);
     }
@@ -152,9 +153,9 @@ PYBIND11_MODULE(_moose, m)
     py::class_<__Finfo__>(m, "_Finfo", py::dynamic_attr())
         .def(py::init<const ObjId &, const Finfo *, const char *>())
         .def_property_readonly("type", &__Finfo__::type)
-        .def_property_readonly(
-            "vec",
-            [](const __Finfo__ &finfo) { return MooseVec(finfo.getObjId()); })
+        .def_property_readonly("vec", [](const __Finfo__ &finfo) {
+             return MooseVec(finfo.getObjId());
+         })
         .def_property("num", &__Finfo__::getNumField,
                       &__Finfo__::setNumField)  // Only for FieldElementFinfos
         .def("__call__", &__Finfo__::operator())
@@ -171,20 +172,18 @@ PYBIND11_MODULE(_moose, m)
         .def_property_readonly("numIds", &Id::numIds)
         .def_property_readonly("path", &Id::path)
         .def_property_readonly(
-            "name", [](const Id &id) { return id.element()->getName(); })
+             "name", [](const Id &id) { return id.element()->getName(); })
         .def_property_readonly("id", &Id::value)
         .def("__getitem__", [](const Id &id, size_t i) { return ObjId(id, i); })
+        .def_property_readonly("cinfo",
+                               [](Id &id) { return id.element()->cinfo(); },
+                               py::return_value_policy::reference)
         .def_property_readonly(
-            "cinfo", [](Id &id) { return id.element()->cinfo(); },
-            py::return_value_policy::reference)
-        .def_property_readonly(
-            "type", [](Id &id) { return id.element()->cinfo()->name(); })
-        .def("__repr__",
-             [](const Id &id) {
-                 return "<Id id=" + std::to_string(id.value()) +
-                        " path=" + id.path() +
-                        " class=" + id.element()->cinfo()->name() + ">";
-             })
+             "type", [](Id &id) { return id.element()->cinfo()->name(); })
+        .def("__repr__", [](const Id &id) {
+             return "<Id id=" + std::to_string(id.value()) + " path=" +
+                    id.path() + " class=" + id.element()->cinfo()->name() + ">";
+         })
         /**
          *  Override __eq__ etc.
          */
@@ -206,17 +205,17 @@ PYBIND11_MODULE(_moose, m)
                                [](const ObjId &oid) { return MooseVec(oid); })
         .def_property_readonly("path", &ObjId::path)
         .def_property_readonly(
-            "parent", [](const ObjId &oid) { return Neutral::parent(oid); })
+             "parent", [](const ObjId &oid) { return Neutral::parent(oid); })
         .def_property_readonly(
-            "name", [](const ObjId &oid) { return oid.element()->getName(); })
-        .def_property_readonly(
-            "className",
-            [](const ObjId &oid) { return oid.element()->cinfo()->name(); })
+             "name", [](const ObjId &oid) { return oid.element()->getName(); })
+        .def_property_readonly("className", [](const ObjId &oid) {
+             return oid.element()->cinfo()->name();
+         })
         .def_property_readonly("id", [](ObjId &oid) { return oid.id; })
         .def_property_readonly(
-            "dataIndex", [](ObjId &oid) { return oid.eref().dataIndex(); })
+             "dataIndex", [](ObjId &oid) { return oid.eref().dataIndex(); })
         .def_property_readonly(
-            "type", [](ObjId &oid) { return oid.element()->cinfo()->name(); })
+             "type", [](ObjId &oid) { return oid.element()->cinfo()->name(); })
 
         //--------------------------------------------------------------------
         // Set/Get
@@ -244,24 +243,22 @@ PYBIND11_MODULE(_moose, m)
         .def("connect",
              [](const ObjId &src, const string &srcfield, const ObjId &tgt,
                 const string &tgtfield, const string &type) {
-                 return shellConnect(src, srcfield, tgt, tgtfield, type);
-             })
-        .def(
-            "connect",
-            [](const ObjId &src, const string &srcfield, const MooseVec &tgtvec,
-               const string &tgtfield, const string &type) {
-                return shellConnect(src, srcfield, tgtvec.obj(), tgtfield,
-                                    type);
-            })
+             return shellConnect(src, srcfield, tgt, tgtfield, type);
+         })
+        .def("connect", [](const ObjId &src, const string &srcfield,
+                           const MooseVec &tgtvec, const string &tgtfield,
+                           const string &type) {
+             return shellConnect(src, srcfield, tgtvec.obj(), tgtfield, type);
+         })
         //---------------------------------------------------------------------
         //  Extra
         //---------------------------------------------------------------------
         .def("__repr__", [](const ObjId &oid) {
-            return "<moose." + oid.element()->cinfo()->name() +
-                   " id=" + std::to_string(oid.id.value()) +
-                   " dataIndex=" + to_string(oid.eref().dataIndex()) +
-                   " path=" + oid.path() + ">";
-        });
+             return "<moose." + oid.element()->cinfo()->name() + " id=" +
+                    std::to_string(oid.id.value()) + " dataIndex=" +
+                    to_string(oid.eref().dataIndex()) + " path=" + oid.path() +
+                    ">";
+         });
 
     // Variable.
     py::class_<Variable>(m, "_Variable").def(py::init<>());
@@ -276,7 +273,7 @@ PYBIND11_MODULE(_moose, m)
         .def("baseCinfo", &Cinfo::baseCinfo, py::return_value_policy::reference)
         .def("isA", &Cinfo::isA);
 
-    // Vec
+    // Vec class.
     py::class_<MooseVec>(m, "vec", py::dynamic_attr())
         .def(py::init<const string &, unsigned int, const string &>(), "path"_a,
              "n"_a = 1, "dtype"_a = "Neutral")  // Default
@@ -284,43 +281,38 @@ PYBIND11_MODULE(_moose, m)
         .def("connect", &MooseVec::connectToSingle)
         .def("connect", &MooseVec::connectToVec)
         .def("__len__", &MooseVec::len)
-        .def(
-            "__iter__",
-            [](MooseVec &v) {
-                // Generate an iterator which is a vector<ObjId>. And then
-                // pass the reference to the objects.
-                v.generateIterator();
-                return py::make_iterator(v.objref().begin(), v.objref().end());
-            },
-            py::keep_alive<0, 1>())
+        .def("__iter__",
+             [](MooseVec &v) {
+                 // Generate an iterator which is a vector<ObjId>. And then
+                 // pass the reference to the objects.
+                 v.generateIterator();
+                 return py::make_iterator(v.objref().begin(), v.objref().end());
+             },
+             py::keep_alive<0, 1>())
         .def("__getitem__", &MooseVec::getItem)
         .def("__setattr__", &MooseVec::setAttrOneToOne)
         .def("__setattr__", &MooseVec::setAttrOneToAll)
         .def("__getattr__", &MooseVec::getAttr)
-        .def("__repr__",
-             [](const MooseVec &v) -> string {
-                 return "<moose.vec class=" + v.dtype() + " path=" + v.path() +
-                        " id=" + std::to_string(v.id()) +
-                        " size=" + std::to_string(v.size()) + ">";
-             })
+        .def("__repr__", [](const MooseVec & v)->string {
+             return "<moose.vec class=" + v.dtype() + " path=" + v.path() +
+                    " id=" + std::to_string(v.id()) + " size=" +
+                    std::to_string(v.size()) + ">";
+         })
         // This is to provide old API support. Some scripts use .vec even on a
         // vec to get a vec. So silly or so Zen?!
-        .def_property_readonly(
-            "vec", [](const MooseVec &vec) { return &vec; },
-            py::return_value_policy::reference_internal)
+        .def_property_readonly("vec", [](const MooseVec &vec) { return &vec; },
+                               py::return_value_policy::reference_internal)
         .def_property_readonly("type",
                                [](const MooseVec &v) { return "moose.vec"; });
 
     // Module functions.
-    m.def(
-        "getShell",
-        []() { return reinterpret_cast<Shell *>(Id().eref().data()); },
-        py::return_value_policy::reference);
+    m.def("getShell",
+          []() { return reinterpret_cast<Shell *>(Id().eref().data()); },
+          py::return_value_policy::reference);
 
     m.def("seed", [](unsigned int a) { moose::mtseed(a); });
-    m.def(
-        "rand", [](double a, double b) { return moose::mtrand(a, b); },
-        "a"_a = 0, "b"_a = 1);
+    m.def("rand", [](double a, double b) { return moose::mtrand(a, b); },
+          "a"_a = 0, "b"_a = 1);
     // This is a wrapper to Shell::wildcardFind. The python interface must
     // override it.
     m.def("wildcardFind", &wildcardFind2);
@@ -334,6 +326,7 @@ PYBIND11_MODULE(_moose, m)
     m.def("stop", &mooseStop);
     m.def("element", &mooseObjIdPath);
     m.def("element", &mooseObjIdObj);
+    m.def("element", &mooseObjIdId);
     m.def("exists", &mooseExists);
     m.def("getCwe", &mooseGetCwe);
     m.def("setCwe", &mooseSetCwe);
@@ -341,13 +334,12 @@ PYBIND11_MODULE(_moose, m)
     m.def("useClock", &mooseUseClock);
     m.def("loadModelInternal", &loadModelInternal);
     m.def("getFieldNames", &mooseGetFieldNames);
-    m.def(
-        "getField",
-        [](const ObjId &oid, const string &fieldName, const string &ftype) {
-            // ftype is not needed anymore.
-            return getFieldGeneric(oid, fieldName);
-        },
-        "el"_a, "fieldname"_a, "ftype"_a = "");
+    m.def("getField",
+          [](const ObjId &oid, const string &fieldName, const string &ftype) {
+              // ftype is not needed anymore.
+              return getFieldGeneric(oid, fieldName);
+          },
+          "el"_a, "fieldname"_a, "ftype"_a = "");
     m.def("getFieldDict", &mooseGetFieldDict, "className"_a,
           "finfoType"_a = "");
     m.def("copy", &mooseCopy, "orig"_a, "newParent"_a, "newName"_a, "num"_a = 1,
