@@ -22,9 +22,9 @@ namespace py = pybind11;
 
 MooseVec::MooseVec(const string& path, unsigned int n = 0,
                    const string& dtype = "Neutral")
-    : path_(path)
+    : path_(path), useDataIndex_(false)
 {
-    if (!mooseExists(path))
+    if (! mooseExists(path))
         oid_ = mooseCreateFromPath(dtype, path, n);
     else
         oid_ = ObjId(path);

@@ -42,13 +42,31 @@ def test_vec():
 
 def test_finfos():
     s = moose.SimpleSynHandler('synh')
-    try:
-        print(s.synapse[0])
-    except Exception as e:
-        assert True
-        #  print(e, "Great. We must got an exception here")
-    else:
-        raise Exception("This should have failed")
+
+    s.numSynapses = 10
+    assert s.numSynapses == 10
+
+    syns = s.synapse.vec
+    print(syns)
+    assert len(syns) == 10
+    for i, s in enumerate(syns):
+        print(s, type(s))
+        s.weight = 9.0
+    for s in syns:
+        assert s.weight == 9.0
+    print(syns.weight)
+
+    # this is a shorthand for above for loop.
+    #  syns.weight = 9.0
+
+     # try:
+     #     print(syns[11])
+     # except Exception as e:
+     #     print(e, "Great. We must got an exception here")
+     # else:
+     #     print(syns[11])
+     #     raise Exception("This should have failed")
+
     a = moose.Pool('x13213')
     a.concInit = 0.1
     assert 0.1 == moose.getField(a, 'concInit')

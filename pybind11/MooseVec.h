@@ -39,7 +39,6 @@ public:
 
     vector<ObjId> objs() const;
 
-
     ObjId connectToSingle(const string& srcfield, const ObjId& tgt, const string& tgtfield, const string& msgtype);
 
     ObjId connectToVec(const string& srcfield, const MooseVec& tgt, const string& tgtfield, const string& msgtype);
@@ -54,8 +53,14 @@ private:
     ObjId oid_;
     std::string path_;
 
-    // Iterator interface.
+    // Objects 
+    // Turns a ObjId to vector. Use dataIndex whenever available such as 
+    // >>> a = moose.Pool('a', 100)
+    // >>> av = moose.vec(a)
+    // will use dataIndex for indexing.
+    // For FieldElementInfo, create objects.
     vector<ObjId> iterator_;
+    bool useDataIndex_;
 };
 
 #endif /* end of include guard: MOOSE_VEC_H */

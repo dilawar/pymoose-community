@@ -298,7 +298,6 @@ GraupnerBrunel2012CaPlasticitySynHandler&
 
 void GraupnerBrunel2012CaPlasticitySynHandler::vSetNumSynapses( const unsigned int v )
 {
-    cout << "Setting numSynapses " << v << endl;
     unsigned int prevSize = synapses_.size();
     synapses_.resize( v );
     for ( unsigned int i = prevSize; i < v; ++i )
