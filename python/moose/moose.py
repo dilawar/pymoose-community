@@ -39,6 +39,7 @@ class PyObjId(_moose._ObjId):
             obj = _moose._ObjId(x)
         else:
             raise RuntimeError("%s is not supported" % x)
+        super().__init__(obj.id, obj.dataIndex)
         """
         #if self.__class__ is None:
         #    self.__class__ = x.className

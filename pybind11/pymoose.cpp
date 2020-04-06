@@ -51,7 +51,13 @@ bool setFieldGeneric(const ObjId &oid, const string &fieldName,
         throw runtime_error(fieldName + " is not found on " + oid.path());
         return false;
     }
+
     auto fieldType = finfo->rttiType();
+
+    // Remove any space in fieldType
+    fieldType.erase(
+        std::remove_if(fieldType.begin(), fieldType.end(), ::isspace),
+        fieldType.end());
 
     if (fieldType == "double")
         return Field<double>::set(oid, fieldName, val.cast<double>());
@@ -60,10 +66,10 @@ bool setFieldGeneric(const ObjId &oid, const string &fieldName,
                                           val.cast<vector<double>>());
     if (fieldType == "float")
         return Field<float>::set(oid, fieldName, val.cast<float>());
-    if (fieldType == "unsigned int")
+    if (fieldType == "unsignedint")
         return Field<unsigned int>::set(oid, fieldName,
                                         val.cast<unsigned int>());
-    if (fieldType == "unsigned long")
+    if (fieldType == "unsignedlong")
         return Field<unsigned long>::set(oid, fieldName,
                                          val.cast<unsigned long>());
     if (fieldType == "int")
@@ -86,11 +92,22 @@ bool setFieldGeneric(const ObjId &oid, const string &fieldName,
         // NB: Note that we cast to ObjId here and not to Id.
         return Field<Id>::set(oid.id, fieldName, val.cast<ObjId>());
     }
+    if (fieldType == "vector<double>") {
+        // NB: Note that we cast to ObjId here and not to Id.
+        return Field<vector<double>>::set(
+            oid.id, fieldName, val.cast<vector<double>>());
+    }
+    if (fieldType == "vector<vector<double>>") {
+        // NB: Note that we cast to ObjId here and not to Id.
+        return Field<vector<vector<double>>>::set(
+            oid.id, fieldName, val.cast<vector<vector<double>>>());
+    }
     if (fieldType == "Variable")
-        return Field<Variable>::set(oid, fieldName, val.cast<Variable>());
+        if (fieldType == "Variable")
+            return Field<Variable>::set(oid, fieldName, val.cast<Variable>());
 
-    throw runtime_error("NotImplemented::setField : " + fieldName +
-                        " with value type " + fieldType);
+    throw runtime_error("NotImplemented::setField: '" + fieldName +
+                        "' with value type '" + fieldType + "'.");
     return false;
 }
 
@@ -190,8 +207,10 @@ PYBIND11_MODULE(_moose, m)
         .def("__eq__", [](const Id &a, const Id &b) { return a == b; })
         .def("__ne__", [](const Id &a, const Id &b) { return a != b; });
 
-    // I can use py::metaclass here to generate moose.Neutral etc types but
-    // lets do it in moose.py.
+    /**
+     * @name ObjId. It is a base of all other moose objects.
+     * @{ */
+    /**  @} */
     py::class_<ObjId>(m, "_ObjId")
         .def(py::init<>())
         .def(py::init<Id>())
