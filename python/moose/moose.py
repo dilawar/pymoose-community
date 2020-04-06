@@ -21,7 +21,7 @@ __class_types__ = {}
 
 
 class PyObjId(_moose._ObjId):
-    __class__ = ''
+    __class__ = None
 
     def __init__(self, x, ndata=1, **kwargs):
         """
@@ -39,7 +39,6 @@ class PyObjId(_moose._ObjId):
         else:
             raise RuntimeError("%s is not supported" % x)
         """
-
         obj = _moose.create(self.__class__, x, ndata)
         for k, v in kwargs.items():
             obj.setField(k, v)
@@ -114,10 +113,12 @@ def connect(src, srcfield, dest, destfield, msgtype="Single"):
 
 
 def copy(elem, newParent, newName="", n=1):
+    # FIXME: move to pybind11/pymoose.cpp
+
     if isinstance(elem, str):
         elem = _moose.element(elem)
-    if isinstance(newName, str):
-        newParent = PyObjId(newParent)
+    if isinstance(newParent, str):
+        newParent = _moose.element(newParent)
     if not newName:
         newName = elem.name
     return _moose.copy(elem.id, newParent, newName, n, False, False)
