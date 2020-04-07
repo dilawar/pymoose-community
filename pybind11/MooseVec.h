@@ -10,10 +10,13 @@
 #ifndef MOOSE_VEC_H
 #define MOOSE_VEC_H
 
-class MooseVec {
+class MooseVec 
+{
 
 public:
     MooseVec(const string& path, unsigned int n, const string& dtype);
+
+    MooseVec(const Id& id);
 
     MooseVec(const ObjId& oid);
 

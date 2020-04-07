@@ -178,6 +178,8 @@ PYBIND11_MODULE(_moose, m)
         .def("__getitem__", &__Finfo__::getItem)
         .def("__setitem__", &__Finfo__::setItem);
 
+    // A thin wrapper around Id from ../basecode/Id.h . Usually this is shows
+    // at moose.vec.
     py::class_<Id>(m, "_Id")
         .def(py::init<>())
         .def(py::init<unsigned int>())

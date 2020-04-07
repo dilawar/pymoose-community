@@ -19,6 +19,8 @@
 
 #include "../shell/Shell.h"
 
+#include "MooseVec.h"
+
 namespace py = pybind11;
 using namespace std;
 
@@ -134,7 +136,7 @@ inline bool mooseDeleteStr(const string& path)
 ObjId mooseCreate(const string type, const string& path,
                   unsigned int numdata = 1);
 
-ObjId mooseCopy(const py::object& orig, ObjId newParent, string newName,
+MooseVec mooseCopy(const py::object& orig, ObjId newParent, string newName,
                 unsigned int n, bool toGlobal, bool copyExtMsgs);
 
 

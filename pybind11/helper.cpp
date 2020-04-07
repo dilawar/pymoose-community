@@ -22,6 +22,8 @@
 #include "../external/pybind11/include/pybind11/pybind11.h"
 #include "../external/pybind11/include/pybind11/stl.h"
 
+namespace py = pybind11;
+
 // See
 // https://pybind11.readthedocs.io/en/stable/advanced/cast/stl.html#binding-stl-containers
 // #include "../external/pybind11/include/pybind11/stl_bind.h"
@@ -43,8 +45,6 @@
 #include "Finfo.h"
 
 using namespace std;
-
-namespace py = pybind11;
 
 using namespace std;
 
@@ -138,13 +138,11 @@ ObjId createIdFromPath(string path, string type, unsigned int numData)
     return nId;
 }
 
-
 bool mooseExists(const string& p)
 {
     string path = moose::normalizePath(p);
     return Id(path) != Id() || path == "/" || path == "/root";
 }
-
 
 ObjId loadModelInternal(const string& fname, const string& modelpath,
                         const string& solverclass = "")
@@ -215,7 +213,6 @@ void mooseMoveObjId(const ObjId& a, const ObjId& b)
     getShellPtr()->doMove(a.id, b);
 }
 
-
 void mooseSetClock(const unsigned int clockId, double dt)
 {
     getShellPtr()->doSetClock(clockId, dt);
@@ -243,10 +240,9 @@ py::object mooseGetCwe()
     return py::cast(mooseGetCweId());
 }
 
-
 void mooseSetCwe(const py::object& arg)
 {
-    if(py::isinstance<py::str>(arg))
+    if (py::isinstance<py::str>(arg))
         return getShellPtr()->setCwe(ObjId(arg.cast<string>()));
     return getShellPtr()->setCwe(arg.cast<ObjId>());
 }
@@ -319,13 +315,14 @@ void mooseStop()
     getShellPtr()->doStop();
 }
 
-ObjId mooseCopy(const py::object& elem, ObjId newParent, string newName,
-                unsigned int n = 1, bool toGlobal = false,
-                bool copyExtMsgs = false)
+// Id is synonym with Id in previous binding.
+MooseVec mooseCopy(const py::object& elem, ObjId newParent, string newName,
+                   unsigned int n = 1, bool toGlobal = false,
+                   bool copyExtMsgs = false)
 {
     Id orig = py::cast<Id>(elem);
-    return ObjId(getShellPtr()->doCopy(orig, newParent, newName, n, toGlobal,
-                                       copyExtMsgs));
+    return MooseVec(getShellPtr()->doCopy(orig, newParent, newName, n, toGlobal,
+                                          copyExtMsgs));
 }
 
 /**

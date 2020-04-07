@@ -34,6 +34,10 @@ MooseVec::MooseVec(const ObjId& oid) : oid_(oid), path_(oid.path())
 {
 }
 
+MooseVec::MooseVec(const Id& id) : oid_(ObjId(id)), path_(id.path())
+{
+}
+
 const string MooseVec::dtype() const
 {
     return oid_.element()->cinfo()->name();
