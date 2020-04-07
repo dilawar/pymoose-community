@@ -21,7 +21,7 @@
 #include "MooseVec.h"
 
 template <typename T>
-void setField(const ObjId& id, const string& fname, T val)
+inline void setField(const ObjId& id, const string& fname, T val)
 {
     // cout << "Setting " << fname << " to value " << val << typeid(T).name() <<
     // endl;
@@ -29,7 +29,7 @@ void setField(const ObjId& id, const string& fname, T val)
 }
 
 template <typename T>
-T getField(const ObjId& id, const string& fname)
+inline T getField(const ObjId& id, const string& fname)
 {
     return Field<T>::get(id, fname);
 }
@@ -37,7 +37,7 @@ T getField(const ObjId& id, const string& fname)
 // FIXME: Is it most efficient?
 // See discussion here: https://github.com/pybind/pybind11/issues/1042
 template <typename T = double>
-py::array_t<T> getFieldNumpy(const ObjId& id, const string& fname)
+inline py::array_t<T> getFieldNumpy(const ObjId& id, const string& fname)
 {
     auto v = Field<vector<T>>::get(id, fname);
     return py::array_t<T>(v.size(), v.data());

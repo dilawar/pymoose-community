@@ -145,6 +145,7 @@ py::object getFieldGeneric(const ObjId &oid, const string &fieldName)
     return pybind11::none();
 }
 
+
 /* --------------------------------------------------------------------------*/
 /**
  * @Synopsis  MOOSE extension module _moose.so.
@@ -316,7 +317,7 @@ PYBIND11_MODULE(_moose, m)
         .def("__getitem__", &MooseVec::getItem)
         .def("__setattr__", &MooseVec::setAttrOneToOne)
         .def("__setattr__", &MooseVec::setAttrOneToAll)
-        .def("__getattr__", &MooseVec::getAttr)
+        .def("__getattr__", &MooseVec::getAttributeNumpy)
         .def("__repr__", [](const MooseVec & v)->string {
              return "<moose.vec class=" + v.dtype() + " path=" + v.path() +
                     " id=" + std::to_string(v.id()) + " size=" +

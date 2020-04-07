@@ -86,8 +86,9 @@ public:
                  NodePolicy nodePolicy = MooseBlockBalance,
                  unsigned int preferredNode = 1 );
 
-    // Python bindings.
-    ObjId doCreate2( string type, ObjId parent, string name, unsigned int numData);
+    // Same as before but with default nodePolicy and preferredNode. We are
+    // hidning them away from the python bindings.
+    Id doCreate2( string type, ObjId parent, string name, unsigned int numData);
 
     /**
      * Delete specified Element and all its children and all

@@ -42,7 +42,7 @@ bool mooseExists(const string& path);
 void mooseMoveId(const Id& a, const ObjId& b);
 void mooseMoveObjId(const ObjId& a, const ObjId& b);
 
-inline ObjId mooseObjIdPath(const string& p)
+inline MooseVec mooseObjIdPath(const string& p)
 {
     // handle relative path.
     string path(p);
@@ -51,19 +51,18 @@ inline ObjId mooseObjIdPath(const string& p)
     ObjId oid(path);
     if (oid.bad()) {
         cerr << "moose_element: " << path << " does not exist!" << endl;
-        return ObjId(Id());
     }
-    return oid;
+    return MooseVec(oid);
 }
 
-inline ObjId mooseObjIdObj(const ObjId& obj)
+inline MooseVec mooseObjIdObj(const ObjId& obj)
 {
-    return ObjId(obj.id, obj.dataIndex, obj.fieldIndex);
+    return MooseVec(obj);
 }
 
-inline ObjId mooseObjIdId(const Id& id)
+inline MooseVec mooseObjIdId(const Id& id)
 {
-    return ObjId(id);
+    return MooseVec(id);
 }
 
 inline ObjId mooseCreateFromPath(const string type, const string& p, unsigned int numdata)

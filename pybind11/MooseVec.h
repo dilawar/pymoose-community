@@ -43,7 +43,8 @@ public:
 
     void setAttrOneToOne(const string& name, const py::sequence& val);
 
-    vector<py::object> getAttr(const string& name);
+    vector<py::object> getAttribute(const string& name);
+    py::array_t<double> getAttributeNumpy(const string& name);
 
     vector<ObjId> objs() const;
 
@@ -67,8 +68,7 @@ private:
     // >>> av = moose.vec(a)
     // will use dataIndex for indexing.
     // For FieldElementInfo, create objects.
-    vector<ObjId> iterator_;
-    bool useDataIndex_;
+    vector<ObjId> objs_;
 };
 
 #endif /* end of include guard: MOOSE_VEC_H */

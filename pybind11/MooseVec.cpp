@@ -22,12 +22,9 @@ namespace py = pybind11;
 
 MooseVec::MooseVec(const string& path, unsigned int n = 0,
                    const string& dtype = "Neutral")
-    : path_(path), useDataIndex_(false)
+    : path_(path)
 {
-    if (! mooseExists(path))
-        oid_ = mooseCreateFromPath(dtype, path, n);
-    else
-        oid_ = ObjId(path);
+    oid_ = ObjId(path);
 }
 
 MooseVec::MooseVec(const ObjId& oid) : oid_(oid), path_(oid.path())
@@ -100,13 +97,43 @@ void MooseVec::setAttrOneToOne(const string& name, const py::sequence& val)
         setFieldGeneric(getItem(i), name, val[i]);
 }
 
-vector<py::object> MooseVec::getAttr(const string& name)
+vector<py::object> MooseVec::getAttribute(const string& name)
 {
     vector<py::object> res(size());
     for (unsigned int i = 0; i < size(); i++)
         res[i] = getFieldGeneric(getItem(i), name);
     return res;
 }
+
+// FIXME: Only double is supported here. Not sure if this is enough.
+py::array_t<double> MooseVec::getAttributeNumpy(const string &name)
+{
+    auto cinfo = oid_.element()->cinfo();
+    auto finfo = cinfo->findFinfo(name);
+
+    if (!finfo) {
+        throw py::key_error(name + " is not found on '" + oid_.path() + "'.");
+    }
+
+    string finfoType = cinfo->getFinfoType(finfo);
+
+    // Either return a simple value (ValueFinfo), list, dict or DestFinfo
+    // setter.
+    // The DestFinfo setter is a function.
+
+    vector<double> res(size());
+    if (finfoType == "ValueFinfo") {
+        for (unsigned int i = 0; i < size(); i++)
+            res[i] = getField<double>(getItem(i), name);
+        return py::array_t<double>(res.size(), res.data());
+    }
+
+    throw runtime_error("getAttributeNumpy::NotImplemented : " + name +
+                        " with rttType " + finfo->rttiType() + " and type: '" +
+                        finfoType + "'");
+    return py::array_t<double>();
+}
+
 
 ObjId MooseVec::connectToSingle(const string& srcfield, const ObjId& tgt,
                                 const string& tgtfield, const string& msgtype)
@@ -144,11 +171,11 @@ size_t MooseVec::id() const
 
 void MooseVec::generateIterator()
 {
-    iterator_.resize(size());
-    for (size_t i = 0; i < size(); i++) iterator_[i] = getItem(i);
+    objs_.resize(size());
+    for (size_t i = 0; i < size(); i++) objs_[i] = getItem(i);
 }
 
 const vector<ObjId>& MooseVec::objref() const
 {
-    return iterator_;
+    return objs_;
 }

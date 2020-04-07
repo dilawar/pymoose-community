@@ -235,7 +235,7 @@ Id Shell::doCreate(string type, ObjId parent, string name, unsigned int numData,
     return Id();
 }
 
-ObjId Shell::doCreate2(string type, ObjId parent, string name,
+Id Shell::doCreate2(string type, ObjId parent, string name,
                        unsigned int numData)
 {
     // if (parent.bad()) {

@@ -3,7 +3,9 @@ __copyright__  = "Copyright 2019-, Dilawar Singh"
 __maintainer__ = "Dilawar Singh"
 __email__      = "dilawars@ncbs.res.in"
 
+
 import moose
+import random
 import numpy as np
 
 
@@ -39,7 +41,9 @@ def test_vec():
     assert len(v) == 100, len(v)
     assert v == v.vec
     assert v[0] == v.vec[0], (v[0], v.vec[0])
-
+    x = [random.random() for i in range(100)]
+    v.conc = x
+    assert np.equal(v.conc, x).all()
 
 def test_finfos():
     s = moose.SimpleSynHandler('synh')
@@ -48,14 +52,11 @@ def test_finfos():
     assert s.numSynapses == 10
 
     syns = s.synapse.vec
-    print(syns)
     assert len(syns) == 10
     for i, s in enumerate(syns):
-        print(s, type(s))
         s.weight = 9.0
     for s in syns:
         assert s.weight == 9.0
-    print(syns.weight)
 
     # this is a shorthand for above for loop.
     syns.weight = 11.121
@@ -138,12 +139,11 @@ def main():
     test_children()
     test_finfos()
     test_other()
-    test_vec()
     test_delete()
     test_wrapper()
     test_inheritance()
     test_access()
-
+    test_vec()
 
 if __name__ == '__main__':
     main()
