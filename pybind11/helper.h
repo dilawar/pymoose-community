@@ -22,6 +22,12 @@
 namespace py = pybind11;
 using namespace std;
 
+ObjId mooseGetCweId();
+py::object mooseGetCwe();
+
+void mooseSetCwe(const py::object& arg);
+// void mooseSetCwe(const ObjId& oid);
+
 inline Shell* getShellPtr(void)
 {
     return reinterpret_cast<Shell*>(Id().eref().data());
@@ -34,8 +40,12 @@ bool mooseExists(const string& path);
 void mooseMoveId(const Id& a, const ObjId& b);
 void mooseMoveObjId(const ObjId& a, const ObjId& b);
 
-inline ObjId mooseObjIdPath(const string& path)
+inline ObjId mooseObjIdPath(const string& p)
 {
+    // handle relative path.
+    string path(p);
+    if(p[0] != '/')
+        path = mooseGetCweId().path() + '/' + path;
     ObjId oid(path);
     if (oid.bad()) {
         cerr << "moose_element: " << path << " does not exist!" << endl;
@@ -54,7 +64,7 @@ inline ObjId mooseObjIdId(const Id& id)
     return ObjId(id);
 }
 
-inline ObjId mooseCreateFromPath(const string type, const string& path, unsigned int numdata)
+inline ObjId mooseCreateFromPath(const string type, const string& p, unsigned int numdata)
 {
 
 #if 0
@@ -62,6 +72,11 @@ inline ObjId mooseCreateFromPath(const string type, const string& path, unsigned
     // enabled later.
     auto newpath = moose::normalizePath(path);
 #endif
+
+    // relative path.
+    string path(p);
+    if(path[0] != '/')
+        path = mooseGetCweId().path()+'/'+path;
 
     // If path exists and user is asking for the same type then return the
     // object else raise exception.
@@ -72,14 +87,14 @@ inline ObjId mooseCreateFromPath(const string type, const string& path, unsigned
     }
 
     // Split into dirname and basename component.
-    auto p = moose::splitPath(path);
+    auto pp = moose::splitPath(path);
 
     // Name must not end with [\d*] etc.  normalizePath takes care of it if
     // enabled. 
-    string name(p.second);
+    string name(pp.second);
     if(name.back() == ']')
         name = name.substr(0, name.find_last_of('['));
-    return getShellPtr()->doCreate2(type, ObjId(p.first), name, numdata);
+    return getShellPtr()->doCreate2(type, ObjId(pp.first), name, numdata);
 }
 
 inline ObjId mooseCreateFromObjId(const string& type, const ObjId& oid, unsigned int numData)
@@ -122,8 +137,6 @@ ObjId mooseCreate(const string type, const string& path,
 ObjId mooseCopy(const py::object& orig, ObjId newParent, string newName,
                 unsigned int n, bool toGlobal, bool copyExtMsgs);
 
-py::object mooseGetCwe();
-void mooseSetCwe(const ObjId& oid);
 
 void mooseSetClock(const unsigned int clockId, double dt);
 

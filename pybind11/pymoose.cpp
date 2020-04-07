@@ -297,6 +297,8 @@ PYBIND11_MODULE(_moose, m)
         .def(py::init<const ObjId &>())
         .def("connect", &MooseVec::connectToSingle)
         .def("connect", &MooseVec::connectToVec)
+        .def_property_readonly("name", &MooseVec::name)
+        .def_property_readonly("path", &MooseVec::path)
         .def("__len__", &MooseVec::len)
         .def("__iter__",
              [](MooseVec &v) {

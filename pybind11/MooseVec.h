@@ -25,6 +25,8 @@ public:
 
     const string path() const;
 
+    const string name() const;
+
     unsigned int len();
 
     const ObjId& getItemRef(const size_t i) const;

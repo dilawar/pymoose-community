@@ -46,6 +46,11 @@ const size_t MooseVec::size() const
     return oid_.element()->numData();
 }
 
+const string MooseVec::name() const
+{
+    return oid_.element()->getName();
+}
+
 const string MooseVec::path() const
 {
     return path_;

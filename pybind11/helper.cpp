@@ -233,14 +233,22 @@ void mooseUseClock(size_t tick, const string& path, const string& field)
  * @Returns  cwe.
  */
 /* ----------------------------------------------------------------------------*/
-py::object mooseGetCwe()
+ObjId mooseGetCweId()
 {
-    return py::cast(getShellPtr()->getCwe());
+    return getShellPtr()->getCwe();
 }
 
-void mooseSetCwe(const ObjId& oid)
+py::object mooseGetCwe()
 {
-    return getShellPtr()->setCwe(oid);
+    return py::cast(mooseGetCweId());
+}
+
+
+void mooseSetCwe(const py::object& arg)
+{
+    if(py::isinstance<py::str>(arg))
+        return getShellPtr()->setCwe(ObjId(arg.cast<string>()));
+    return getShellPtr()->setCwe(arg.cast<ObjId>());
 }
 
 map<string, string> mooseGetFieldDict(const string& className,
