@@ -94,8 +94,8 @@ bool setFieldGeneric(const ObjId &oid, const string &fieldName,
     }
     if (fieldType == "vector<double>") {
         // NB: Note that we cast to ObjId here and not to Id.
-        return Field<vector<double>>::set(
-            oid.id, fieldName, val.cast<vector<double>>());
+        return Field<vector<double>>::set(oid.id, fieldName,
+                                          val.cast<vector<double>>());
     }
     if (fieldType == "vector<vector<double>>") {
         // NB: Note that we cast to ObjId here and not to Id.

@@ -24,6 +24,16 @@ public:
             return py::cast(LookupField<T, bool>::get(oid, fname, key));
         if (tgtType == "double")
             return py::cast(LookupField<T, double>::get(oid, fname, key));
+        if (tgtType == "unsigned int")
+            return py::cast(LookupField<T, unsigned int>::get(oid, fname, key));
+        if (tgtType == "int")
+            return py::cast(LookupField<T, int>::get(oid, fname, key));
+        if (tgtType == "string")
+            return py::cast(LookupField<T, string>::get(oid, fname, key));
+        if (tgtType == "ObjId")
+            return py::cast(LookupField<T, ObjId>::get(oid, fname, key));
+        if (tgtType == "Id")
+            return py::cast(LookupField<T, Id>::get(oid, fname, key));
         if (tgtType == "vector<double>")
             return py::cast(
                 LookupField<T, vector<double>>::get(oid, fname, key));

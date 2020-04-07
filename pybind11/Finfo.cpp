@@ -27,8 +27,6 @@ namespace py = pybind11;
 __Finfo__::__Finfo__(const ObjId& oid, const Finfo* f, const string& finfoType)
     : oid_(oid), f_(f), finfoType_(finfoType)
 {
-    // cout << " __Finfo__ type " << finfoType << endl;
-
     if (finfoType == "DestFinfo")
         func_ = [oid, f](const py::object& key) {
             return getLookupValueFinfoItem(oid, f, key);
@@ -103,6 +101,14 @@ py::object __Finfo__::getLookupValueFinfoItem(const ObjId& oid, const Finfo* f,
     } else if (srcType == "unsigned int") {
         auto k = py::cast<unsigned int>(key);
         r = getLookupValueFinfoItemInner<unsigned int>(oid, f, k, tgtType);
+    } else if (srcType == "ObjId") {
+        auto k = py::cast<ObjId>(key);
+        r = getLookupValueFinfoItemInner<ObjId>(oid, f, k, tgtType);
+    } else if (srcType == "Id") {
+        auto k = py::cast<Id>(key);
+        r = getLookupValueFinfoItemInner<Id>(oid, f, k, tgtType);
+    } else {
+        r = py::none();
     }
 
     if (r.is(py::none())) {
@@ -116,12 +122,13 @@ py::object __Finfo__::getLookupValueFinfoItem(const ObjId& oid, const Finfo* f,
 
 py::object __Finfo__::getItem(const py::object& key)
 {
-    // py::print("Fetching value for", key, finfoType_);
+    py::print("Fetching value for", key, finfoType_);
     return func_(key);
 }
 
 py::object __Finfo__::operator()(const py::object& key)
 {
+    py::print("Calling function with key", key);
     return func_(key);
 }
 
@@ -166,7 +173,6 @@ py::cpp_function __Finfo__::getDestFinfoSetterFunc2(const ObjId& oid,
                         oid.path());
 }
 
-
 // Get DestFinfo1.
 py::cpp_function __Finfo__::getDestFinfoSetterFunc1(const ObjId& oid,
                                                     const Finfo* finfo,
@@ -180,17 +186,13 @@ py::cpp_function __Finfo__::getDestFinfoSetterFunc1(const ObjId& oid,
         return func;
     }
 
-    if (ftype == "double") 
-        return getSetGetFunc1<double>(oid, fname);
-    if (ftype == "ObjId") 
-        return getSetGetFunc1<ObjId>(oid, fname);
-    if (ftype == "Id")
-       return getSetGetFunc1<Id>(oid, fname);
-    if (ftype == "vector<Id>") 
-        return getSetGetFunc1<vector<Id>>(oid, fname);
-    if (ftype == "vector<ObjId>") 
+    if (ftype == "double") return getSetGetFunc1<double>(oid, fname);
+    if (ftype == "ObjId") return getSetGetFunc1<ObjId>(oid, fname);
+    if (ftype == "Id") return getSetGetFunc1<Id>(oid, fname);
+    if (ftype == "vector<Id>") return getSetGetFunc1<vector<Id>>(oid, fname);
+    if (ftype == "vector<ObjId>")
         return getSetGetFunc1<vector<ObjId>>(oid, fname);
-    if (ftype == "vector<double>") 
+    if (ftype == "vector<double>")
         return getSetGetFunc1<vector<double>>(oid, fname);
 
     throw runtime_error("getFieldPropertyDestFinfo1::NotImplemented " + fname +
@@ -257,7 +259,6 @@ py::list __Finfo__::getElementFinfo(const ObjId& objid, const Finfo* f)
 py::object __Finfo__::getElementFinfoItem(const ObjId& oid, const Finfo* f,
                                           unsigned int index)
 {
-    // cout << "Fetching at index " << index << " " << getNumField() << endl ;
     if (index >= getNumFieldStatic(oid, f)) {
         throw py::index_error("Index " + to_string(index) + " out of range.");
     }
@@ -269,11 +270,6 @@ string __Finfo__::type() const
 {
     return finfoType_;
 }
-
-// py::object __Finfo__::getAttr(const string& key)
-// {
-// std::cout << "Accessing " << key << std::endl;
-// }
 
 unsigned int __Finfo__::getNumField()
 {
