@@ -260,8 +260,8 @@ PYBIND11_MODULE(_moose, m)
         //---------------------------------------------------------------------
         //  Connect
         //---------------------------------------------------------------------
-        .def("connect", &shellConnect, "srcfield"_a, "dest"_a
-                , "destfield"_a, "msgtype"_a="Single")
+        .def("connect", &shellConnect, "srcfield"_a, "dest"_a , "destfield"_a, "msgtype"_a="Single")
+        .def("connect", &shellConnectToVec, "srcfield"_a, "dest"_a , "destfield"_a, "msgtype"_a="Single")
         //---------------------------------------------------------------------
         //  Extra
         //---------------------------------------------------------------------
@@ -302,6 +302,7 @@ PYBIND11_MODULE(_moose, m)
              },
              py::keep_alive<0, 1>())
         .def("__getitem__", &MooseVec::getItem)
+
         .def("__setattr__", &MooseVec::setAttrOneToOne<double>)
         .def("__setattr__", &MooseVec::setAttrOneToOne<string>)
         .def("__setattr__", &MooseVec::setAttrOneToOne<bool>)

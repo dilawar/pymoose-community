@@ -130,6 +130,9 @@ ObjId getElementFieldItem(const ObjId& objid, const string& fname,
 ObjId shellConnect(const ObjId& src, const string& srcField, const ObjId& tgt,
                    const string& tgtField, const string& msgType);
 
+ObjId shellConnectToVec(const ObjId& src, const string& srcField, const MooseVec& tgt,
+                   const string& tgtField, const string& msgType);
+
 inline bool mooseDeleteObj(const ObjId& oid)
 {
     return getShellPtr()->doDelete(oid);

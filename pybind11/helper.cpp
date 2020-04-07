@@ -197,10 +197,13 @@ ObjId getElementFieldItem(const ObjId& objid, const string& fname,
 ObjId shellConnect(const ObjId& src, const string& srcField, const ObjId& tgt,
                    const string& tgtField, const string& msgType)
 {
-    // cout << "[" << msgType << "] Connect " << src.path() << "." << srcField
-    // << " --> " << tgt.path()
-    // << "." << tgtField << endl;
     return getShellPtr()->doAddMsg(msgType, src, srcField, tgt, tgtField);
+}
+
+ObjId shellConnectToVec(const ObjId& src, const string& srcField, const MooseVec& tgt,
+                   const string& tgtField, const string& msgType)
+{
+    return getShellPtr()->doAddMsg(msgType, src, srcField, tgt.obj(), tgtField);
 }
 
 #if 0
