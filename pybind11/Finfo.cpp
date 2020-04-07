@@ -93,28 +93,24 @@ py::object __Finfo__::getLookupValueFinfoItem(const ObjId& oid, const Finfo* f,
     string srcType = srcDestType[0];
     string tgtType = srcDestType[1];
 
-    py::object r;
+    py::object r = py::none();
 
     if (srcType == "string") {
         auto k = py::cast<string>(key);
-        r = getLookupValueFinfoItemInner<string>(oid, f, k, tgtType);
+        return getLookupValueFinfoItemInner<string>(oid, f, k, tgtType);
     } else if (srcType == "unsigned int") {
         auto k = py::cast<unsigned int>(key);
-        r = getLookupValueFinfoItemInner<unsigned int>(oid, f, k, tgtType);
+        return getLookupValueFinfoItemInner<unsigned int>(oid, f, k, tgtType);
     } else if (srcType == "ObjId") {
         auto k = py::cast<ObjId>(key);
-        r = getLookupValueFinfoItemInner<ObjId>(oid, f, k, tgtType);
+        return getLookupValueFinfoItemInner<ObjId>(oid, f, k, tgtType);
     } else if (srcType == "Id") {
         auto k = py::cast<Id>(key);
-        r = getLookupValueFinfoItemInner<Id>(oid, f, k, tgtType);
+        return getLookupValueFinfoItemInner<Id>(oid, f, k, tgtType);
     } else {
-        r = py::none();
-    }
-
-    if (r.is(py::none())) {
         py::print("getLookupValueFinfoItem::NotImplemented for key:", key,
-                  "srcType:", srcType, "and tgtType:", tgtType, "path: ",
-                  oid.path());
+                "srcType:", srcType, "and tgtType:", tgtType, "path: ",
+                oid.path());
         throw runtime_error("getLookupValueFinfoItem::NotImplemented error");
     }
     return r;
@@ -122,13 +118,11 @@ py::object __Finfo__::getLookupValueFinfoItem(const ObjId& oid, const Finfo* f,
 
 py::object __Finfo__::getItem(const py::object& key)
 {
-    py::print("Fetching value for", key, finfoType_);
     return func_(key);
 }
 
 py::object __Finfo__::operator()(const py::object& key)
 {
-    py::print("Calling function with key", key);
     return func_(key);
 }
 

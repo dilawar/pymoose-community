@@ -45,6 +45,7 @@ public:
 
         py::print("Warning: Could not find", fname, "for key", key, "(type",
                   tgtType, ") on path ", oid.path());
+        throw py::key_error("Attribute error.");
         return py::none();
     }
 

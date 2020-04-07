@@ -117,9 +117,7 @@ py::object getFieldGeneric(const ObjId &oid, const string &fieldName)
     auto finfo = cinfo->findFinfo(fieldName);
 
     if (!finfo) {
-        cout << "Error: " << fieldName << " is not found on " << oid.path()
-             << endl;
-        return pybind11::none();
+        throw py::key_error(fieldName + " is not found on '" + oid.path() + "'.");
     }
 
     string finfoType = cinfo->getFinfoType(finfo);
