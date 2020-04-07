@@ -61,12 +61,7 @@ def mooseAddChemSolver(modelRoot, solver):
     Add the solvers only if all are Chemical compartment
     """
     compts = moose.wildcardFind(modelRoot + '/##[ISA=ChemCompt]')
-    print([(x.__metaclass__, x.className) for x in compts] )
-    print(compts, solver, '1111')
-    print([isinstance(x, (moose.CubeMesh, moose.CylMesh)) for x in compts])
-
     if all(isinstance(x, (moose.CubeMesh,moose.CylMesh)) for x in compts):
-        print('111')
         if not compts:
             return ("Atleast one compartment is required ")
         elif ( len(compts) > 3 ):

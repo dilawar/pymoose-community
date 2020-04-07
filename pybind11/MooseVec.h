@@ -39,10 +39,12 @@ public:
     ObjId getDataItem(const size_t i) const;
     ObjId getFieldItem(const size_t i) const;
 
+    // Set attribute to vector.
     void setAttrOneToAll(const string& name, const py::object& val);
 
     void setAttrOneToOne(const string& name, const py::sequence& val);
 
+    // Get attributes.
     vector<py::object> getAttribute(const string& name);
     py::array_t<double> getAttributeNumpy(const string& name);
 

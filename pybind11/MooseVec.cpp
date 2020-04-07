@@ -105,7 +105,8 @@ vector<py::object> MooseVec::getAttribute(const string& name)
     return res;
 }
 
-// FIXME: Only double is supported here. Not sure if this is enough.
+// FIXME: Only double is supported here. Not sure if this is enough. This
+// should be the API function.
 py::array_t<double> MooseVec::getAttributeNumpy(const string &name)
 {
     auto cinfo = oid_.element()->cinfo();
@@ -128,7 +129,7 @@ py::array_t<double> MooseVec::getAttributeNumpy(const string &name)
         return py::array_t<double>(res.size(), res.data());
     }
 
-    throw runtime_error("getAttributeNumpy::NotImplemented : " + name +
+    throw runtime_error("MooseVec::getAttributeNumpy::NotImplemented : " + name +
                         " with rttType " + finfo->rttiType() + " and type: '" +
                         finfoType + "'");
     return py::array_t<double>();

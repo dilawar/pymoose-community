@@ -60,6 +60,7 @@ GENESIS_COLOR_SEQUENCE = ((248, 0, 255), (240, 0, 255), (232, 0, 255), (224, 0, 
 #               --StimulusTable
 
 def mooseWriteKkit( modelpath, filename, sceneitems={}):
+    print('111')
     global foundmatplotlib_
     if not foundmatplotlib_:
         print('No maplotlib found.'
@@ -154,7 +155,7 @@ def mooseWriteKkit( modelpath, filename, sceneitems={}):
             writeFooter1(f)
             writeNotes(modelpath,f)
             writeFooter2(f)
-            print('Written to file '+filename)
+            print('kkit model is written to file '+filename)
             return errors, True
         else:
             print("Warning: writeKkit:: No model found on " , modelpath)

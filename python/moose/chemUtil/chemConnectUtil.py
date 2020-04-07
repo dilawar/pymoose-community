@@ -112,8 +112,8 @@ def validColorcheck(color):
 def xyPosition(objInfo,xory):
     try:
         return float(moose.element(objInfo).getField(xory))
-    except ValueError as e:
-        return float(0)
+    except ValueError:
+        return 0.0
 
 def setupMeshObj(modelRoot):
     ''' Setup compartment and its members pool,reaction,enz cplx under self.meshEntry dictionaries \
@@ -152,10 +152,10 @@ def setupMeshObj(modelRoot):
         tablist  = moose.wildcardFind(meshEnt.path+'/##[ISA=StimulusTable]')
         if mol_cpl or funclist or enzlist or realist or tablist:
             for m in mol_cpl:
-                if isinstance(moose.element(m.parent),moose.CplxEnzBase):
+                if isinstance(moose.element(m.parent), moose.CplxEnzBase):
                     cplxlist.append(m)
                     objInfo = m.parent.path+'/info'
-                elif isinstance(moose.element(m),moose.PoolBase):
+                elif isinstance(moose.element(m), moose.PoolBase):
                     mollist.append(m)
                     objInfo =m.path+'/info'
                 if moose.exists(objInfo):
@@ -277,11 +277,10 @@ def setupItem(modelPath,cntDict):
                     tablist.append((moose.element(tabconnect),'tab',countuniqItem[tabconnect]))
                 cntDict[tab] = tablist
 
-def countitems(mitems,objtype):
+def countitems(mitems, objtype):
     items = []
-    items = moose.element(mitems).neighbors[objtype]
+    items = mitems.neighbors[objtype]
     uniqItems = set(items)
-    #countuniqItems = Counter(items)
     countuniqItems = dict((i, items.count(i)) for i in items)
     return(uniqItems,countuniqItems)
 

@@ -315,9 +315,9 @@ PYBIND11_MODULE(_moose, m)
              },
              py::keep_alive<0, 1>())
         .def("__getitem__", &MooseVec::getItem)
-        .def("__setattr__", &MooseVec::setAttrOneToOne)
         .def("__setattr__", &MooseVec::setAttrOneToAll)
-        .def("__getattr__", &MooseVec::getAttributeNumpy)
+        .def("__setattr__", &MooseVec::setAttrOneToOne)
+        .def("__getattr__", &MooseVec::getAttribute)
         .def("__repr__", [](const MooseVec & v)->string {
              return "<moose.vec class=" + v.dtype() + " path=" + v.path() +
                     " id=" + std::to_string(v.id()) + " size=" +
@@ -346,8 +346,10 @@ PYBIND11_MODULE(_moose, m)
     m.def("create", &mooseCreateFromPath);
     m.def("create", &mooseCreateFromObjId);
     m.def("create", &mooseCreateFromId);
-    m.def("move", &mooseMoveId);
-    m.def("move", &mooseMoveObjId);
+    m.def("move", &mooseMove<ObjId, ObjId>);
+    m.def("move", &mooseMove<ObjId, string>);
+    m.def("move", &mooseMove<string, ObjId>);
+    m.def("move", &mooseMove<string, string>);
     m.def("reinit", &mooseReinit);
     m.def("start", &mooseStart, "runtime"_a, "notify"_a = false);
     m.def("stop", &mooseStop);

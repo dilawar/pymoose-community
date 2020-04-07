@@ -39,8 +39,17 @@ Id initShell();
 
 bool mooseExists(const string& path);
 
+#if 0
 void mooseMoveId(const Id& a, const ObjId& b);
 void mooseMoveObjId(const ObjId& a, const ObjId& b);
+#endif
+
+template<typename P=ObjId, typename Q=ObjId>
+inline void mooseMove(const P& src, const Q& tgt)
+{
+    getShellPtr()->doMove(Id(src), ObjId(tgt));
+}
+
 
 inline MooseVec mooseObjIdPath(const string& p)
 {

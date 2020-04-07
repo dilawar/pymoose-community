@@ -203,6 +203,7 @@ ObjId shellConnect(const ObjId& src, const string& srcField, const ObjId& tgt,
     return getShellPtr()->doAddMsg(msgType, src, srcField, tgt, tgtField);
 }
 
+#if 0
 void mooseMoveId(const Id& a, const ObjId& b)
 {
     getShellPtr()->doMove(a, b);
@@ -212,6 +213,12 @@ void mooseMoveObjId(const ObjId& a, const ObjId& b)
 {
     getShellPtr()->doMove(a.id, b);
 }
+
+void mooseMoveObPath(const string& a, const ObjId& b)
+{
+    getShellPtr()->doMove(a.id, b);
+}
+#endif
 
 void mooseSetClock(const unsigned int clockId, double dt)
 {
