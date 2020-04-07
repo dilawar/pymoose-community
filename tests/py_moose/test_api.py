@@ -1,9 +1,10 @@
-__author__ = "Dilawar Singh"
-__copyright__ = "Copyright 2019-, Dilawar Singh"
+__author__     = "Dilawar Singh"
+__copyright__  = "Copyright 2019-, Dilawar Singh"
 __maintainer__ = "Dilawar Singh"
-__email__ = "dilawars@ncbs.res.in"
+__email__      = "dilawars@ncbs.res.in"
 
 import moose
+import numpy as np
 
 
 def test_children():
@@ -57,7 +58,8 @@ def test_finfos():
     print(syns.weight)
 
     # this is a shorthand for above for loop.
-    #  syns.weight = 9.0
+    syns.weight = 11.121
+    assert np.allclose(syns.weight, 11.121), syns.weight
 
      # try:
      #     print(syns[11])

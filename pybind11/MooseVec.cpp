@@ -58,7 +58,19 @@ unsigned int MooseVec::len()
 
 ObjId MooseVec::getItem(const size_t i) const
 {
-    return ObjId(oid_.path(), i, 0);
+    if (oid_.element()->hasFields())
+        return getFieldItem(i);
+    return getDataItem(i);
+}
+
+ObjId MooseVec::getDataItem(const size_t i) const
+{
+    return ObjId(oid_.path(), i, oid_.fieldIndex);
+}
+
+ObjId MooseVec::getFieldItem(const size_t i) const
+{
+    return ObjId(oid_.path(), oid_.dataIndex, i);
 }
 
 void MooseVec::setAttrOneToAll(const string& name, const py::object& val)

@@ -29,7 +29,10 @@ public:
 
     const ObjId& getItemRef(const size_t i) const;
 
+    // Get vector element. Vector element could be `dataIndex` or `fieldIndex`.
     ObjId getItem(const size_t i) const;
+    ObjId getDataItem(const size_t i) const;
+    ObjId getFieldItem(const size_t i) const;
 
     void setAttrOneToAll(const string& name, const py::object& val);
 
