@@ -14,12 +14,15 @@
 #include <typeinfo>
 #include <utility>
 #include <vector>
+#include <functional>
 
-#include "../external/pybind11/include/pybind11/numpy.h"
 #include "../external/pybind11/include/pybind11/pybind11.h"
 #include "../external/pybind11/include/pybind11/stl.h"
+#include "../external/pybind11/include/pybind11/numpy.h"
 
 namespace py = pybind11;
+using namespace std;
+using namespace pybind11::literals;
 
 #include "../basecode/global.h"
 #include "../basecode/header.h"
@@ -34,8 +37,6 @@ namespace py = pybind11;
 #include "helper.h"
 #include "pymoose.h"
 
-using namespace std;
-using namespace pybind11::literals;
 
 Id initModule(py::module &m)
 {
@@ -259,16 +260,18 @@ PYBIND11_MODULE(_moose, m)
         //  Connect
         //---------------------------------------------------------------------
         // This would be so much easier with c++17.
-        .def("connect",
-             [](const ObjId &src, const string &srcfield, const ObjId &tgt,
-                const string &tgtfield, const string &type) {
-             return shellConnect(src, srcfield, tgt, tgtfield, type);
-         })
-        .def("connect", [](const ObjId &src, const string &srcfield,
-                           const MooseVec &tgtvec, const string &tgtfield,
-                           const string &type) {
-             return shellConnect(src, srcfield, tgtvec.obj(), tgtfield, type);
-         })
+        .def("connect", &shellConnect, "srcfield"_a, "dest"_a
+                , "destfield"_a, "msgtype"_a="Single")
+        // .def("connect",
+        //      [](const ObjId &src, const string &srcfield, const ObjId &tgt,
+        //         const string &tgtfield, const string &type) {
+        //      return shellConnect(src, srcfield, tgt, tgtfield, type);
+        //  }, "src"_a, "srcfield"_a, "dest"_a, "destfield"_a, "msgtype"_a = "Single")
+        // .def("connect", [](const ObjId &src, const string &srcfield,
+        //                    const MooseVec &tgtvec, const string &tgtfield,
+        //                    const string &type) {
+        //      return shellConnect(src, srcfield, tgtvec.obj(), tgtfield, type);
+        //  }, "src"_a, "srcfield"_a, "dest"_a, "destfield"_a, "msgtype"_a="Single")
         //---------------------------------------------------------------------
         //  Extra
         //---------------------------------------------------------------------
