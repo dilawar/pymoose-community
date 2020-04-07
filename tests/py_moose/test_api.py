@@ -43,7 +43,8 @@ def test_vec():
     assert v[0] == v.vec[0], (v[0], v.vec[0])
     x = [random.random() for i in range(100)]
     v.conc = x
-    assert np.equal(v.conc, x).all()
+    assert sum(v.conc) == sum(x)
+    assert np.allclose(v.conc, x), (v.conc, x)
 
 def test_finfos():
     s = moose.SimpleSynHandler('synh')
@@ -132,7 +133,12 @@ def test_access():
         raise RuntimeError("Should have failed.")
     a2 = moose.element(a1)
     a3 = moose.element(a1.path)
-    assert a2 == a3
+    assert a2 == a3, (a2, a3)
+
+def test_element():
+    a = moose.Pool('xxxx', 2)
+    ae = moose.element(a)
+    assert ae.parent == a.parent, (ae.parent, a.parent)
 
 
 def main():
@@ -144,6 +150,7 @@ def main():
     test_inheritance()
     test_access()
     test_vec()
+    test_element()
 
 if __name__ == '__main__':
     main()

@@ -57,6 +57,11 @@ const string MooseVec::path() const
     return path_;
 }
 
+ObjId MooseVec::parent() const
+{
+    return Neutral::parent(oid_);
+}
+
 unsigned int MooseVec::len()
 {
     return (unsigned int)size();
@@ -77,24 +82,6 @@ ObjId MooseVec::getDataItem(const size_t i) const
 ObjId MooseVec::getFieldItem(const size_t i) const
 {
     return ObjId(oid_.path(), oid_.dataIndex, i);
-}
-
-void MooseVec::setAttrOneToAll(const string& name, const py::object& val)
-{
-    for (size_t i = 0; i < size(); i++) setFieldGeneric(getItem(i), name, val);
-}
-
-void MooseVec::setAttrOneToOne(const string& name, const py::sequence& val)
-{
-    if (py::len(val) != size())
-        throw runtime_error(
-            "Length of sequence on the right hand side "
-            "does not match size of vector. "
-            "Expected " +
-            to_string(size()) + ", got " + to_string(py::len(val)));
-
-    for (size_t i = 0; i < size(); i++)
-        setFieldGeneric(getItem(i), name, val[i]);
 }
 
 vector<py::object> MooseVec::getAttribute(const string& name)

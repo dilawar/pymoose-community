@@ -260,19 +260,8 @@ PYBIND11_MODULE(_moose, m)
         //---------------------------------------------------------------------
         //  Connect
         //---------------------------------------------------------------------
-        // This would be so much easier with c++17.
         .def("connect", &shellConnect, "srcfield"_a, "dest"_a
                 , "destfield"_a, "msgtype"_a="Single")
-        // .def("connect",
-        //      [](const ObjId &src, const string &srcfield, const ObjId &tgt,
-        //         const string &tgtfield, const string &type) {
-        //      return shellConnect(src, srcfield, tgt, tgtfield, type);
-        //  }, "src"_a, "srcfield"_a, "dest"_a, "destfield"_a, "msgtype"_a = "Single")
-        // .def("connect", [](const ObjId &src, const string &srcfield,
-        //                    const MooseVec &tgtvec, const string &tgtfield,
-        //                    const string &type) {
-        //      return shellConnect(src, srcfield, tgtvec.obj(), tgtfield, type);
-        //  }, "src"_a, "srcfield"_a, "dest"_a, "destfield"_a, "msgtype"_a="Single")
         //---------------------------------------------------------------------
         //  Extra
         //---------------------------------------------------------------------
@@ -301,10 +290,8 @@ PYBIND11_MODULE(_moose, m)
         .def(py::init<const string &, unsigned int, const string &>(), "path"_a,
              "n"_a = 1, "dtype"_a = "Neutral")  // Default
         .def(py::init<const ObjId &>())
-        .def("connect", &MooseVec::connectToSingle)
-        .def("connect", &MooseVec::connectToVec)
-        .def_property_readonly("name", &MooseVec::name)
-        .def_property_readonly("path", &MooseVec::path)
+        .def("__eq__", [](const MooseVec &a, const MooseVec &b) { return a.obj() == b.obj(); })
+        .def("__ne__", [](const MooseVec &a, const MooseVec &b) { return a.obj() != b.obj(); })
         .def("__len__", &MooseVec::len)
         .def("__iter__",
              [](MooseVec &v) {
@@ -315,8 +302,12 @@ PYBIND11_MODULE(_moose, m)
              },
              py::keep_alive<0, 1>())
         .def("__getitem__", &MooseVec::getItem)
-        .def("__setattr__", &MooseVec::setAttrOneToAll)
-        .def("__setattr__", &MooseVec::setAttrOneToOne)
+        .def("__setattr__", &MooseVec::setAttrOneToOne<double>)
+        .def("__setattr__", &MooseVec::setAttrOneToOne<string>)
+        .def("__setattr__", &MooseVec::setAttrOneToOne<bool>)
+        .def("__setattr__", &MooseVec::setAttrOneToAll<double>)
+        .def("__setattr__", &MooseVec::setAttrOneToAll<string>)
+        .def("__setattr__", &MooseVec::setAttrOneToAll<bool>)
         .def("__getattr__", &MooseVec::getAttribute)
         .def("__repr__", [](const MooseVec & v)->string {
              return "<moose.vec class=" + v.dtype() + " path=" + v.path() +
@@ -328,7 +319,15 @@ PYBIND11_MODULE(_moose, m)
         .def_property_readonly("vec", [](const MooseVec &vec) { return &vec; },
                                py::return_value_policy::reference_internal)
         .def_property_readonly("type",
-                               [](const MooseVec &v) { return "moose.vec"; });
+                               [](const MooseVec &v) { return "moose.vec"; })
+        .def("connect", &MooseVec::connectToSingle)
+        .def("connect", &MooseVec::connectToVec)
+
+        // Thi properties are not vectorised. 
+        .def_property_readonly("parent", &MooseVec::parent)
+        .def_property_readonly("name", &MooseVec::name)
+        .def_property_readonly("path", &MooseVec::path)
+        ;
 
     // Module functions.
     m.def("getShell",

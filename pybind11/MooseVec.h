@@ -30,6 +30,8 @@ public:
 
     const string name() const;
 
+    ObjId parent() const;
+
     unsigned int len();
 
     const ObjId& getItemRef(const size_t i) const;
@@ -40,15 +42,43 @@ public:
     ObjId getFieldItem(const size_t i) const;
 
     // Set attribute to vector.
-    void setAttrOneToAll(const string& name, const py::object& val);
+    // void setAttrOneToAll(const string& name, const py::object& val);
+    // void setAttrOneToOne(const string& name, const py::sequence& val);
 
-    void setAttrOneToOne(const string& name, const py::sequence& val);
+    template<typename T>
+    bool setAttrOneToAll(const string& name, const T& val)
+    {
+        bool res = true;
+        for (size_t i = 0; i < size(); i++) 
+            res &= Field<T>::set(getItem(i), name, val);
+        return res;
+    }
+
+
+    template<typename T=double>
+    bool setAttrOneToOne(const string& name, const vector<T>& val)
+    {
+        if (val.size() != size())
+            throw runtime_error(
+                    "Length of sequence on the right hand side "
+                    "does not match size of vector. "
+                    "Expected " +
+                    to_string(size()) + ", got " + to_string(val.size()));
+
+        bool res = true;
+        for (size_t i = 0; i < size(); i++)
+            res &= Field<T>::set(getItem(i), name, val[i]);
+
+        return res;
+    }
+
 
     // Get attributes.
     vector<py::object> getAttribute(const string& name);
     py::array_t<double> getAttributeNumpy(const string& name);
 
     vector<ObjId> objs() const;
+
 
     ObjId connectToSingle(const string& srcfield, const ObjId& tgt, const string& tgtfield, const string& msgtype);
 
