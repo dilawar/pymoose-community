@@ -294,3 +294,9 @@ def findCompartment(element):
     if element.isA['ChemCompt']:
         return element
     return findCompartment(element.parent)
+
+def mooseIsInstance(elem, classes):
+    for cl in classes:
+        if elem.isA[cl]:
+            return True
+    return False
