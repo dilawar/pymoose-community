@@ -346,13 +346,13 @@ double MooseParser::Eval(bool check) const
 {
     if(! valid_)
     {
-        cout << "Warn: Invalid parser state." << endl;
+        cout << "MooseParser::Eval: Warn: Invalid parser state." << endl;
         return 0.0;
     }
 
     if(expr_.empty())
     {
-        cout << "warn: Expr is empty " << endl;
+        cout << "MooseParser::Eval: warn: Expr is empty " << endl;
         return 0.0;
     }
 

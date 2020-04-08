@@ -768,10 +768,7 @@ bool Function::symbolExists(const string& name) const
 void Function::process(const Eref &e, ProcPtr p)
 {
     if(! valid_)
-    {
-        cerr << "Warn: Invalid parser state. " << endl;
         return;
-    }
 
     // Update values of incoming variables.
     vector<double> databuf;
