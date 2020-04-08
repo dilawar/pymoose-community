@@ -44,37 +44,44 @@ void mooseMoveId(const Id& a, const ObjId& b);
 void mooseMoveObjId(const ObjId& a, const ObjId& b);
 #endif
 
-template<typename P=ObjId, typename Q=ObjId>
+template <typename P = ObjId, typename Q = ObjId>
 inline void mooseMove(const P& src, const Q& tgt)
 {
     getShellPtr()->doMove(Id(src), ObjId(tgt));
 }
 
-
-inline MooseVec mooseObjIdPath(const string& p)
+inline ObjId mooseObjIdPath(const string& p)
 {
     // handle relative path.
     string path(p);
-    if(p[0] != '/')
-        path = mooseGetCweId().path() + '/' + path;
+
+    // If path is a relative path.
+    if (p[0] != '/') 
+    {
+        string cwepath(mooseGetCweId().path());
+        if(cwepath.back() != '/')
+            cwepath.push_back('/');
+        path = cwepath + p;
+    }
     ObjId oid(path);
     if (oid.bad()) {
-        cerr << "moose_element: " << path << " does not exist!" << endl;
+        cerr << "moose.element: " << path << " does not exist!" << endl;
     }
-    return MooseVec(oid);
+    return oid;
 }
 
-inline MooseVec mooseObjIdObj(const ObjId& obj)
+inline ObjId mooseObjIdObj(const ObjId& obj)
 {
-    return MooseVec(obj);
+    return obj;
 }
 
-inline MooseVec mooseObjIdId(const Id& id)
+inline ObjId mooseObjIdId(const Id& id)
 {
-    return MooseVec(id);
+    return ObjId(id);
 }
 
-inline ObjId mooseCreateFromPath(const string type, const string& p, unsigned int numdata)
+inline ObjId mooseCreateFromPath(const string type, const string& p,
+                                 unsigned int numdata)
 {
 
 #if 0
@@ -85,14 +92,14 @@ inline ObjId mooseCreateFromPath(const string type, const string& p, unsigned in
 
     // relative path.
     string path(p);
-    if(path[0] != '/')
-        path = mooseGetCweId().path()+'/'+path;
+    if (path[0] != '/')
+        path = mooseGetCweId().path() + '/' + path;
 
     // If path exists and user is asking for the same type then return the
     // object else raise exception.
-    if(mooseExists(path)) {
+    if (mooseExists(path)) {
         auto oid = ObjId(path);
-        if(oid.element()->cinfo()->name() == type)
+        if (oid.element()->cinfo()->name() == type)
             return oid;
     }
 
@@ -100,23 +107,24 @@ inline ObjId mooseCreateFromPath(const string type, const string& p, unsigned in
     auto pp = moose::splitPath(path);
 
     // Name must not end with [\d*] etc.  normalizePath takes care of it if
-    // enabled. 
+    // enabled.
     string name(pp.second);
-    if(name.back() == ']')
+    if (name.back() == ']')
         name = name.substr(0, name.find_last_of('['));
     return getShellPtr()->doCreate2(type, ObjId(pp.first), name, numdata);
 }
 
-inline ObjId mooseCreateFromObjId(const string& type, const ObjId& oid, unsigned int numData)
+inline ObjId mooseCreateFromObjId(const string& type, const ObjId& oid,
+                                  unsigned int numData)
 {
     return oid;
 }
 
-inline ObjId mooseCreateFromId(const string& type, const Id& id, unsigned int numData)
+inline ObjId mooseCreateFromId(const string& type, const Id& id,
+                               unsigned int numData)
 {
     return ObjId(id);
 }
-
 
 ObjId loadModelInternal(const string& fname, const string& modelpath,
                         const string& solverclass);
@@ -130,8 +138,9 @@ ObjId getElementFieldItem(const ObjId& objid, const string& fname,
 ObjId shellConnect(const ObjId& src, const string& srcField, const ObjId& tgt,
                    const string& tgtField, const string& msgType);
 
-ObjId shellConnectToVec(const ObjId& src, const string& srcField, const MooseVec& tgt,
-                   const string& tgtField, const string& msgType);
+ObjId shellConnectToVec(const ObjId& src, const string& srcField,
+                        const MooseVec& tgt, const string& tgtField,
+                        const string& msgType);
 
 inline bool mooseDeleteObj(const ObjId& oid)
 {
@@ -143,13 +152,12 @@ inline bool mooseDeleteStr(const string& path)
     return getShellPtr()->doDelete(ObjId(path));
 }
 
+MooseVec mooseCopy(const py::object& orig, const py::object& newParent,
+                   string newName, unsigned int n, bool toGlobal,
+                   bool copyExtMsgs);
 
 ObjId mooseCreate(const string type, const string& path,
                   unsigned int numdata = 1);
-
-MooseVec mooseCopy(const py::object& orig, ObjId newParent, string newName,
-                unsigned int n, bool toGlobal, bool copyExtMsgs);
-
 
 void mooseSetClock(const unsigned int clockId, double dt);
 
@@ -166,6 +174,7 @@ void mooseStop();
 
 py::cpp_function getPropertyDestFinfo(const ObjId& oid, const Finfo* finfo);
 
-vector<string> mooseGetFieldNames(const string& className, const string& finfoType);
+vector<string> mooseGetFieldNames(const string& className,
+                                  const string& finfoType);
 
 #endif /* end of include guard: HELPER_H */

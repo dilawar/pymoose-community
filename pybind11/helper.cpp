@@ -326,12 +326,17 @@ void mooseStop()
 }
 
 // Id is synonym with Id in previous binding.
-MooseVec mooseCopy(const py::object& elem, ObjId newParent, string newName,
+MooseVec mooseCopy(const py::object& elem, const py::object& newParent, string newName,
                    unsigned int n = 1, bool toGlobal = false,
                    bool copyExtMsgs = false)
 {
     Id orig = py::cast<Id>(elem);
-    return MooseVec(getShellPtr()->doCopy(orig, newParent, newName, n, toGlobal,
+    ObjId newp;
+    if(py::isinstance<MooseVec>(newParent))
+        newp = newParent.cast<MooseVec>().obj();
+    else
+        newp = newParent.cast<ObjId>();
+    return MooseVec(getShellPtr()->doCopy(orig, newp, newName, n, toGlobal,
                                           copyExtMsgs));
 }
 

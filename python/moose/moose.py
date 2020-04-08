@@ -129,10 +129,6 @@ def copy(elem, newParent, newName="", n=1):
     return _moose.copy(elem.id, newParent, newName, n, False, False)
 
 
-def getCwe():
-    return PyObjId(_moose.getCwe())
-
-
 def pwe():
     """Print present working element. Convenience function for GENESIS
     users. If you want to retrieve the element in stead of printing
@@ -141,7 +137,7 @@ def pwe():
     >>> pwe()
     >>> '/'
     """
-    pwe_ = getCwe()
+    pwe_ = _moose.getCwe()
     print(pwe_.path)
     return pwe_
 

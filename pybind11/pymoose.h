@@ -21,11 +21,11 @@
 #include "MooseVec.h"
 
 template <typename T>
-inline void setField(const ObjId& id, const string& fname, T val)
+inline bool setField(const ObjId& id, const string& fname, T val)
 {
     // cout << "Setting " << fname << " to value " << val << typeid(T).name() <<
     // endl;
-    Field<T>::set(id, fname, val);
+    return Field<T>::set(id, fname, val);
 }
 
 template <typename T>

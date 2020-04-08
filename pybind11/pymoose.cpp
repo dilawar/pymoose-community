@@ -309,6 +309,12 @@ PYBIND11_MODULE(_moose, m)
         .def("__setattr__", &MooseVec::setAttrOneToAll<double>)
         .def("__setattr__", &MooseVec::setAttrOneToAll<string>)
         .def("__setattr__", &MooseVec::setAttrOneToAll<bool>)
+        .def("__getattr__", &MooseVec::getAttributeNumpy<double>)
+        .def("__getattr__", &MooseVec::getAttributeNumpy<float>)
+        // These three are probably never needed.
+        .def("__getattr__", &MooseVec::getAttributeNumpy<unsigned int>)
+        .def("__getattr__", &MooseVec::getAttributeNumpy<unsigned long>)
+        // For the rest non-POD types.
         .def("__getattr__", &MooseVec::getAttribute)
         .def("__repr__", [](const MooseVec & v)->string {
              return "<moose.vec class=" + v.dtype() + " path=" + v.path() +
@@ -326,8 +332,11 @@ PYBIND11_MODULE(_moose, m)
 
         // Thi properties are not vectorised. 
         .def_property_readonly("parent", &MooseVec::parent)
+        .def_property_readonly("children", &MooseVec::children)
         .def_property_readonly("name", &MooseVec::name)
         .def_property_readonly("path", &MooseVec::path)
+        // Wrapped object.
+        .def_property_readonly("objid", &MooseVec::obj)
         ;
 
     // Module functions.
