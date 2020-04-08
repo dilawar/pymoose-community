@@ -103,6 +103,10 @@ def test_inheritance():
     # This must be true for isinstance to work.
     assert isinstance(aa, moose.CubeMesh), (a.__class__, aa.__class__)
 
+    a = moose.CubeMesh('yapf')
+    assert a.isA['CubeMesh']
+    assert a.isA['ChemCompt']
+
 
 def test_delete():
     a = moose.Neutral('/xxx')

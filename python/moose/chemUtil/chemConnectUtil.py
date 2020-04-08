@@ -66,7 +66,7 @@ def colorCheck(fc_bgcolor):
         if string its taken as colorname further down in validColorcheck checked for valid color, \
         but for tuple and list its taken as r,g,b value.
     """
-    if isinstance(fc_bgcolor,str):
+    if isinstance(fc_bgcolor, str):
         if fc_bgcolor.startswith("#"):
             fc_bgcolor = fc_bgcolor
         elif (fc_bgcolor.isdigit()):
@@ -152,13 +152,14 @@ def setupMeshObj(modelRoot):
         tablist  = moose.wildcardFind(meshEnt.path+'/##[ISA=StimulusTable]')
         if mol_cpl or funclist or enzlist or realist or tablist:
             for m in mol_cpl:
-                if isinstance(moose.element(m.parent), moose.CplxEnzBase):
+                objInfo = None
+                if m.parent and m.parent.isA['CplxEnzBase']:
                     cplxlist.append(m)
                     objInfo = m.parent.path+'/info'
-                elif isinstance(moose.element(m), moose.PoolBase):
+                elif m.isA['PoolBase']:
                     mollist.append(m)
                     objInfo =m.path+'/info'
-                if moose.exists(objInfo):
+                if moose is not None and moose.exists(objInfo):
                     listOfitems[moose.element(moose.element(objInfo).parent)]={'x':xyPosition(objInfo,'x'),'y':xyPosition(objInfo,'y')}
 
                 xcord.append(xyPosition(objInfo,'x'))
@@ -191,7 +192,7 @@ def getxyCord(xcord,ycord,list1,listOfitems):
         #     objInfo = moose.element(item.parent).path+'/info'
         # else:
         #     objInfo = item.path+'/info'
-        if not isinstance(item,moose.Function):
+        if not item.isA['Function']:
             objInfo = item.path+'/info'
             xcord.append(xyPosition(objInfo,'x'))
             ycord.append(xyPosition(objInfo,'y'))

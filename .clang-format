@@ -1,5 +1,4 @@
 ---
-BasedOnStyle:  Google
 AccessModifierOffset: -4
 ConstructorInitializerIndentWidth: 4
 AlignEscapedNewlinesLeft: true
@@ -34,13 +33,13 @@ Standard:        Auto
 IndentWidth:     4
 TabWidth:        8
 UseTab:          Never
-BreakBeforeBraces: Allman
+BreakBeforeBraces: Stroustrup
 IndentFunctionDeclarationAfterType: true
 SpacesInParentheses: false
 SpacesInAngles:  false
 SpaceInEmptyParentheses: false
 SpacesInCStyleCastParentheses: false
-SpaceAfterControlStatementKeyword: true
+SpaceAfterControlStatementKeyword: false
 SpaceBeforeAssignmentOperators: true
 ContinuationIndentWidth: 4
 Standard : C++11

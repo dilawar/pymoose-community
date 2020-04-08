@@ -47,7 +47,7 @@ class PyObjId(_moose._ObjId):
         obj = _moose.create(self.__class__, x, ndata)
         for k, v in kwargs.items():
             obj.setField(k, v)
-        super().__init__(obj.id, obj.dataIndex)
+        super().__init__(obj)
 
     @classmethod
     def toMooseClass(cls, obj):

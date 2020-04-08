@@ -60,7 +60,6 @@ GENESIS_COLOR_SEQUENCE = ((248, 0, 255), (240, 0, 255), (232, 0, 255), (224, 0, 
 #               --StimulusTable
 
 def mooseWriteKkit( modelpath, filename, sceneitems={}):
-    print('111')
     global foundmatplotlib_
     if not foundmatplotlib_:
         print('No maplotlib found.'
@@ -155,7 +154,7 @@ def mooseWriteKkit( modelpath, filename, sceneitems={}):
             writeFooter1(f)
             writeNotes(modelpath,f)
             writeFooter2(f)
-            print('kkit model is written to file '+filename)
+            print('Written to file '+filename)
             return errors, True
         else:
             print("Warning: writeKkit:: No model found on " , modelpath)
@@ -380,7 +379,7 @@ def nearestColorIndex(color, color_sequence):
 def storeReacMsg(reacList,f):
     for reac in reacList:
         reacPath = trimPath( reac);
-        sublist = reac.neighbors["subOut"]
+        sublist = reac.neighbors["sub"]
         prdlist = reac.neighbors["prd"]
         for sub in sublist:
             s = "addmsg /kinetics/" + trimPath( sub ) + " /kinetics/" + reacPath +  " SUBSTRATE n \n";
@@ -432,29 +431,33 @@ def writeReac(modelpath,f,sceneitems):
     return reacList,error
  
 def trimPath(mobj):
+    assert mobj is not None
     original = mobj
-    mobj = moose.element(mobj)
-    found = False
-    while not isinstance(mobj,moose.ChemCompt) and mobj.path != "/":
-        mobj = moose.element(mobj.parent)
-        found = True
+    print(1, mobj)
+    while not mobj.isA['ChemCompt'] and mobj.path != "/":
+        mobj = mobj.parent
+        print(11, mobj, mobj.path)
+    print('111')
+
+    # If we are out of the while loop, we have found what we are looking for.
     if mobj.path == "/":
-        print(original, " object doesn't have compartment as a parent ")
+        print("%s object doesn't have compartment as a parent." % original)
         return
-    #other than the kinetics compartment, all the othername are converted to group in Genesis which are place under /kinetics
-    # Any moose object comes under /kinetics then one level down the path is taken.
+
+    # other than the kinetics compartment, all the othername are converted to
+    # group in Genesis which are place under /kinetics. Any moose object comes
+    # under /kinetics then one level down the path is taken.
     # e.g /group/poolObject or /Reac
-    if found:
-        if mobj.name != "kinetics":# and ( (mobj.className != "CubeMesh") and (mobj.className != "CylMesh") and (mobj.className != "EndoMesh") and (mobj.className != "NeuroMesh")):
-            splitpath = original.path[(original.path.find(mobj.name)):len(original.path)]
-        else:
-            pos = original.path.find(mobj.name)
-            slash = original.path.find('/',pos+1)
-            splitpath = original.path[slash+1:len(original.path)]
-        splitpath = re.sub(r"\[[0-9]+\]", "", splitpath)
-        s = splitpath.replace("_dash_",'-')
-        s = splitpath.replace("_space_","_")
-        return s
+    if mobj.name != "kinetics":# and ( (mobj.className != "CubeMesh") and (mobj.className != "CylMesh") and (mobj.className != "EndoMesh") and (mobj.className != "NeuroMesh")):
+        splitpath = original.path[(original.path.find(mobj.name)):len(original.path)]
+    else:
+        pos = original.path.find(mobj.name)
+        slash = original.path.find('/',pos+1)
+        splitpath = original.path[slash+1:len(original.path)]
+    splitpath = re.sub(r"\[[0-9]+\]", "", splitpath)
+    s = splitpath.replace("_dash_",'-')
+    s = splitpath.replace("_space_","_")
+    return s
 
 # def writeSumtotal( modelpath,f):
 #     funclist = moose.wildcardFind(modelpath+'/##[ISA=Function]')
