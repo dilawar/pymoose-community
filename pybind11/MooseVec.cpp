@@ -94,13 +94,32 @@ ObjId MooseVec::getFieldItem(const size_t i) const
     return ObjId(oid_.path(), oid_.dataIndex, i);
 }
 
-vector<py::object> MooseVec::getAttribute(const string& name)
+py::object MooseVec::getAttribute(const string& name)
 {
+    // If type if double, int, bool etc, then return the numpy array. else
+    // return the list of python object.
+    auto cinfo = oid_.element()->cinfo();
+    auto finfo = cinfo->findFinfo(name);
+    auto rttType = finfo->rttiType();
+
+    if(rttType == "double")
+        return getAttributeNumpy<double>(name);
+    if(rttType == "unsigned int")
+        return getAttributeNumpy<unsigned int>(name);
+    if(rttType == "int")
+        return getAttributeNumpy<unsigned int>(name);
+
+    // FIXME: bool type is not working. Need to raise the ticket on pybind11
+    // after creating and MWE.
+    //if(rttType == "bool")
+    //    return getAttributeNumpy<bool>(name);
+
     vector<py::object> res(size());
     for (unsigned int i = 0; i < size(); i++)
         res[i] = getFieldGeneric(getItem(i), name);
-    return res;
+    return py::cast(res);
 }
+
 
 
 // // FIXME: Only double is supported here. Not sure if this is enough. This

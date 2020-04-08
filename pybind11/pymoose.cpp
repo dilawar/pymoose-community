@@ -309,12 +309,9 @@ PYBIND11_MODULE(_moose, m)
         .def("__setattr__", &MooseVec::setAttrOneToAll<double>)
         .def("__setattr__", &MooseVec::setAttrOneToAll<string>)
         .def("__setattr__", &MooseVec::setAttrOneToAll<bool>)
-        .def("__getattr__", &MooseVec::getAttributeNumpy<double>)
-        .def("__getattr__", &MooseVec::getAttributeNumpy<float>)
-        // These three are probably never needed.
-        .def("__getattr__", &MooseVec::getAttributeNumpy<unsigned int>)
-        .def("__getattr__", &MooseVec::getAttributeNumpy<unsigned long>)
-        // For the rest non-POD types.
+        // Beware of pybind11 overload resolution order:
+        // https://pybind11.readthedocs.io/en/stable/advanced/functions.html#overload-resolution-order
+        // Templated function won't work here. The first one is always called.
         .def("__getattr__", &MooseVec::getAttribute)
         .def("__repr__", [](const MooseVec & v)->string {
              return "<moose.vec class=" + v.dtype() + " path=" + v.path() +

@@ -56,10 +56,9 @@ inline ObjId mooseObjIdPath(const string& p)
     string path(p);
 
     // If path is a relative path.
-    if (p[0] != '/') 
-    {
+    if (p[0] != '/') {
         string cwepath(mooseGetCweId().path());
-        if(cwepath.back() != '/')
+        if (cwepath.back() != '/')
             cwepath.push_back('/');
         path = cwepath + p;
     }

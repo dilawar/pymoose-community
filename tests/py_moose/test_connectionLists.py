@@ -45,16 +45,11 @@ params = {
 
 def makeGlobalBalanceNetwork():
     stim = moose.RandSpike( '/model/stim', params['numInputs'] )
-
     inhib = moose.LIF( '/model/inhib', params['numInhib'] )
-
     insyn = moose.SimpleSynHandler(inhib.path + '/syns', params['numInhib'])
-
     moose.connect( insyn, 'activationOut', inhib, 'activation', 'OneToOne' )
     output = moose.LIF( '/model/output', params['numOutput'] )
-
     outsyn = moose.SimpleSynHandler(output.path+'/syns',params['numOutput'])
-
     moose.connect(outsyn, 'activationOut', output, 'activation', 'OneToOne')
     outInhSyn = moose.SimpleSynHandler(output.path+'/inhsyns',params['numOutput'])
     moose.connect(outInhSyn, 'activationOut', output, 'activation', 'OneToOne')
@@ -63,41 +58,47 @@ def makeGlobalBalanceNetwork():
     ov = moose.vec( outsyn.path + '/synapse' )
     oiv = moose.vec( outInhSyn.path + '/synapse' )
 
-    inhibMatrix = moose.connect( stim, 'spikeOut', iv, 'addSpike', 'Sparse' )
-    #  inhibMatrix = moose.element(temp)
+    assert len(iv) == 0
+    assert len(ov) == 0
+    assert len(oiv) == 0
 
-    inhibMatrix.setRandomConnectivity(params['stimToInhProb'], params['stimToInhSeed'])
+    temp = moose.connect( stim, 'spikeOut', iv, 'addSpike', 'Sparse' )
+    inhibMatrix = moose.element( temp )
+    inhibMatrix.setRandomConnectivity( 
+            params['stimToInhProb'], params['stimToInhSeed'] )
     cl = inhibMatrix.connectionList
 
     # This can change when random-number generator changes.
+    # This was before we used c++11 <random> to generate random numbers. This
+    # test has changes on Tuesday 31 July 2018 11:12:35 AM IST
     #  expectedCl = [ 1,4,13,13,26,42,52,56,80,82,95,97,4,9,0,9,4,8,0,6,1,6,6,7]
     expectedCl=[0,6,47,50,56,67,98,2,0,3,5,4,8,3]
 
-    #  print('CL', cl)
     assert list(cl) == expectedCl, "Expected %s, got %s" % (expectedCl, cl)
-    assert inhibMatrix.numEntries == 7, inhibMatrix.numEntries
 
-    excMatrix = moose.connect( stim, 'spikeOut', ov, 'addSpike', 'Sparse' )
-    #  excMatrix = moose.element(temp)
-    print('111',  excMatrix)
-    excMatrix.setRandomConnectivity(params['stimToOutProb'], params['stimToOutSeed'])
-    assert excMatrix.numEntries == 62, excMatrix.numEntries
+    temp = moose.connect( stim, 'spikeOut', ov, 'addSpike', 'Sparse' )
+    excMatrix = moose.element( temp )
+    excMatrix.setRandomConnectivity( 
+            params['stimToOutProb'], params['stimToOutSeed'] )
 
-    negFFMatrix = moose.connect(inhib, 'spikeOut', oiv, 'addSpike', 'Sparse')
-    #  negFFMatrix = moose.element( temp )
-    negFFMatrix.setRandomConnectivity(params['inhToOutProb'], params['inhToOutSeed'] )
-    assert negFFMatrix.numEntries == 55, negFFMatrix.numEntries
+    temp = moose.connect( inhib, 'spikeOut', oiv, 'addSpike', 'Sparse' )
+    negFFMatrix = moose.element( temp )
+    negFFMatrix.setRandomConnectivity( 
+            params['inhToOutProb'], params['inhToOutSeed'] )
+
+    # print("ConnMtxEntries: ", inhibMatrix.numEntries, excMatrix.numEntries, negFFMatrix.numEntries)
+    got = (inhibMatrix.numEntries, excMatrix.numEntries, negFFMatrix.numEntries)
+    expected = (7, 62, 55)
+    assert expected == got, "Expected %s, Got %s" % (expected,got)
 
     cl = negFFMatrix.connectionList
     numInhSyns = [ ]
     niv = 0
     nov = 0
     noiv = 0
-
-    insyn = moose.vec(insyn)
-    for i in insyn:
+    for i in moose.vec( insyn ):
         niv += i.synapse.num
-        numInhSyns.append( i.synapse.num)
+        numInhSyns.append( i.synapse.num )
         if i.synapse.num > 0:
             i.synapse.weight = params['wtStimToInh']
 
@@ -106,27 +107,29 @@ def makeGlobalBalanceNetwork():
     assert numInhSyns == expected, "Expected %s, got %s" % (expected,numInhSyns)
 
     for i in moose.vec( outsyn ):
+        print('111', i)
         nov += i.synapse.num
         if i.synapse.num > 0:
             i.synapse.weight = params['wtStimToOut']
     for i in moose.vec( outInhSyn ):
         noiv += i.synapse.num
+        #print i.synapse.num
         if i.synapse.num > 0:
             i.synapse.weight = params['wtInhToOut']
-     
-    print(iv.numField, ov.numField, oiv.numField)
-    print("SUMS: ", sum( iv.numField ), sum( ov.numField ), sum( oiv.numField ))
-    #  assert [1, 64, 25] == [sum( iv.numField ), sum( ov.numField ), sum( oiv.numField )]
-    assert [1, 50, 27] == [sum( iv.numField ), sum( ov.numField ), sum( oiv.numField )]
-    print("SUMS2: ", niv, nov, noiv)
-    #  assert [7, 62, 55] ==  [ niv, nov, noiv ]
-    assert [7, 62, 55] ==  [ niv, nov, noiv ]
 
-    print(insyn.vec)
-    print(outsyn.vec)
-    print(outInhSyn)
+    print("SUMS: ", sum( iv.numField ), sum( ov.numField ), sum( oiv.numField ))
+    assert [1, 64, 25] == [sum( iv.numField ), sum( ov.numField ), sum( oiv.numField )]
+    print("SUMS2: ", niv, nov, noiv)
+    assert [7, 62, 55] ==  [ niv, nov, noiv ]
     print("SUMS3: ", sum( insyn.vec.numSynapses ), sum( outsyn.vec.numSynapses ), sum( outInhSyn.vec.numSynapses ))
     assert [7,62,55] == [ sum( insyn.vec.numSynapses ), sum( outsyn.vec.numSynapses ), sum( outInhSyn.vec.numSynapses ) ]
+
+    # print(oiv.numField)
+    # print(insyn.vec[1].synapse.num)
+    # print(insyn.vec.numSynapses)
+    # print(sum( insyn.vec.numSynapses ))
+    # niv = iv.numSynapses
+    # ov = iv.numSynapses
 
     sv = moose.vec( stim )
     sv.rate = params['randInputRate']

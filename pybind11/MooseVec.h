@@ -76,10 +76,11 @@ public:
 
 
     // Get attributes.
-    vector<py::object> getAttribute(const string& name);
+    py::object getAttribute(const string& name);
 
-    // TODO: May be buffer https://pybind11.readthedocs.io/en/stable/advanced/pycpp/numpy.html#buffer-protocol
-    template<typename T=double>
+    vector<ObjId> objs() const;
+
+    template<typename T>
     py::array_t<T> getAttributeNumpy(const string& name)
     {
         vector<T> res(size());
@@ -87,9 +88,6 @@ public:
             res[i] = Field<T>::get(getItem(i), name);
         return py::array_t<T>(res.size(), res.data());
     }
-
-    vector<ObjId> objs() const;
-
 
     ObjId connectToSingle(const string& srcfield, const ObjId& tgt, const string& tgtfield, const string& msgtype);
 

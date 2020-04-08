@@ -36,7 +36,7 @@ inline T getField(const ObjId& id, const string& fname)
 
 // FIXME: Is it most efficient?
 // See discussion here: https://github.com/pybind/pybind11/issues/1042
-template <typename T = double>
+template <typename T>
 inline py::array_t<T> getFieldNumpy(const ObjId& id, const string& fname)
 {
     auto v = Field<vector<T>>::get(id, fname);
