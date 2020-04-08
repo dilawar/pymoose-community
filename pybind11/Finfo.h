@@ -37,7 +37,7 @@ public:
         if (tgtType == "vector<double>")
             return py::cast(
                 LookupField<T, vector<double>>::get(oid, fname, key));
-        if (tgtType == "vector<Id>")
+        if (tgtType == "vector<Id>") 
             return py::cast(LookupField<T, vector<Id>>::get(oid, fname, key));
         if (tgtType == "vector<ObjId>")
             return py::cast(

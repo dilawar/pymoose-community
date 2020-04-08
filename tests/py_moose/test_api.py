@@ -22,6 +22,13 @@ def test_children():
     moose.setCwe(a3)
     s = moose.getCwe()
     assert s == a3, (s, a3)
+    a11 = a1.children[0]
+    ax = moose.element(a1)
+    ax1 = ax.children[0]
+    assert ax == a1
+    assert ax1 == a11
+    assert a11.isA['Neutral'], a11.isA
+    assert ax1.isA['Neutral'], a11.isA
 
 
 def test_other():

@@ -72,6 +72,7 @@ vector<MooseVec> MooseVec::children() const
 }
 
 
+
 unsigned int MooseVec::len()
 {
     return (unsigned int)size();

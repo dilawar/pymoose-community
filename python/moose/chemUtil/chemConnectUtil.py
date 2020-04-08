@@ -66,7 +66,7 @@ def colorCheck(fc_bgcolor):
         if string its taken as colorname further down in validColorcheck checked for valid color, \
         but for tuple and list its taken as r,g,b value.
     """
-    if isinstance(fc_bgcolor, str):
+    if isinstance(fc_bgcolor,str):
         if fc_bgcolor.startswith("#"):
             fc_bgcolor = fc_bgcolor
         elif (fc_bgcolor.isdigit()):
@@ -110,10 +110,12 @@ def validColorcheck(color):
         return(matplotlib.colors.cnames["orange"])
 
 def xyPosition(objInfo,xory):
+    if objInfo is None:
+        return 0.0
     try:
         return float(moose.element(objInfo).getField(xory))
-    except ValueError:
-        return 0.0
+    except ValueError as e:
+        return float(0)
 
 def setupMeshObj(modelRoot):
     ''' Setup compartment and its members pool,reaction,enz cplx under self.meshEntry dictionaries \
@@ -153,13 +155,13 @@ def setupMeshObj(modelRoot):
         if mol_cpl or funclist or enzlist or realist or tablist:
             for m in mol_cpl:
                 objInfo = None
-                if m.parent and m.parent.isA['CplxEnzBase']:
+                if m.parent.isA['CplxEnzBase']:
                     cplxlist.append(m)
                     objInfo = m.parent.path+'/info'
                 elif m.isA['PoolBase']:
                     mollist.append(m)
                     objInfo =m.path+'/info'
-                if moose is not None and moose.exists(objInfo):
+                if objInfo is not None and moose.exists(objInfo):
                     listOfitems[moose.element(moose.element(objInfo).parent)]={'x':xyPosition(objInfo,'x'),'y':xyPosition(objInfo,'y')}
 
                 xcord.append(xyPosition(objInfo,'x'))
@@ -192,7 +194,7 @@ def getxyCord(xcord,ycord,list1,listOfitems):
         #     objInfo = moose.element(item.parent).path+'/info'
         # else:
         #     objInfo = item.path+'/info'
-        if not item.isA['Function']:
+        if not isinstance(item,moose.Function):
             objInfo = item.path+'/info'
             xcord.append(xyPosition(objInfo,'x'))
             ycord.append(xyPosition(objInfo,'y'))
@@ -278,21 +280,17 @@ def setupItem(modelPath,cntDict):
                     tablist.append((moose.element(tabconnect),'tab',countuniqItem[tabconnect]))
                 cntDict[tab] = tablist
 
-def countitems(mitems, objtype):
+def countitems(mitems,objtype):
     items = []
-    items = mitems.neighbors[objtype]
+    items = moose.element(mitems).neighbors[objtype]
     uniqItems = set(items)
+    #countuniqItems = Counter(items)
     countuniqItems = dict((i, items.count(i)) for i in items)
     return(uniqItems,countuniqItems)
 
 def findCompartment(element):
     if element.path == '/':
-        return moose.element('/')
-    elif mooseIsInstance(element, ["CubeMesh", "CylMesh","EndoMesh","NeuroMesh"]):
-        return (element)
-    else:
-        return findCompartment(moose.element(element.parent))
-    
-
-def mooseIsInstance(element, classNames):
-    return moose.element(element).__class__.__name__ in classNames
+        return element
+    if element.isA['ChemCompt']:
+        return element
+    return findCompartment(element.parent)

@@ -86,6 +86,7 @@ def mooseAddChemSolver(modelRoot, solver):
                     setCompartmentSolver(modelRoot, currentSolver)
                     return True
     else:
+        
         return ("mooseAddChemSolver is only for adding Chemical Model which has to be `CubeMesh` or `CylMesh` found ",list(set([x.className for x in compts]) - set(['CubeMesh',"CylMesh"])))
 
 

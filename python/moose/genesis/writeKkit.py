@@ -10,6 +10,7 @@ __maintainer__       = "Harsha Rani"
 __email__            = "hrani@ncbs.res.in"
 __status__           = "Development"
 __updated__          = "Jan 08 2020"
+
 #Jan 8: added a line to add compartment info
 #       permeability from moose is in uM which to be converted to mM for genesis
 #2020
@@ -253,7 +254,7 @@ def writeConcChan(modelpath,f,sceneitems):
             if len(moose.element(cChan).neighbors['setNumChan']) == 1:
                 chanParent = moose.element(moose.element(cChan).neighbors['setNumChan'][0])
     
-            if not (isinstance(chanParent,moose.PoolBase)):
+            if not chanParent.isA['PoolBase']:
                 print(" raise exception Channel doesn't have pool as parent %s",moose.element(cChan).path)
                 return False,"raise exception Channel doesn't have pool as parent"
             else:
@@ -307,7 +308,7 @@ def writeEnz( modelpath,f,sceneitems):
             if len(moose.element(enz).neighbors['enzDest']) == 1:
                 enzParent = moose.element(moose.element(enz).neighbors['enzDest'][0])
     
-            if not (isinstance(enzParent,moose.PoolBase)):
+            if not enzParent.isA['PoolBase']:
                 print(" raise exception enz doesn't have pool as parent %s",moose.element(enz).path)
                 return False
             else:
@@ -379,7 +380,7 @@ def nearestColorIndex(color, color_sequence):
 def storeReacMsg(reacList,f):
     for reac in reacList:
         reacPath = trimPath( reac);
-        sublist = reac.neighbors["sub"]
+        sublist = reac.neighbors["subOut"]
         prdlist = reac.neighbors["prd"]
         for sub in sublist:
             s = "addmsg /kinetics/" + trimPath( sub ) + " /kinetics/" + reacPath +  " SUBSTRATE n \n";
@@ -431,22 +432,16 @@ def writeReac(modelpath,f,sceneitems):
     return reacList,error
  
 def trimPath(mobj):
-    assert mobj is not None
     original = mobj
-    print(1, mobj)
     while not mobj.isA['ChemCompt'] and mobj.path != "/":
-        mobj = mobj.parent
-        print(11, mobj, mobj.path)
-    print('111')
+        mobj = moose.element(mobj.parent)
 
-    # If we are out of the while loop, we have found what we are looking for.
     if mobj.path == "/":
-        print("%s object doesn't have compartment as a parent." % original)
+        print("%s object doesn't have a parent compartment as a parent." % original)
         return
 
-    # other than the kinetics compartment, all the othername are converted to
-    # group in Genesis which are place under /kinetics. Any moose object comes
-    # under /kinetics then one level down the path is taken.
+    # other than the kinetics compartment, all the othername are converted to group in Genesis which are place under /kinetics
+    # Any moose object comes under /kinetics then one level down the path is taken.
     # e.g /group/poolObject or /Reac
     if mobj.name != "kinetics":# and ( (mobj.className != "CubeMesh") and (mobj.className != "CylMesh") and (mobj.className != "EndoMesh") and (mobj.className != "NeuroMesh")):
         splitpath = original.path[(original.path.find(mobj.name)):len(original.path)]
@@ -589,21 +584,22 @@ def writePool(modelpath,f,volIndex,sceneitems):
 
     for p in moose.wildcardFind(modelpath+'/##[0][ISA=PoolBase]'):
         if findCompartment(p) == moose.element('/'):
-            error = error + " \n "+p.path+ " doesn't have compartment ignored to write to genesis"
+            error += "\n%s doesn't have compartment ignored to write to genesis" % p
         else:
             slave_enable = 0
-            if (p.className == "BufPool" or p.className == "ZombieBufPool"):
+            if p.isA["BufPool"] or p.isA["ZombieBufPool"]:
                 pool_children = p.children
                 if pool_children== 0:
                     slave_enable = 4
                 else:
                     for pchild in pool_children:
-                        if not(pchild.className == "ZombieFunction") and not(pchild.className == "Function"):
+                        if (not pchild.isA["ZombieFunction"]) and (not pchild.isA["Function"]):
                             slave_enable = 4
                         else:
                             slave_enable = 0
                             break
-            if (p.parent.className != "Enz" and p.parent.className !='ZombieEnz'):
+
+            if (not p.parent.isA['Enz']) and (not p.parent.isA['ZombieEnz']):
                 #Assuming "p.parent.className !=Enzyme is cplx which is not written to genesis"
 
                 # x = sceneitems[p]['x']

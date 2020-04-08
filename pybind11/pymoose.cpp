@@ -47,7 +47,7 @@ bool setFieldGeneric(const ObjId &oid, const string &fieldName,
 {
     auto cinfo = oid.element()->cinfo();
     auto finfo = cinfo->findFinfo(fieldName);
-    if (!finfo) {
+    if(!finfo) {
         throw runtime_error(fieldName + " is not found on " + oid.path());
         return false;
     }
@@ -59,44 +59,44 @@ bool setFieldGeneric(const ObjId &oid, const string &fieldName,
         std::remove_if(fieldType.begin(), fieldType.end(), ::isspace),
         fieldType.end());
 
-    if (fieldType == "double")
+    if(fieldType == "double")
         return Field<double>::set(oid, fieldName, val.cast<double>());
-    if (fieldType == "vector<double>")
+    if(fieldType == "vector<double>")
         return Field<vector<double>>::set(oid, fieldName,
                                           val.cast<vector<double>>());
-    if (fieldType == "float")
+    if(fieldType == "float")
         return Field<float>::set(oid, fieldName, val.cast<float>());
-    if (fieldType == "unsignedint")
+    if(fieldType == "unsignedint")
         return Field<unsigned int>::set(oid, fieldName,
                                         val.cast<unsigned int>());
-    if (fieldType == "unsignedlong")
+    if(fieldType == "unsignedlong")
         return Field<unsigned long>::set(oid, fieldName,
                                          val.cast<unsigned long>());
-    if (fieldType == "int")
+    if(fieldType == "int")
         return Field<int>::set(oid, fieldName, val.cast<int>());
-    if (fieldType == "bool")
+    if(fieldType == "bool")
         return Field<bool>::set(oid, fieldName, val.cast<bool>());
-    if (fieldType == "string")
+    if(fieldType == "string")
         return Field<string>::set(oid, fieldName, val.cast<string>());
-    if (fieldType == "vector<string>")
+    if(fieldType == "vector<string>")
         return Field<vector<string>>::set(oid, fieldName,
                                           val.cast<vector<string>>());
-    if (fieldType == "char")
+    if(fieldType == "char")
         return Field<char>::set(oid, fieldName, val.cast<char>());
-    if (fieldType == "vector<ObjId>")
+    if(fieldType == "vector<ObjId>")
         return Field<vector<ObjId>>::set(oid, fieldName,
                                          val.cast<vector<ObjId>>());
-    if (fieldType == "ObjId")
+    if(fieldType == "ObjId")
         return Field<ObjId>::set(oid, fieldName, val.cast<ObjId>());
     // if (fieldType == "Id") {
     //    // NB: Note that we cast to ObjId here and not to Id.
     //    return Field<Id>::set(oid.id, fieldName, val.cast<ObjId>());
     //}
-    if (fieldType == "Id") {
+    if(fieldType == "Id") {
         // NB: Handle MooseVec as well. Note that we send ObjId to the set
         // function. The C++ implicit conversion takes care of the rest.
         // Id tgt;
-        if (py::isinstance<MooseVec>(val)) {
+        if(py::isinstance<MooseVec>(val)) {
             auto tgt = Id(val.cast<MooseVec>().obj());
             return Field<Id>::set(oid.id, fieldName, tgt);
         } else {
@@ -104,18 +104,18 @@ bool setFieldGeneric(const ObjId &oid, const string &fieldName,
             return Field<Id>::set(oid.id, fieldName, tgt);
         }
     }
-    if (fieldType == "vector<double>") {
+    if(fieldType == "vector<double>") {
         // NB: Note that we cast to ObjId here and not to Id.
         return Field<vector<double>>::set(oid.id, fieldName,
                                           val.cast<vector<double>>());
     }
-    if (fieldType == "vector<vector<double>>") {
+    if(fieldType == "vector<vector<double>>") {
         // NB: Note that we cast to ObjId here and not to Id.
         return Field<vector<vector<double>>>::set(
             oid.id, fieldName, val.cast<vector<vector<double>>>());
     }
-    if (fieldType == "Variable")
-        if (fieldType == "Variable")
+    if(fieldType == "Variable")
+        if(fieldType == "Variable")
             return Field<Variable>::set(oid, fieldName, val.cast<Variable>());
 
     throw runtime_error("NotImplemented::setField: '" + fieldName +
@@ -128,7 +128,7 @@ py::object getFieldGeneric(const ObjId &oid, const string &fieldName)
     auto cinfo = oid.element()->cinfo();
     auto finfo = cinfo->findFinfo(fieldName);
 
-    if (!finfo) {
+    if(!finfo) {
         throw py::key_error(fieldName + " is not found on '" + oid.path() +
                             "'.");
     }
@@ -139,14 +139,14 @@ py::object getFieldGeneric(const ObjId &oid, const string &fieldName)
     // setter.
     // The DestFinfo setter is a function.
 
-    if (finfoType == "ValueFinfo")
+    if(finfoType == "ValueFinfo")
         return __Finfo__::getFieldValue(oid, finfo);
-    else if (finfoType == "FieldElementFinfo") {
+    else if(finfoType == "FieldElementFinfo") {
         return py::cast(__Finfo__(oid, finfo, "FieldElementFinfo"));
-    } else if (finfoType == "LookupValueFinfo") {
+    } else if(finfoType == "LookupValueFinfo") {
         // Return function.
         return py::cast(__Finfo__(oid, finfo, "LookupValueFinfo"));
-    } else if (finfoType == "DestFinfo") {
+    } else if(finfoType == "DestFinfo") {
         // Return a setter function. It can be used to set field on DestFinfo.
         return __Finfo__::getDestFinfoSetterFunc(oid, finfo);
     }
@@ -192,6 +192,7 @@ PYBIND11_MODULE(_moose, m)
         .def("__setitem__", &__Finfo__::setItem)
         .def("__len__", &__Finfo__::getNumField);
 
+#if 1
     // A thin wrapper around Id from ../basecode/Id.h . Usually this is shows
     // at moose.vec.
     py::class_<Id>(m, "_Id")
@@ -222,7 +223,16 @@ PYBIND11_MODULE(_moose, m)
          *  Override __eq__ etc.
          */
         .def("__eq__", [](const Id &a, const Id &b) { return a == b; })
-        .def("__ne__", [](const Id &a, const Id &b) { return a != b; });
+        .def("__ne__", [](const Id &a, const Id &b) { return a != b; })
+        .def("__hash__", &Id::value)
+        .def("__getattr__", [](const Id &id, const string &key) {
+             return getFieldGeneric(ObjId(id), key);
+         })
+        .def("__setattr__",
+             [](const Id &id, const string &key, const py::object &val) {
+             return setFieldGeneric(ObjId(id), key, val);
+         });
+#endif
 
     /**
      * @name ObjId. It is a base of all other moose objects.
@@ -235,7 +245,9 @@ PYBIND11_MODULE(_moose, m)
         .def(py::init<Id, unsigned int, unsigned int>())
         .def(py::init<const string &>())
         // Custom constructor.
-        .def(py::init([](const ObjId& oid){ return ObjId(oid.id, oid.dataIndex, oid.fieldIndex);}))
+        .def(py::init([](const ObjId &oid) {
+             return ObjId(oid.id, oid.dataIndex, oid.fieldIndex);
+         }))
         //---------------------------------------------------------------------
         //  Readonly properties.
         //---------------------------------------------------------------------
@@ -248,28 +260,26 @@ PYBIND11_MODULE(_moose, m)
         .def_property_readonly("className", [](const ObjId &oid) {
              return oid.element()->cinfo()->name();
          })
-        .def_property_readonly("id", [](ObjId &oid) { return oid.id; })
-        .def_property_readonly(
-             "dataIndex", [](ObjId &oid) { return oid.eref().dataIndex(); })
+        .def_property_readonly("id", [](ObjId & oid)->Id { return oid.id; })
+        .def_property_readonly("dataIndex",
+                               [](ObjId &oid) { return oid.dataIndex; })
+        .def_property_readonly("fieldIndex",
+                               [](ObjId &oid) { return oid.fieldIndex; })
         .def_property_readonly(
              "type", [](ObjId &oid) { return oid.element()->cinfo()->name(); })
-
-        //--------------------------------------------------------------------
-        // Set/Get
-        //--------------------------------------------------------------------
-        .def("getField", &getFieldGeneric)
-        .def("setField", &setFieldGeneric)
-        //.def("getNumpy", &getFieldNumpy<double>)
 
         /**
          *  Override __eq__ etc.
          */
         .def("__eq__", [](const ObjId &a, const ObjId &b) { return a == b; })
         .def("__ne__", [](const ObjId &a, const ObjId &b) { return a != b; })
+        .def("__hash__", [](const ObjId &oid) { return oid.id.value(); })
 
         /**
          * Attributes.
          */
+        .def("getField", &getFieldGeneric)
+        .def("setField", &setFieldGeneric)
         .def("__getattr__", &getFieldGeneric)
         .def("__setattr__", &setFieldGeneric)
 
