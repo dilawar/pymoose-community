@@ -16,7 +16,9 @@ def test_vec2():
     v2 = iaf.vec
     assert v1 == v2
     assert id(v1) == id(v2)
-    iaf.Vm = range(10)
+
+    print(iaf, 111)
+    iaf.Vm = np.arange(0, 10, 1.0)
     print(iaf.Vm)
     print("All done")
     assert iaf[5].Vm == 5, iaf[5].Vm

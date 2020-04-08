@@ -125,6 +125,12 @@ inline ObjId mooseCreateFromId(const string& type, const Id& id,
     return ObjId(id);
 }
 
+inline ObjId mooseCreateFromMooseVec(const string& type, const MooseVec& vec,
+                               unsigned int numData)
+{
+    return vec.obj();
+}
+
 ObjId loadModelInternal(const string& fname, const string& modelpath,
                         const string& solverclass);
 

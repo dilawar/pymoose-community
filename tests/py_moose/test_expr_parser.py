@@ -231,6 +231,7 @@ def singleCompt(name, params):
     print('=============')
     print('[INFO] Making compartment %s' % name)
     mod = moose.copy('/library/' + name + '/' + name, '/model')
+
     A = moose.element(mod.path + '/A')
     Z = moose.element(mod.path + '/Z')
     Z.nInit = 1
@@ -253,6 +254,7 @@ def singleCompt(name, params):
     ksolve = moose.Ksolve(mod.path + '/ksolve')
     stoich = moose.Stoich(mod.path + '/stoich')
     stoich.compartment = mod
+
     stoich.ksolve = ksolve
     stoich.path = mod.path + '/##'
     print('REINIT AND START')

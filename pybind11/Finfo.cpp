@@ -28,21 +28,23 @@ __Finfo__::__Finfo__(const ObjId& oid, const Finfo* f, const string& finfoType)
     : oid_(oid), f_(f), finfoType_(finfoType)
 {
     if (finfoType == "DestFinfo")
-        func_ = [oid, f](const py::object& key) {
-            return getLookupValueFinfoItem(oid, f, key);
-        };
+        func_ = [oid, f](const py::object& key)
+        { return getLookupValueFinfoItem(oid, f, key); };
     else if (finfoType == "FieldElementFinfo")
-        func_ = [oid, f](const py::object& index) {
+        func_ = [oid, f](const py::object& index)
+        {
             // this is essential of make this function static.
             return getElementFinfoItem(oid, f, py::cast<unsigned int>(index));
         };
     else if (finfoType == "LookupValueFinfo")
-        func_ = [oid, f, this](const py::object& key) {
+        func_ = [oid, f, this](const py::object& key)
+        {
             // Assigning is essential or make these functions static.
             return this->getLookupValueFinfoItem(oid, f, key);
         };
     else
-        func_ = [this](const py::object& key) {
+        func_ = [this](const py::object& key)
+        {
             throw runtime_error("Not supported for Finfo type '" + finfoType_ +
                                 "'");
             return py::none();
@@ -69,7 +71,8 @@ bool __Finfo__::setLookupValueFinfoItem(const ObjId& oid, const py::object& key,
     auto srcType = srcDestType[0];
     auto destType = srcDestType[1];
 
-    if (srcType == "unsigned int") {
+    if (srcType == "unsigned int")
+    {
         if (destType == "double")
             return LookupField<unsigned int, double>::set(
                 oid, fieldName, py::cast<unsigned int>(key),
@@ -95,24 +98,24 @@ py::object __Finfo__::getLookupValueFinfoItem(const ObjId& oid, const Finfo* f,
 
     py::object r = py::none();
 
-    if (srcType == "string") {
-        auto k = py::cast<string>(key);
-        return getLookupValueFinfoItemInner<string>(oid, f, k, tgtType);
-    } else if (srcType == "unsigned int") {
-        auto k = py::cast<unsigned int>(key);
-        return getLookupValueFinfoItemInner<unsigned int>(oid, f, k, tgtType);
-    } else if (srcType == "ObjId") {
-        auto k = py::cast<ObjId>(key);
-        return getLookupValueFinfoItemInner<ObjId>(oid, f, k, tgtType);
-    } else if (srcType == "Id") {
-        auto k = py::cast<Id>(key);
-        return getLookupValueFinfoItemInner<Id>(oid, f, k, tgtType);
-    } else {
-        py::print("getLookupValueFinfoItem::NotImplemented for key:", key,
-                "srcType:", srcType, "and tgtType:", tgtType, "path: ",
-                oid.path());
-        throw runtime_error("getLookupValueFinfoItem::NotImplemented error");
-    }
+    if (srcType == "string")
+        return getLookupValueFinfoItemInner<string>(oid, f, key.cast<string>(), tgtType);
+    if (srcType == "unsigned int")
+        return getLookupValueFinfoItemInner<unsigned int>(
+            oid, f, key.cast<unsigned int>(), tgtType);
+    if (srcType == "ObjId")
+        return getLookupValueFinfoItemInner<ObjId>(oid, f, key.cast<ObjId>(),
+                                                   tgtType);
+    if (srcType == "vector<double>")
+        return getLookupValueFinfoItemInner<vector<double>>(
+            oid, f, key.cast<vector<double>>(), tgtType);
+    if (srcType == "Id")
+        return getLookupValueFinfoItemInner<Id>(oid, f, key.cast<Id>(), tgtType);
+
+    py::print("getLookupValueFinfoItem::NotImplemented for key:", key,
+            "srcType:", srcType, "and tgtType:", tgtType, "path: ",
+            oid.path());
+    throw runtime_error("getLookupValueFinfoItem::NotImplemented error");
     return r;
 }
 
@@ -133,7 +136,8 @@ py::cpp_function __Finfo__::getDestFinfoSetterFunc(const ObjId& oid,
     vector<string> types;
     moose::tokenize(rttType, ",", types);
 
-    if (types.size() == 1) return getDestFinfoSetterFunc1(oid, finfo, types[0]);
+    if (types.size() == 1)
+        return getDestFinfoSetterFunc1(oid, finfo, types[0]);
 
     assert(types.size() == 2);
     return getDestFinfoSetterFunc2(oid, finfo, types[0], types[1]);
@@ -146,19 +150,20 @@ py::cpp_function __Finfo__::getDestFinfoSetterFunc2(const ObjId& oid,
                                                     const string& ftype2)
 {
     const auto fname = finfo->name();
-    if (ftype1 == "double") {
-        if (ftype2 == "unsigned int") {
+    if (ftype1 == "double")
+    {
+        if (ftype2 == "unsigned int")
+        {
             std::function<bool(double, unsigned int)> func = [oid, fname](
-                const double a, const unsigned int b) {
-                return SetGet2<double, unsigned int>::set(oid, fname, a, b);
-            };
+                const double a, const unsigned int b)
+            { return SetGet2<double, unsigned int>::set(oid, fname, a, b); };
             return func;
         }
-        if (ftype2 == "long") {
+        if (ftype2 == "long")
+        {
             std::function<bool(double, long)> func = [oid, fname](
-                const double a, const long b) {
-                return SetGet2<double, long>::set(oid, fname, a, b);
-            };
+                const double a, const long b)
+            { return SetGet2<double, long>::set(oid, fname, a, b); };
             return func;
         }
     }
@@ -173,17 +178,23 @@ py::cpp_function __Finfo__::getDestFinfoSetterFunc1(const ObjId& oid,
                                                     const string& ftype)
 {
     const auto fname = finfo->name();
-    if (ftype == "void") {
-        std::function<bool()> func = [oid, fname]() {
-            return SetGet0::set(oid, fname);
-        };
+    if (ftype == "void")
+    {
+        std::function<bool()> func = [oid, fname]()
+        { return SetGet0::set(oid, fname); };
         return func;
     }
 
-    if (ftype == "double") return getSetGetFunc1<double>(oid, fname);
-    if (ftype == "ObjId") return getSetGetFunc1<ObjId>(oid, fname);
-    if (ftype == "Id") return getSetGetFunc1<Id>(oid, fname);
-    if (ftype == "vector<Id>") return getSetGetFunc1<vector<Id>>(oid, fname);
+    if (ftype == "double")
+        return getSetGetFunc1<double>(oid, fname);
+    if (ftype == "ObjId")
+        return getSetGetFunc1<ObjId>(oid, fname);
+    if (ftype == "Id")
+        return getSetGetFunc1<Id>(oid, fname);
+    if (ftype == "string")
+        return getSetGetFunc1<string>(oid, fname);
+    if (ftype == "vector<Id>")
+        return getSetGetFunc1<vector<Id>>(oid, fname);
     if (ftype == "vector<ObjId>")
         return getSetGetFunc1<vector<ObjId>>(oid, fname);
     if (ftype == "vector<double>")
@@ -201,13 +212,17 @@ py::object __Finfo__::getFieldValue(const ObjId& oid, const Finfo* f)
 
     if (rttType == "double" or rttType == "float")
         r = pybind11::float_(getField<double>(oid, fname));
-    else if (rttType == "vector<double>") {
+    else if (rttType == "vector<double>")
+    {
         // r = py::cast(getField<vector<double>>(oid, fname));
         r = getFieldNumpy<double>(oid, fname);
-    } else if (rttType == "vector<unsigned int>") {
+    }
+    else if (rttType == "vector<unsigned int>")
+    {
         // r = pybind11::cast(getField<vector<unsigned int>>(oid, fname));
         r = getFieldNumpy<unsigned int>(oid, fname);
-    } else if (rttType == "string")
+    }
+    else if (rttType == "string")
         r = pybind11::str(getField<string>(oid, fname));
     else if (rttType == "char")
         r = pybind11::int_(getField<char>(oid, fname));
@@ -231,7 +246,8 @@ py::object __Finfo__::getFieldValue(const ObjId& oid, const Finfo* f)
         r = py::cast(getField<vector<ObjId>>(oid, fname));
     else if (rttType == "vector<string>")
         r = py::cast(getField<vector<string>>(oid, fname));
-    else {
+    else
+    {
         MOOSE_WARN("Warning: getValueFinfo:: Unsupported type '" + rttType +
                    "'");
         r = py::none();
@@ -253,7 +269,8 @@ py::list __Finfo__::getElementFinfo(const ObjId& objid, const Finfo* f)
 py::object __Finfo__::getElementFinfoItem(const ObjId& oid, const Finfo* f,
                                           unsigned int index)
 {
-    if (index >= getNumFieldStatic(oid, f)) {
+    if (index >= getNumFieldStatic(oid, f))
+    {
         throw py::index_error("Index " + to_string(index) + " out of range.");
     }
     auto o = ObjId(oid.path() + '/' + f->name());

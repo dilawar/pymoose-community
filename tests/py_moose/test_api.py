@@ -46,6 +46,12 @@ def test_vec():
     assert sum(v.conc) == sum(x)
     assert np.allclose(v.conc, x), (v.conc, x)
 
+    # assign bool to double.
+    y = [float(x < 5) for x in range(100) ]
+    v.concInit = y
+    assert (v.concInit[:5] == 1.0).all(), v.concInit[:5]
+    assert (v.concInit[5:] == 0.0).all(), v.concInit[5:]
+
 def test_finfos():
     s = moose.SimpleSynHandler('synh')
 
@@ -140,6 +146,22 @@ def test_element():
     ae = moose.element(a)
     assert ae.parent == a.parent, (ae.parent, a.parent)
 
+def test_typing():
+    a = moose.Pool('x123y', 100)
+
+    a.concInit = True
+    assert a.concInit == 1.0, a.concInit
+    a.concInit = False
+    assert a.concInit == 0.0, a.concInit
+
+    av = moose.vec(a)
+    av.concInit = 1.0
+    assert np.allclose(av.concInit, 1.0), av.concInit
+    av.concInit = 0.012
+    assert np.allclose(av.concInit, 0.012), av.concInit
+
+    av.concInit = True
+    assert np.allclose(av.concInit, 1.0), av.concInit
 
 def main():
     test_children()
@@ -149,8 +171,9 @@ def main():
     test_wrapper()
     test_inheritance()
     test_access()
-    test_vec()
     test_element()
+    test_vec()
+    test_typing()
 
 if __name__ == '__main__':
     main()

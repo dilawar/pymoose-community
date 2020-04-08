@@ -11,10 +11,6 @@
 
 using namespace std;
 
-#include "../external/pybind11/include/pybind11/pybind11.h"
-#include "../external/pybind11/include/pybind11/numpy.h"
-namespace py = pybind11;
-
 #include "../utility/strutil.h"
 #include "helper.h"
 #include "pymoose.h"
@@ -24,7 +20,11 @@ MooseVec::MooseVec(const string& path, unsigned int n = 0,
                    const string& dtype = "Neutral")
     : path_(path)
 {
+    // If path is given and it does not exists, then create one. The old api
+    // support it.
     oid_ = ObjId(path);
+    if(oid_.bad()) 
+        oid_ = mooseCreateFromPath(dtype, path, n);
 }
 
 MooseVec::MooseVec(const ObjId& oid) : oid_(oid), path_(oid.path())
@@ -109,49 +109,11 @@ py::object MooseVec::getAttribute(const string& name)
     if(rttType == "int")
         return getAttributeNumpy<unsigned int>(name);
 
-    // FIXME: bool type is not working. Need to raise the ticket on pybind11
-    // after creating and MWE.
-    //if(rttType == "bool")
-    //    return getAttributeNumpy<bool>(name);
-
     vector<py::object> res(size());
     for (unsigned int i = 0; i < size(); i++)
         res[i] = getFieldGeneric(getItem(i), name);
     return py::cast(res);
 }
-
-
-
-// // FIXME: Only double is supported here. Not sure if this is enough. This
-// // should be the API function.
-// py::array_t<double> MooseVec::getAttributeNumpy(const string &name)
-// {
-//     auto cinfo = oid_.element()->cinfo();
-//     auto finfo = cinfo->findFinfo(name);
-//
-//     if (!finfo) {
-//         throw py::key_error(name + " is not found on '" + oid_.path() + "'.");
-//     }
-//
-//     string finfoType = cinfo->getFinfoType(finfo);
-//
-//     // Either return a simple value (ValueFinfo), list, dict or DestFinfo
-//     // setter.
-//     // The DestFinfo setter is a function.
-//
-//     vector<double> res(size());
-//     if (finfoType == "ValueFinfo") {
-//         for (unsigned int i = 0; i < size(); i++)
-//             res[i] = getField<double>(getItem(i), name);
-//         return py::array_t<double>(res.size(), res.data());
-//     }
-//
-//     throw runtime_error("MooseVec::getAttributeNumpy::NotImplemented : " + name +
-//                         " with rttType " + finfo->rttiType() + " and type: '" +
-//                         finfoType + "'");
-//     return py::array_t<double>();
-// }
-
 
 ObjId MooseVec::connectToSingle(const string& srcfield, const ObjId& tgt,
                                 const string& tgtfield, const string& msgtype)

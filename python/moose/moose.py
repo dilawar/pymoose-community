@@ -158,7 +158,7 @@ def le(el=None):
 
     """
     if el is None:
-        el = getCwe()
+        el = _moose.getCwe()
     elif isinstance(el, str):
         if not _moose.exists(el):
             raise ValueError('no such element')
