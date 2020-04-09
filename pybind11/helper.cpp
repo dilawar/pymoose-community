@@ -16,6 +16,7 @@
 
 #include <memory>
 #include <stdexcept>
+#include <csignal>
 
 #include "../external/pybind11/include/pybind11/functional.h"
 #include "../external/pybind11/include/pybind11/numpy.h"
@@ -86,6 +87,20 @@ Id initShell(void)
 
     Cinfo::makeCinfoElements(classMasterId);
     return shellId;
+}
+
+/**
+ * @brief Handle signal raised by user during simulation.
+ *
+ * @param signum
+ */
+void handleKeyboardInterrupts(int signum)
+{
+    LOG(moose::info, "Interrupt signal (" << signum << ") received.");
+    // Get the shell and cleanup.
+    Shell *shell = getShellPtr();
+    shell->cleanSimulation();
+    exit(signum);
 }
 
 /**
@@ -315,8 +330,22 @@ void mooseReinit()
     getShellPtr()->doReinit();
 }
 
+/* --------------------------------------------------------------------------*/
+/**
+ * @Synopsis  Register and signal handler and start the simulation. When ctrl+c
+ * is pressed, stop, cleanup and exit.
+ *
+ * @Param runtime
+ * @Param notify
+ */
+/* ----------------------------------------------------------------------------*/
 void mooseStart(double runtime, bool notify = false)
 {
+    struct sigaction sigHandler;
+    sigHandler.sa_handler = handleKeyboardInterrupts;
+    sigemptyset(&sigHandler.sa_mask);
+    sigHandler.sa_flags = 0;
+    sigaction(SIGINT, &sigHandler, NULL);
     getShellPtr()->doStart(runtime, notify);
 }
 

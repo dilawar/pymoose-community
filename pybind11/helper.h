@@ -173,6 +173,8 @@ map<string, string> mooseGetFieldDict(const string& className,
 
 void mooseReinit();
 
+void handleKeyboardInterrupts(int signum);
+
 void mooseStart(double runtime, bool notify);
 
 void mooseStop();
