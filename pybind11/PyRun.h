@@ -7,6 +7,7 @@
 #define _PYCALL_H
 
 #include <climits>
+
 #if PY_MAJOR_VERSION >= 3
 #define PYCODEOBJECT PyObject
 
@@ -76,10 +77,8 @@ protected:
     int mode_;                    // flag to decide when to run the Python string
     string initstr_;              // statement str for running at reinit
     string runstr_;               // statement str for running in each process call
-
-    py::dict g_;
-    py::dict l_;
-
+    PyObject * globals_;          // global env dict
+    PyObject * locals_;           // local env dict
     PYCODEOBJECT * runcompiled_;  // compiled form of procstr_
     PYCODEOBJECT * initcompiled_; // coimpiled form of initstr_
     string inputvar_;             // identifier for input variable.

@@ -6,13 +6,6 @@
 // Created: Sat Oct 11 14:47:22 2014 (+0530)
 
 #include "Python.h"
-
-#include "../external/pybind11/include/pybind11/pybind11.h"
-#include "../external/pybind11/include/pybind11/eval.h"
-
-namespace py = pybind11;
-using namespace py::literals;
-
 #include "../basecode/header.h"
 #include "PyRun.h"
 
@@ -125,19 +118,32 @@ PyRun::PyRun()
     : mode_(0),
       initstr_(""),
       runstr_(""),
+      globals_(0),
+      locals_(0),
       runcompiled_(0),
       initcompiled_(0),
       inputvar_("input_"),
       outputvar_("output")
 {
-    py::float_ value(0.0);
-    if (PyDict_SetItemString(l_.ptr(), inputvar_.c_str(), value.ptr())) {
+    locals_ = PyDict_New();
+    if (!locals_) {
+        cerr << "Could not initialize locals dict" << endl;
+        return;
+    }
+    PyObject *value = PyFloat_FromDouble(0.0);
+    if (!value && PyErr_Occurred()) {
+        PyErr_Print();
+        return;
+    }
+    if (PyDict_SetItemString(locals_, inputvar_.c_str(), value)) {
         PyErr_Print();
     }
 }
 
 PyRun::~PyRun()
 {
+    Py_XDECREF(globals_);
+    Py_XDECREF(locals_);
 }
 
 void PyRun::setRunString(string statement)
@@ -162,7 +168,7 @@ string PyRun::getInitString() const
 
 void PyRun::setInputVar(string name)
 {
-    PyDict_DelItemString(l_.ptr(), inputvar_.c_str());
+    PyDict_DelItemString(locals_, inputvar_.c_str());
     inputvar_ = name;
 }
 
@@ -173,7 +179,7 @@ string PyRun::getInputVar() const
 
 void PyRun::setOutputVar(string name)
 {
-    PyDict_DelItemString(l_.ptr(), outputvar_.c_str());
+    PyDict_DelItemString(locals_, outputvar_.c_str());
     outputvar_ = name;
 }
 
@@ -201,7 +207,7 @@ void PyRun::trigger(const Eref &e, double input)
         return;
     }
 
-    PyObject *value = PyDict_GetItemString(l_.ptr(), inputvar_.c_str());
+    PyObject *value = PyDict_GetItemString(locals_, inputvar_.c_str());
     if (value) {
         Py_DECREF(value);
     }
@@ -209,14 +215,14 @@ void PyRun::trigger(const Eref &e, double input)
     if (!value && PyErr_Occurred()) {
         PyErr_Print();
     }
-    if (PyDict_SetItemString(l_.ptr(), inputvar_.c_str(), value)) {
+    if (PyDict_SetItemString(locals_, inputvar_.c_str(), value)) {
         PyErr_Print();
     }
-    PyEval_EvalCode(runcompiled_, g_.ptr(), l_.ptr());
+    PyEval_EvalCode(runcompiled_, globals_, locals_);
     if (PyErr_Occurred()) {
         PyErr_Print();
     }
-    value = PyDict_GetItemString(l_.ptr(), outputvar_.c_str());
+    value = PyDict_GetItemString(locals_, outputvar_.c_str());
     if (value) {
         double output = PyFloat_AsDouble(value);
         if (PyErr_Occurred()) {
@@ -230,7 +236,7 @@ void PyRun::trigger(const Eref &e, double input)
 void PyRun::run(const Eref &e, string statement)
 {
     PyRun_SimpleString(statement.c_str());
-    PyObject *value = PyDict_GetItemString(l_.ptr(), outputvar_.c_str());
+    PyObject *value = PyDict_GetItemString(locals_, outputvar_.c_str());
     if (value) {
         double output = PyFloat_AsDouble(value);
         if (PyErr_Occurred())
@@ -245,19 +251,19 @@ void PyRun::process(const Eref &e, ProcPtr p)
     // Make sure the get the GIL. Ksolve/Gsolve can be multithreaded.
     PyGILState_STATE gstate = PyGILState_Ensure();
 
-    // PyRun_String(runstr_.c_str(), 0, g_.ptr(), l_.ptr());
+    // PyRun_String(runstr_.c_str(), 0, globals_, locals_);
     // PyRun_SimpleString(runstr_.c_str());
     if (!runcompiled_ || mode_ == 2) {
         return;
     }
 
-    PyEval_EvalCode(runcompiled_, g_.ptr(), l_.ptr());
+    PyEval_EvalCode(runcompiled_, globals_, locals_);
     if (PyErr_Occurred()) {
         PyErr_Print();
         return;
     }
 
-    PyObject *value = PyDict_GetItemString(l_.ptr(), outputvar_.c_str());
+    PyObject *value = PyDict_GetItemString(locals_, outputvar_.c_str());
     if (value) {
         double output = PyFloat_AsDouble(value);
         if (PyErr_Occurred()) {
@@ -301,16 +307,25 @@ void handleError(bool syntax)
 
 void PyRun::reinit(const Eref &e, ProcPtr p)
 {
-    g_ = py::module::import("__main__").attr("__dict__");
-    // l_.ptr() = l_.ptr();
-
+    PyObject *main_module;
+    if (globals_ == NULL) {
+        main_module = PyImport_AddModule("__main__");
+        globals_ = PyModule_GetDict(main_module);
+        Py_XINCREF(globals_);
+    }
+    if (locals_ == NULL) {
+        locals_ = PyDict_New();
+        if (!locals_) {
+            cerr << "Could not initialize locals dict" << endl;
+        }
+    }
     initcompiled_ = (PYCODEOBJECT *)Py_CompileString(
         initstr_.c_str(), get_program_name().c_str(), Py_file_input);
     if (!initcompiled_) {
         cerr << "Error compiling initString" << endl;
         handleError(true);
     } else {
-        PyEval_EvalCode(initcompiled_, g_.ptr(), l_.ptr());
+        PyEval_EvalCode(initcompiled_, globals_, locals_);
         if (PyErr_Occurred()) {
             PyErr_Print();
         }
@@ -324,7 +339,7 @@ void PyRun::reinit(const Eref &e, ProcPtr p)
         cerr << "Error compiling runString" << endl;
         handleError(true);
     } else {
-        PyEval_EvalCode(runcompiled_, g_.ptr(), l_.ptr());
+        PyEval_EvalCode(runcompiled_, globals_, locals_);
         if (PyErr_Occurred()) {
             PyErr_Print();
         }

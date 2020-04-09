@@ -20,7 +20,7 @@ logger_ = logging.getLogger('moose')
 __class_types__ = {}
 
 
-class PyObjId(_moose._ObjId):
+class PyObjId(_moose.melement):
 
     __class__ = 'Unknown'
 
