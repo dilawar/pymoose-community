@@ -167,9 +167,7 @@ py::object getFieldGeneric(const ObjId &oid, const string &fieldName)
 PYBIND11_MODULE(_moose, m)
 {
     m.doc() = R"moosedoc(
-
     pyMOOSE: Multiscale Object-Oriented Simulation Environment.
-
     )moosedoc";
 
     initModule(m);
