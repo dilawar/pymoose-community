@@ -18,11 +18,7 @@ if(NOT PYTHONINTERP_FOUND)
   find_package(PythonInterp 2.7)
 endif()
 
-# Disable rpath on OSX.
-if(APPLE)
-  set(CMAKE_MACOSX_RPATH OFF)
-endif()
-
+set(CMAKE_MACOSX_RPATH OFF)
 
 # NOTE: version should be changed in setup.py file.
 # If moose version is not given, use setup.py file to get the default version.
@@ -65,7 +61,6 @@ option(WITH_MPI             "Enable Openmpi support" OFF)
 option(WITH_BOOST           "Enable boost. Prefer boost over stl" OFF)
 option(WITH_BOOST_ODE       "Use boost library ode2 library instead of GSL" OFF)
 option(WITH_GSL             "Use gsl-library. Alternative is WITH_BOOST" ON)
-option(USE_PRIVATE_RNG      "Stochastic Objects use their private RNG" ON)
 option(WITH_ASAN            "Use AddressSanitizer in DEBUG mode." OFF)
 
 
@@ -102,10 +97,8 @@ if(WITH_ASAN AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -fsanitize=address")
 endif()
 
-if(WITH_GSL)
-    set(WITH_BOOST OFF)
-    set(WITH_BOOST_ODE OFF)
-elseif(WITH_BOOST)
+# Allows WITH_BOOST to turn off WITH_GSL=ON (default).
+if(WITH_BOOST OR WITH_BOOST_ODE)
     set(WITH_BOOST_ODE ON)
     set(WITH_GSL OFF)
 endif()
