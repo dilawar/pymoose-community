@@ -158,7 +158,6 @@ py::object getFieldGeneric(const ObjId &oid, const string &fieldName)
 }
 
 
-
 /* --------------------------------------------------------------------------*/
 /**
  * @Synopsis  MOOSE extension module _moose.so.
@@ -174,6 +173,8 @@ PYBIND11_MODULE(_moose, m)
     )moosedoc";
 
     initModule(m);
+
+    py::object melement;
 
     // A thin wrapper around Id from ../basecode/Id.h . Usually this is shows
     // at moose.vec.
@@ -222,7 +223,7 @@ PYBIND11_MODULE(_moose, m)
     // class bind both __getitem__ to the getter function call.
     // Note that both a.isA["Compartment"] and a.isA("Compartment") are valid
     // now.
-    py::class_<__Finfo__>(m, "mfinfo", py::dynamic_attr())
+    py::class_<__Finfo__>(m, "Field", py::dynamic_attr())
         .def(py::init<const ObjId &, const Finfo *, const char *>())
         .def_property_readonly("type", &__Finfo__::type)
         .def_property_readonly("vec", [](const __Finfo__ &finfo) {
@@ -240,7 +241,7 @@ PYBIND11_MODULE(_moose, m)
      * @name ObjId. It is a base of all other moose objects.
      * @{ */
     /**  @} */
-    py::class_<ObjId>(m, "melement")
+    py::class_<ObjId>(m, "ObjId", py::metaclass(melement))
         .def(py::init<>())
         .def(py::init<Id>())
         .def(py::init<Id, unsigned int>())

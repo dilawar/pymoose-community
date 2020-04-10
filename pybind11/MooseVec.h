@@ -40,10 +40,12 @@ public:
 
     unsigned int len();
 
-    const ObjId& getItemRef(const size_t i) const;
+    const ObjId& getItemRef(const int i) const;
 
     // Get vector element. Vector element could be `dataIndex` or `fieldIndex`.
-    ObjId getItem(const size_t i) const;
+    // Allows negative indexing.
+    ObjId getItem(const int i) const;
+
     ObjId getDataItem(const size_t i) const;
     ObjId getFieldItem(const size_t i) const;
 

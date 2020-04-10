@@ -20,31 +20,34 @@ public:
                                                    const string& tgtType)
     {
         auto fname = f->name();
-        if (tgtType == "bool")
+        if(tgtType == "bool")
             return py::cast(LookupField<T, bool>::get(oid, fname, key));
-        if (tgtType == "double")
+        if(tgtType == "double")
             return py::cast(LookupField<T, double>::get(oid, fname, key));
-        if (tgtType == "unsigned int")
+        if(tgtType == "unsigned int")
             return py::cast(LookupField<T, unsigned int>::get(oid, fname, key));
-        if (tgtType == "int")
+        if(tgtType == "int")
             return py::cast(LookupField<T, int>::get(oid, fname, key));
-        if (tgtType == "string")
+        if(tgtType == "string")
             return py::cast(LookupField<T, string>::get(oid, fname, key));
-        if (tgtType == "ObjId")
+        if(tgtType == "ObjId")
             return py::cast(LookupField<T, ObjId>::get(oid, fname, key));
-        if (tgtType == "Id")
+        if(tgtType == "Id")
             return py::cast(LookupField<T, Id>::get(oid, fname, key));
-        if (tgtType == "vector<double>")
+        if(tgtType == "vector<double>")
             return py::cast(
                 LookupField<T, vector<double>>::get(oid, fname, key));
-        if (tgtType == "vector<Id>") 
+        if(tgtType == "vector<Id>")
             return py::cast(LookupField<T, vector<Id>>::get(oid, fname, key));
-        if (tgtType == "vector<ObjId>")
+        if(tgtType == "vector<ObjId>")
             return py::cast(
                 LookupField<T, vector<ObjId>>::get(oid, fname, key));
+        if(tgtType == "vector<string>")
+            return py::cast(
+                LookupField<T, vector<string>>::get(oid, fname, key));
 
-        py::print("Warning: Could not find", fname, "for key", key, "(type",
-                  tgtType, ") on path ", oid.path());
+        py::print(__func__, ":: warning: Could not find", fname, "for key", key,
+                  "(type", tgtType, ") on path ", oid.path());
         throw py::key_error("Attribute error.");
         return py::none();
     }
@@ -75,7 +78,7 @@ public:
     static py::list getElementFinfo(const ObjId& objid, const Finfo* f);
 
     static py::object getElementFinfoItem(const ObjId& oid, const Finfo* f,
-                                          unsigned int i);
+                                          int i);
 
     // Get attribute (python api);
     unsigned int getNumField();

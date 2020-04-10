@@ -19,8 +19,7 @@ logger_ = logging.getLogger('moose')
 # etc.
 __class_types__ = {}
 
-
-class PyObjId(_moose.melement):
+class PyObjId(_moose.ObjId):
 
     __class__ = 'Unknown'
 

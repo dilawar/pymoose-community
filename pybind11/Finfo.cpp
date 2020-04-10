@@ -34,7 +34,8 @@ __Finfo__::__Finfo__(const ObjId& oid, const Finfo* f, const string& finfoType)
     else if(finfoType == "FieldElementFinfo")
         func_ = [oid, f](const py::object& index) {
             // this is essential of make this function static.
-            return getElementFinfoItem(oid, f, py::cast<unsigned int>(index));
+            // Cast to int because we support negative indexing.
+            return getElementFinfoItem(oid, f, py::cast<int>(index));
         };
     else if(finfoType == "LookupValueFinfo")
         func_ = [oid, f, this](const py::object& key) {
@@ -261,13 +262,14 @@ py::list __Finfo__::getElementFinfo(const ObjId& objid, const Finfo* f)
 }
 
 py::object __Finfo__::getElementFinfoItem(const ObjId& oid, const Finfo* f,
-                                          unsigned int index)
+                                          int index)
 {
-    if(index >= getNumFieldStatic(oid, f)) {
-        throw py::index_error("Index " + to_string(index) + " out of range.");
-    }
+    size_t numFields = getNumFieldStatic(oid, f);
+    size_t i = (index < 0) ? (int) numFields + index : index;
+    if(i >= numFields)
+        throw py::index_error("Index " + to_string(i) + " out of range.");
     auto o = ObjId(oid.path() + '/' + f->name());
-    return py::cast(ObjId(o.path(), o.dataIndex, index));
+    return py::cast(ObjId(o.path(), o.dataIndex, i));
 }
 
 string __Finfo__::type() const

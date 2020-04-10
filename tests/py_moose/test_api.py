@@ -66,6 +66,14 @@ def test_finfos():
     assert s.numSynapses == 10
 
     syns = s.synapse.vec
+
+    print(s.synapse)
+    s8a = s.synapse[8]
+    s8b = s.synapse[-2]
+    assert s8a == s8b, (s8a, s8b)
+
+    # negative indexing.
+    assert syns[-2] == syns[len(syns)-2]
     assert len(syns) == 10
     for i, s in enumerate(syns):
         s.weight = 9.0

@@ -78,8 +78,10 @@ unsigned int MooseVec::len()
     return (unsigned int)size();
 }
 
-ObjId MooseVec::getItem(const size_t i) const
+ObjId MooseVec::getItem(const int index) const
 {
+    // Negative indexing.
+    size_t i = (index < 0)?size()+index:index;
     if (oid_.element()->hasFields())
         return getFieldItem(i);
     return getDataItem(i);
@@ -112,7 +114,7 @@ py::object MooseVec::getAttribute(const string& name)
 
     vector<py::object> res(size());
     for (unsigned int i = 0; i < size(); i++)
-        res[i] = getFieldGeneric(getItem(i), name);
+        res[i] = getFieldGeneric(getItem((int)i), name);
     return py::cast(res);
 }
 
@@ -153,7 +155,7 @@ size_t MooseVec::id() const
 void MooseVec::generateIterator()
 {
     objs_.resize(size());
-    for (size_t i = 0; i < size(); i++) objs_[i] = getItem(i);
+    for (size_t i = 0; i < size(); i++) objs_[i] = getItem((int)i);
 }
 
 const vector<ObjId>& MooseVec::objref() const
