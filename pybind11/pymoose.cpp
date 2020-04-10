@@ -135,19 +135,20 @@ py::object getFieldGeneric(const ObjId &oid, const string &fieldName)
 
     string finfoType = cinfo->getFinfoType(finfo);
 
-    // Either return a simple value (ValueFinfo), list, dict or DestFinfo
-    // setter.
-    // The DestFinfo setter is a function.
-
+    // Things are very compilcated here. There return object from this function
+    // can be of different types: a simple value (ValueFinfo), list, dict or 
+    // DestFinfo setter which is a function.
     if(finfoType == "ValueFinfo")
         return __Finfo__::getFieldValue(oid, finfo);
     else if(finfoType == "FieldElementFinfo") {
+        // This is a Finfo
         return py::cast(__Finfo__(oid, finfo, "FieldElementFinfo"));
     } else if(finfoType == "LookupValueFinfo") {
-        // Return function.
+        // This is a function.
         return py::cast(__Finfo__(oid, finfo, "LookupValueFinfo"));
     } else if(finfoType == "DestFinfo") {
-        // Return a setter function. It can be used to set field on DestFinfo.
+        // Return a setter function. 
+        // It can be used to set field on DestFinfo.
         return __Finfo__::getDestFinfoSetterFunc(oid, finfo);
     }
 
@@ -156,7 +157,6 @@ py::object getFieldGeneric(const ObjId &oid, const string &fieldName)
                         finfoType + "'");
     return pybind11::none();
 }
-
 
 /* --------------------------------------------------------------------------*/
 /**
@@ -174,20 +174,14 @@ PYBIND11_MODULE(_moose, m)
 
     initModule(m);
 
-    py::object melement;
-
-    // A thin wrapper around Id from ../basecode/Id.h . Usually this is shows
-    // at moose.vec.
-    py::class_<Id>(m, "mid")
+    // A thin wrapper around Id from ../basecode/Id.h .
+    py::class_<Id>(m, "__id__")
         .def(py::init<>())
         .def(py::init<unsigned int>())
         .def(py::init<const string &>())
         .def(py::init<const ObjId &>())
         // properties
         .def_property_readonly("numIds", &Id::numIds)
-        // FIXME/NB: Don't expose path. Note that Stoich as `path` attribute
-        // which
-        // will not work if this is exposed.
         .def_property_readonly("path", &Id::path)
         .def_property_readonly(
              "name", [](const Id &id) { return id.element()->getName(); })
@@ -208,6 +202,8 @@ PYBIND11_MODULE(_moose, m)
         .def("__eq__", [](const Id &a, const Id &b) { return a == b; })
         .def("__ne__", [](const Id &a, const Id &b) { return a != b; })
         .def("__hash__", &Id::value)
+
+        // Id attributes are same as ObjItem attributes. 
         .def("__getattr__", [](const Id &id, const string &key) {
              return getFieldGeneric(ObjId(id), key);
          })
@@ -216,32 +212,32 @@ PYBIND11_MODULE(_moose, m)
              return setFieldGeneric(ObjId(id), key, val);
          });
 
-
     // This is a wrapper around Field::get  and LookupField::get which may
     // return simple values or vector. Python scripts expect LookupField to
     // return either list of dict which can be queried by key and index. This
     // class bind both __getitem__ to the getter function call.
     // Note that both a.isA["Compartment"] and a.isA("Compartment") are valid
     // now.
-    py::class_<__Finfo__>(m, "Field", py::dynamic_attr())
+    py::class_<__Finfo__>(m, "__Field__", py::dynamic_attr())
         .def(py::init<const ObjId &, const Finfo *, const char *>())
         .def_property_readonly("type", &__Finfo__::type)
-        .def_property_readonly("vec", [](const __Finfo__ &finfo) {
-             return MooseVec(finfo.getObjId());
-         })
-        .def_property("num", &__Finfo__::getNumField,
-                      &__Finfo__::setNumField)  // Only for FieldElementFinfos
-        .def("__call__", &__Finfo__::operator())
+        .def_property("num", &__Finfo__::getNumField, &__Finfo__::setNumField)
+        .def_property_readonly(
+             "vec", [](__Finfo__ &finfo) { return finfo.getMooseVecPtr(); },
+             py::return_value_policy::reference_internal)
+
+        // Only for FieldElementFinfos
+        .def("__len__", &__Finfo__::getNumField)
         .def("__call__", &__Finfo__::operator())
         .def("__getitem__", &__Finfo__::getItem)
         .def("__setitem__", &__Finfo__::setItem)
-        .def("__len__", &__Finfo__::getNumField);
+        ;
 
     /**
      * @name ObjId. It is a base of all other moose objects.
      * @{ */
     /**  @} */
-    py::class_<ObjId>(m, "ObjId", py::metaclass(melement))
+    py::class_<ObjId>(m, "melement")
         .def(py::init<>())
         .def(py::init<Id>())
         .def(py::init<Id, unsigned int>())
@@ -311,14 +307,15 @@ PYBIND11_MODULE(_moose, m)
     py::class_<Variable>(m, "_Variable").def(py::init<>());
 
     // Cinfo.
-    py::class_<Cinfo>(m, "_Cinfo")
+    py::class_<Cinfo>(m, "__Cinfo__")
         .def(py::init<>())
         .def_property_readonly("name", &Cinfo::name)
         .def_property_readonly("finfoMap", &Cinfo::finfoMap,
-                               py::return_value_policy::reference)
+                               py::return_value_policy::reference_internal)
         // .def("findFinfo", &Cinfo::findFinfoWrapper)
-        .def("baseCinfo", &Cinfo::baseCinfo, py::return_value_policy::reference)
-        .def("isA", &Cinfo::isA);
+        .def("baseCinfo", &Cinfo::baseCinfo,
+             py::return_value_policy::reference_internal)
+        .def("isA", &Cinfo::isA, py::return_value_policy::reference_internal);
 
     // Vec class.
     py::class_<MooseVec>(m, "vec")
@@ -338,9 +335,10 @@ PYBIND11_MODULE(_moose, m)
                  return py::make_iterator(v.objref().begin(), v.objref().end());
              },
              py::keep_alive<0, 1>())
+
         .def("__getitem__", &MooseVec::getItem)
-        // Beware of pybind11 overload resolution order:
-        // https://pybind11.readthedocs.io/en/stable/advanced/functions.html#overload-resolution-order
+        .def("__getitem__", &MooseVec::getItemRange)
+
         // Templated function won't work here. The first one is always called.
         .def("__getattr__", &MooseVec::getAttribute)
         .def("__setattr__", &MooseVec::setAttrOneToOne<double>)

@@ -87,6 +87,28 @@ ObjId MooseVec::getItem(const int index) const
     return getDataItem(i);
 }
 
+vector<ObjId> MooseVec::getItemRange(const py::slice& slice) const
+{
+    vector<ObjId> res;
+    int start=0, step=1, stop = size();
+
+    py::object pstart = slice.attr("start");
+    if(! pstart.is(py::none()))
+        start = pstart.cast<int>();
+
+    py::object pstop = slice.attr("stop");
+    if(! pstop.is(py::none()))
+        stop = pstop.cast<int>();
+
+    py::object pstep = slice.attr("step");
+    if(! pstep.is(py::none()))
+        step = pstep.cast<int>();
+
+    for (int i = start; i < stop; i += step)
+        res.push_back(getItem(i));
+    return res;
+}
+
 ObjId MooseVec::getDataItem(const size_t i) const
 {
     return ObjId(oid_.path(), i, oid_.fieldIndex);

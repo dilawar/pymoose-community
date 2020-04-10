@@ -45,6 +45,7 @@ public:
     // Get vector element. Vector element could be `dataIndex` or `fieldIndex`.
     // Allows negative indexing.
     ObjId getItem(const int i) const;
+    vector<ObjId> getItemRange(const py::slice& slice) const;
 
     ObjId getDataItem(const size_t i) const;
     ObjId getFieldItem(const size_t i) const;
@@ -140,6 +141,7 @@ public:
 
     // Get attributes.
     py::object getAttribute(const string& key);
+    bool setAttribute(const string& name, const py::object& val);
 
     vector<ObjId> objs() const;
 

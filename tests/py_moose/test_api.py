@@ -29,6 +29,7 @@ def test_children():
     assert ax1 == a11
     assert a11.isA['Neutral'], a11.isA
     assert ax1.isA['Neutral'], a11.isA
+    print("test_children is done")
 
 
 def test_other():
@@ -66,8 +67,7 @@ def test_finfos():
     assert s.numSynapses == 10
 
     syns = s.synapse.vec
-
-    print(s.synapse)
+    print(s.synapse, '111')
     s8a = s.synapse[8]
     s8b = s.synapse[-2]
     assert s8a == s8b, (s8a, s8b)

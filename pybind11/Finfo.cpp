@@ -25,7 +25,7 @@ namespace py = pybind11;
 #include "Finfo.h"
 
 __Finfo__::__Finfo__(const ObjId& oid, const Finfo* f, const string& finfoType)
-    : oid_(oid), f_(f), finfoType_(finfoType)
+    : oid_(oid), f_(f), finfoType_(finfoType), pVec_(nullptr)
 {
     if(finfoType == "DestFinfo")
         func_ = [oid, f](const py::object& key) {
@@ -127,7 +127,7 @@ py::object __Finfo__::getItem(const py::object& key)
 
 py::object __Finfo__::operator()(const py::object& key)
 {
-    return func_(key);
+    return getItem(key);
 }
 
 py::cpp_function __Finfo__::getDestFinfoSetterFunc(const ObjId& oid,
@@ -311,3 +311,17 @@ ObjId __Finfo__::getObjId() const
 {
     return ObjId(oid_.path() + '/' + f_->name());
 }
+
+// Return by copy.
+MooseVec __Finfo__::getMooseVec()
+{
+    return MooseVec(getObjId());
+}
+
+MooseVec* __Finfo__::getMooseVecPtr()
+{
+    if(! pVec_)
+        pVec_.reset(new MooseVec(getObjId()));
+    return pVec_.get();
+}
+

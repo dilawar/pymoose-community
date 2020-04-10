@@ -10,6 +10,8 @@
 #ifndef FINFO_H
 #define FINFO_H
 
+class MooseVec;
+
 class __Finfo__ {
 public:
     __Finfo__(const ObjId& oid, const Finfo* f, const string& finfoType);
@@ -105,6 +107,12 @@ public:
 
     string type() const;
 
+    // Return a MooseVec element (copy).
+    MooseVec getMooseVec();
+
+    // Retun by pointer.
+    MooseVec* getMooseVecPtr();
+
     // Finfo Id.
     static ObjId getObjIdStatic(const ObjId& oid, const Finfo* f);
     ObjId getObjId() const;
@@ -114,6 +122,9 @@ public:
     const Finfo* f_;
     const std::string finfoType_;
     std::function<py::object(const py::object& key)> func_;
+
+    // __Finfo__ needs to be copiable.
+    shared_ptr<MooseVec> pVec_;
 };
 
 #endif /* end of include guard: FINFO_H */
