@@ -7,6 +7,8 @@
  *        License:  MIT License
  */
 
+#include <iomanip>
+
 #include "../basecode/header.h"
 
 using namespace std;
@@ -18,6 +20,8 @@ using namespace std;
 namespace py = pybind11;
 
 #include "../utility/strutil.h"
+
+#include "Finfo.h"
 #include "helper.h"
 #include "pymoose.h"
 #include "MooseVec.h"
@@ -29,7 +33,7 @@ MooseVec::MooseVec(const string& path, unsigned int n = 0,
     // If path is given and it does not exists, then create one. The old api
     // support it.
     oid_ = ObjId(path);
-    if(oid_.bad()) 
+    if(oid_.bad())
         oid_ = mooseCreateFromPath(dtype, path, n);
 }
 
@@ -48,7 +52,7 @@ const string MooseVec::dtype() const
 
 const size_t MooseVec::size() const
 {
-    if (oid_.element()->hasFields())
+    if(oid_.element()->hasFields())
         return Field<unsigned int>::get(oid_, "numField");
     return oid_.element()->numData();
 }
@@ -73,11 +77,10 @@ vector<MooseVec> MooseVec::children() const
     vector<Id> children;
     Neutral::children(oid_.eref(), children);
     vector<MooseVec> res;
-    std::transform(children.begin(), children.end(), res.begin(), [](const Id& id){ return MooseVec(id); });
+    std::transform(children.begin(), children.end(), res.begin(),
+                   [](const Id& id) { return MooseVec(id); });
     return res;
 }
-
-
 
 unsigned int MooseVec::len()
 {
@@ -87,8 +90,8 @@ unsigned int MooseVec::len()
 ObjId MooseVec::getItem(const int index) const
 {
     // Negative indexing.
-    size_t i = (index < 0)?size()+index:index;
-    if (oid_.element()->hasFields())
+    size_t i = (index < 0) ? size() + index : index;
+    if(oid_.element()->hasFields())
         return getFieldItem(i);
     return getDataItem(i);
 }
@@ -96,21 +99,21 @@ ObjId MooseVec::getItem(const int index) const
 vector<ObjId> MooseVec::getItemRange(const py::slice& slice) const
 {
     vector<ObjId> res;
-    int start=0, step=1, stop = size();
+    int start = 0, step = 1, stop = size();
 
     py::object pstart = slice.attr("start");
-    if(! pstart.is(py::none()))
+    if(!pstart.is(py::none()))
         start = pstart.cast<int>();
 
     py::object pstop = slice.attr("stop");
-    if(! pstop.is(py::none()))
+    if(!pstop.is(py::none()))
         stop = pstop.cast<int>();
 
     py::object pstep = slice.attr("step");
-    if(! pstep.is(py::none()))
+    if(!pstep.is(py::none()))
         step = pstep.cast<int>();
 
-    for (int i = start; i < stop; i += step)
+    for(int i = start; i < stop; i += step)
         res.push_back(getItem(i));
     return res;
 }
@@ -131,6 +134,14 @@ py::object MooseVec::getAttribute(const string& name)
     // return the list of python object.
     auto cinfo = oid_.element()->cinfo();
     auto finfo = cinfo->findFinfo(name);
+    if(!finfo) {
+        auto fmap = __Finfo__::finfoNames(cinfo, "*");
+        cerr << __func__ << ":: AttributeError: " << name
+             << " is not found on path '" << oid_.path() << "'." << endl;
+        cerr << finfoNotFoundMsg(cinfo) << endl;
+        throw py::key_error(name + " is not found.");
+    }
+
     auto rttType = finfo->rttiType();
 
     if(rttType == "double")
@@ -141,11 +152,10 @@ py::object MooseVec::getAttribute(const string& name)
         return getAttributeNumpy<unsigned int>(name);
 
     vector<py::object> res(size());
-    for (unsigned int i = 0; i < size(); i++)
+    for(unsigned int i = 0; i < size(); i++)
         res[i] = getFieldGeneric(getItem((int)i), name);
     return py::cast(res);
 }
-
 
 /* --------------------------------------------------------------------------*/
 /**
@@ -153,38 +163,45 @@ py::object MooseVec::getAttribute(const string& name)
  * generic function.
  *
  * @Param name
- * @Param val 
+ * @Param val
  *
- * @Returns   
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 bool MooseVec::setAttribute(const string& name, const py::object& val)
 {
     auto cinfo = oid_.element()->cinfo();
     auto finfo = cinfo->findFinfo(name);
+    if(!finfo) {
+        cerr << __func__ << ":: AttributeError: " << name
+             << " is not found on path '" << oid_.path() << "'." << endl;
+        cerr << finfoNotFoundMsg(cinfo) << endl;
+        throw py::key_error(name + " is not found.");
+    }
+
     auto rttType = finfo->rttiType();
 
     bool isVector = false;
-    if(py::isinstance<py::iterable>(val) and (not py::isinstance<py::str>(val)))
+    if(py::isinstance<py::iterable>(val) and(not py::isinstance<py::str>(val)))
         isVector = true;
 
     if(isVector) {
         if(rttType == "double")
             return setAttrOneToOne<double>(name, val.cast<vector<double>>());
         if(rttType == "unsigned int")
-            return setAttrOneToOne<unsigned int>(name, val.cast<vector<unsigned int>>());
-    }
-    else {
+            return setAttrOneToOne<unsigned int>(
+                name, val.cast<vector<unsigned int>>());
+    } else {
         if(rttType == "double")
             return setAttrOneToAll<double>(name, val.cast<double>());
         if(rttType == "unsigned int")
-            return setAttrOneToAll<unsigned int>(name, val.cast<unsigned int>());
+            return setAttrOneToAll<unsigned int>(name,
+                                                 val.cast<unsigned int>());
     }
 
     py::print("Not implemented yet.", name, "val:", val);
     throw runtime_error(__func__ + string("::NotImplementedError."));
 }
-
 
 ObjId MooseVec::connectToSingle(const string& srcfield, const ObjId& tgt,
                                 const string& tgtfield, const string& msgtype)
@@ -195,7 +212,7 @@ ObjId MooseVec::connectToSingle(const string& srcfield, const ObjId& tgt,
 ObjId MooseVec::connectToVec(const string& srcfield, const MooseVec& tgt,
                              const string& tgtfield, const string& msgtype)
 {
-    if (size() != tgt.size())
+    if(size() != tgt.size())
         throw runtime_error(
             "Length mismatch. Source vector size is " + to_string(size()) +
             " but the target vector size is " + to_string(tgt.size()));
@@ -210,7 +227,7 @@ const ObjId& MooseVec::obj() const
 vector<ObjId> MooseVec::objs() const
 {
     vector<ObjId> items;
-    for (size_t i = 0; i < size(); i++)
+    for(size_t i = 0; i < size(); i++)
         items.push_back(ObjId(oid_.path(), i, 0));
     return items;
 }
@@ -223,7 +240,8 @@ size_t MooseVec::id() const
 void MooseVec::generateIterator()
 {
     objs_.resize(size());
-    for (size_t i = 0; i < size(); i++) objs_[i] = getItem((int)i);
+    for(size_t i = 0; i < size(); i++)
+        objs_[i] = getItem((int)i);
 }
 
 const vector<ObjId>& MooseVec::objref() const

@@ -103,6 +103,9 @@ public:
                                         const py::object& val,
                                         const Finfo* finfo);
 
+    static vector<pair<string, string>> finfoNames(const Cinfo* cinfo,
+                                                   const string& finfoType);
+
     py::object operator()(const py::object& key);
 
     string type() const;

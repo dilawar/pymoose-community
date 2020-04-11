@@ -24,14 +24,14 @@ Cinfo::Cinfo(const string& name, const Cinfo* baseCinfo, Finfo** finfoArray,
       numBindIndex_(0),
       banCreation_(banCreation)
 {
-    if (cinfoMap().find(name) != cinfoMap().end()) {
+    if(cinfoMap().find(name) != cinfoMap().end()) {
         cout << "Warning: Duplicate Cinfo name " << name << endl;
     }
     init(finfoArray, nFinfos);
     cinfoMap()[name] = this;
     doc_.clear();
-    if (doc && numDoc) {
-        for (unsigned int i = 0; i < numDoc - 1; i += 2) {
+    if(doc && numDoc) {
+        for(unsigned int i = 0; i < numDoc - 1; i += 2) {
             const string argName = doc[i];
             const string argVal = doc[i + 1];
             // cout << "in initCinfo for " << name << ", doc[" << i << "] = " <<
@@ -88,14 +88,14 @@ Cinfo::~Cinfo()
  */
 void Cinfo::init(Finfo** finfoArray, unsigned int nFinfos)
 {
-    if (baseCinfo_) {
+    if(baseCinfo_) {
         // Copy over base Finfos.
         numBindIndex_ = baseCinfo_->numBindIndex_;
         finfoMap_ = baseCinfo_->finfoMap_;
         funcs_ = baseCinfo_->funcs_;
         postCreationFinfos_ = baseCinfo_->postCreationFinfos_;
     }
-    for (unsigned int i = 0; i < nFinfos; i++) {
+    for(unsigned int i = 0; i < nFinfos; i++) {
         registerFinfo(finfoArray[i]);
     }
 }
@@ -122,17 +122,17 @@ void Cinfo::registerFinfo(Finfo* f)
 {
     finfoMap_[f->name()] = f;
     f->registerFinfo(this);
-    if (dynamic_cast<DestFinfo*>(f)) {
+    if(dynamic_cast<DestFinfo*>(f)) {
         destFinfos_.push_back(f);
-    } else if (dynamic_cast<SrcFinfo*>(f)) {
+    } else if(dynamic_cast<SrcFinfo*>(f)) {
         srcFinfos_.push_back(f);
-    } else if (dynamic_cast<ValueFinfoBase*>(f)) {
+    } else if(dynamic_cast<ValueFinfoBase*>(f)) {
         valueFinfos_.push_back(f);
-    } else if (dynamic_cast<LookupValueFinfoBase*>(f)) {
+    } else if(dynamic_cast<LookupValueFinfoBase*>(f)) {
         lookupFinfos_.push_back(f);
-    } else if (dynamic_cast<SharedFinfo*>(f)) {
+    } else if(dynamic_cast<SharedFinfo*>(f)) {
         sharedFinfos_.push_back(f);
-    } else if (dynamic_cast<FieldElementFinfoBase*>(f)) {
+    } else if(dynamic_cast<FieldElementFinfoBase*>(f)) {
         fieldElementFinfos_.push_back(f);
     }
 }
@@ -140,7 +140,8 @@ void Cinfo::registerFinfo(Finfo* f)
 /* --------------------------------------------------------------------------*/
 /**
  * @Synopsis  The runtime type of Finfo. Use dynamic_cast to figure it out. Use
- * RTTI to check if downcast is correct. This is not so costly when used in Python interface.
+ * RTTI to check if downcast is correct. This is not so costly when used in
+ *Python interface.
  *
  * @Param f const Finfo*
  *
@@ -149,17 +150,17 @@ void Cinfo::registerFinfo(Finfo* f)
 /* ----------------------------------------------------------------------------*/
 string Cinfo::getFinfoType(const Finfo* f) const
 {
-    if (dynamic_cast<const DestFinfo*>(f)) {
+    if(dynamic_cast<const DestFinfo*>(f)) {
         return "DestFinfo";
-    } else if (dynamic_cast<const SrcFinfo*>(f)) {
+    } else if(dynamic_cast<const SrcFinfo*>(f)) {
         return "SrcFinfo";
-    } else if (dynamic_cast<const ValueFinfoBase*>(f)) {
+    } else if(dynamic_cast<const ValueFinfoBase*>(f)) {
         return "ValueFinfo";
-    } else if (dynamic_cast<const LookupValueFinfoBase*>(f)) {
+    } else if(dynamic_cast<const LookupValueFinfoBase*>(f)) {
         return "LookupValueFinfo";
-    } else if (dynamic_cast<const SharedFinfo*>(f)) {
+    } else if(dynamic_cast<const SharedFinfo*>(f)) {
         return "SharedFinfo";
-    } else if (dynamic_cast<const FieldElementFinfoBase*>(f)) {
+    } else if(dynamic_cast<const FieldElementFinfoBase*>(f)) {
         return "FieldElementFinfo";
     }
     return "";
@@ -172,14 +173,14 @@ void Cinfo::registerPostCreationFinfo(const Finfo* f)
 
 void Cinfo::postCreationFunc(Id newId, Element* newElm) const
 {
-    for (vector<const Finfo*>::const_iterator i = postCreationFinfos_.begin();
-         i != postCreationFinfos_.end(); ++i)
+    for(vector<const Finfo*>::const_iterator i = postCreationFinfos_.begin();
+        i != postCreationFinfos_.end(); ++i)
         (*i)->postCreationFunc(newId, newElm);
 }
 
 void buildFinfoElement(Id parent, vector<Finfo*>& f, const string& name)
 {
-    if (f.size() > 0) {
+    if(f.size() > 0) {
         char* data = reinterpret_cast<char*>(&f[0]);
         Id id = Id::nextId();
         Element* e =
@@ -197,8 +198,8 @@ void Cinfo::makeCinfoElements(Id parent)
     vector<unsigned int> dims(1, 0);
 
     vector<Id> cinfoElements;
-    for (map<string, Cinfo*>::iterator i = cinfoMap().begin();
-         i != cinfoMap().end(); ++i) {
+    for(map<string, Cinfo*>::iterator i = cinfoMap().begin();
+        i != cinfoMap().end(); ++i) {
         Id id = Id::nextId();
         char* data = reinterpret_cast<char*>(i->second);
         Element* e = new GlobalDataElement(id, Cinfo::initCinfo(), i->first);
@@ -211,8 +212,8 @@ void Cinfo::makeCinfoElements(Id parent)
         // << id << ", name = " << i->first << endl;
     }
     vector<Id>::iterator j = cinfoElements.begin();
-    for (map<string, Cinfo*>::iterator i = cinfoMap().begin();
-         i != cinfoMap().end(); ++i) {
+    for(map<string, Cinfo*>::iterator i = cinfoMap().begin();
+        i != cinfoMap().end(); ++i) {
         buildFinfoElement(*j, i->second->srcFinfos_, "srcFinfo");
         buildFinfoElement(*j, i->second->destFinfos_, "destFinfo");
         buildFinfoElement(*j, i->second->valueFinfos_, "valueFinfo");
@@ -231,7 +232,7 @@ void Cinfo::makeCinfoElements(Id parent)
 const Cinfo* Cinfo::find(const string& name)
 {
     map<string, Cinfo*>::iterator i = cinfoMap().find(name);
-    if (i != cinfoMap().end())
+    if(i != cinfoMap().end())
         return i->second;
     return 0;
 }
@@ -247,7 +248,7 @@ const Cinfo* Cinfo::baseCinfo() const
 const Finfo* Cinfo::findFinfo(const string& name) const
 {
     auto i = finfoMap_.find(name);
-    if (i != finfoMap_.end())
+    if(i != finfoMap_.end())
         return i->second;
     return 0;
 }
@@ -267,7 +268,7 @@ bool Cinfo::banCreation() const
  */
 const OpFunc* Cinfo::getOpFunc(FuncId fid) const
 {
-    if (fid < funcs_.size())
+    if(fid < funcs_.size())
         return funcs_[fid];
     return 0;
 }
@@ -308,11 +309,11 @@ const DinfoBase* Cinfo::dinfo() const
 
 bool Cinfo::isA(const string& ancestor) const
 {
-    if (ancestor == "Neutral")
+    if(ancestor == "Neutral")
         return true;
     const Cinfo* base = this;
-    while (base && base != Neutral::initCinfo()) {
-        if (ancestor == base->name_)
+    while(base && base != Neutral::initCinfo()) {
+        if(ancestor == base->name_)
             return true;
         base = base->baseCinfo_;
     }
@@ -321,10 +322,10 @@ bool Cinfo::isA(const string& ancestor) const
 
 void Cinfo::reportFids() const
 {
-    for (map<string, Finfo*>::const_iterator i = finfoMap_.begin();
-         i != finfoMap_.end(); ++i) {
+    for(map<string, Finfo*>::const_iterator i = finfoMap_.begin();
+        i != finfoMap_.end(); ++i) {
         const DestFinfo* df = dynamic_cast<const DestFinfo*>(i->second);
-        if (df) {
+        if(df) {
             cout << df->getFid() << "	" << df->name() << endl;
         }
     }
@@ -386,8 +387,8 @@ static const Cinfo* cinfoCinfo = Cinfo::initCinfo();
 string Cinfo::getDocs() const
 {
     ostringstream doc;
-    for (map<string, string>::const_iterator ii = doc_.begin();
-         ii != doc_.end(); ++ii) {
+    for(map<string, string>::const_iterator ii = doc_.begin(); ii != doc_.end();
+        ++ii) {
         doc << '\n' << ii->first << ":\t\t" << ii->second << endl;
     }
     return doc.str();
@@ -400,7 +401,7 @@ static DestFinfo dummy("dummy",
 
 string Cinfo::getBaseClass() const
 {
-    if (baseCinfo_)
+    if(baseCinfo_)
         return baseCinfo_->name();
     else
         return "none";
@@ -415,10 +416,10 @@ string Cinfo::getBaseClass() const
 ////////////////////////////////////////////////////////////////////
 Finfo* Cinfo::getSrcFinfo(unsigned int i) const
 {
-    if (i >= getNumSrcFinfo())
+    if(i >= getNumSrcFinfo())
         return 0;
-    if (baseCinfo_) {
-        if (i >= baseCinfo_->getNumSrcFinfo())
+    if(baseCinfo_) {
+        if(i >= baseCinfo_->getNumSrcFinfo())
             return srcFinfos_[i - baseCinfo_->getNumSrcFinfo()];
         else
             return baseCinfo_->getSrcFinfo(i);
@@ -430,7 +431,7 @@ Finfo* Cinfo::getSrcFinfo(unsigned int i) const
 
 unsigned int Cinfo::getNumSrcFinfo() const
 {
-    if (baseCinfo_)
+    if(baseCinfo_)
         return srcFinfos_.size() + baseCinfo_->getNumSrcFinfo();
     else
         return srcFinfos_.size();
@@ -439,10 +440,10 @@ unsigned int Cinfo::getNumSrcFinfo() const
 ////////////////////////////////////////////////////////////////////
 Finfo* Cinfo::getDestFinfo(unsigned int i) const
 {
-    if (i >= getNumDestFinfo())
+    if(i >= getNumDestFinfo())
         return &dummy;
-    if (baseCinfo_) {
-        if (i >= baseCinfo_->getNumDestFinfo())
+    if(baseCinfo_) {
+        if(i >= baseCinfo_->getNumDestFinfo())
             return destFinfos_[i - baseCinfo_->getNumDestFinfo()];
         else
             return const_cast<Cinfo*>(baseCinfo_)->getDestFinfo(i);
@@ -453,7 +454,7 @@ Finfo* Cinfo::getDestFinfo(unsigned int i) const
 
 unsigned int Cinfo::getNumDestFinfo() const
 {
-    if (baseCinfo_)
+    if(baseCinfo_)
         return destFinfos_.size() + baseCinfo_->getNumDestFinfo();
     else
         return destFinfos_.size();
@@ -462,10 +463,10 @@ unsigned int Cinfo::getNumDestFinfo() const
 ////////////////////////////////////////////////////////////////////
 Finfo* Cinfo::getValueFinfo(unsigned int i) const
 {
-    if (i >= getNumValueFinfo())
+    if(i >= getNumValueFinfo())
         return &dummy;
-    if (baseCinfo_) {
-        if (i >= baseCinfo_->getNumValueFinfo())
+    if(baseCinfo_) {
+        if(i >= baseCinfo_->getNumValueFinfo())
             return valueFinfos_[i - baseCinfo_->getNumValueFinfo()];
         else
             return const_cast<Cinfo*>(baseCinfo_)->getValueFinfo(i);
@@ -476,7 +477,7 @@ Finfo* Cinfo::getValueFinfo(unsigned int i) const
 
 unsigned int Cinfo::getNumValueFinfo() const
 {
-    if (baseCinfo_)
+    if(baseCinfo_)
         return valueFinfos_.size() + baseCinfo_->getNumValueFinfo();
     else
         return valueFinfos_.size();
@@ -485,10 +486,10 @@ unsigned int Cinfo::getNumValueFinfo() const
 ////////////////////////////////////////////////////////////////////
 Finfo* Cinfo::getLookupFinfo(unsigned int i) const
 {
-    if (i >= getNumLookupFinfo())
+    if(i >= getNumLookupFinfo())
         return &dummy;
-    if (baseCinfo_) {
-        if (i >= baseCinfo_->getNumLookupFinfo())
+    if(baseCinfo_) {
+        if(i >= baseCinfo_->getNumLookupFinfo())
             return lookupFinfos_[i - baseCinfo_->getNumLookupFinfo()];
         else
             return const_cast<Cinfo*>(baseCinfo_)->getLookupFinfo(i);
@@ -499,7 +500,7 @@ Finfo* Cinfo::getLookupFinfo(unsigned int i) const
 
 unsigned int Cinfo::getNumLookupFinfo() const
 {
-    if (baseCinfo_)
+    if(baseCinfo_)
         return lookupFinfos_.size() + baseCinfo_->getNumLookupFinfo();
     else
         return lookupFinfos_.size();
@@ -508,10 +509,10 @@ unsigned int Cinfo::getNumLookupFinfo() const
 ////////////////////////////////////////////////////////////////////
 Finfo* Cinfo::getSharedFinfo(unsigned int i)
 {
-    if (i >= getNumSharedFinfo())
+    if(i >= getNumSharedFinfo())
         return &dummy;
-    if (baseCinfo_) {
-        if (i >= baseCinfo_->getNumSharedFinfo())
+    if(baseCinfo_) {
+        if(i >= baseCinfo_->getNumSharedFinfo())
             return sharedFinfos_[i - baseCinfo_->getNumSharedFinfo()];
         else
             return const_cast<Cinfo*>(baseCinfo_)->getSharedFinfo(i);
@@ -522,7 +523,7 @@ Finfo* Cinfo::getSharedFinfo(unsigned int i)
 
 unsigned int Cinfo::getNumSharedFinfo() const
 {
-    if (baseCinfo_)
+    if(baseCinfo_)
         return sharedFinfos_.size() + baseCinfo_->getNumSharedFinfo();
     else
         return sharedFinfos_.size();
@@ -531,10 +532,10 @@ unsigned int Cinfo::getNumSharedFinfo() const
 ////////////////////////////////////////////////////////////////////
 Finfo* Cinfo::getFieldElementFinfo(unsigned int i) const
 {
-    if (i >= getNumFieldElementFinfo())
+    if(i >= getNumFieldElementFinfo())
         return &dummy;
-    if (baseCinfo_) {
-        if (i >= baseCinfo_->getNumFieldElementFinfo())
+    if(baseCinfo_) {
+        if(i >= baseCinfo_->getNumFieldElementFinfo())
             return fieldElementFinfos_
                 [i - baseCinfo_->getNumFieldElementFinfo()];
         else
@@ -546,7 +547,7 @@ Finfo* Cinfo::getFieldElementFinfo(unsigned int i) const
 
 unsigned int Cinfo::getNumFieldElementFinfo() const
 {
-    if (baseCinfo_)
+    if(baseCinfo_)
         return fieldElementFinfos_.size() +
                baseCinfo_->getNumFieldElementFinfo();
     else
@@ -563,15 +564,15 @@ void Cinfo::setNumFinfo(unsigned int val)  // Dummy function
 const string& Cinfo::srcFinfoName(BindIndex bid) const
 {
     static const string err = "";
-    for (vector<Finfo*>::const_iterator i = srcFinfos_.begin();
-         i != srcFinfos_.end(); ++i) {
+    for(vector<Finfo*>::const_iterator i = srcFinfos_.begin();
+        i != srcFinfos_.end(); ++i) {
         const SrcFinfo* sf = dynamic_cast<const SrcFinfo*>(*i);
         assert(sf);
-        if (sf->getBindIndex() == bid) {
+        if(sf->getBindIndex() == bid) {
             return sf->name();
         }
     }
-    if (baseCinfo_)
+    if(baseCinfo_)
         return baseCinfo_->srcFinfoName(bid);
     cout << "Error: Cinfo::srcFinfoName( " << bid << " ): not found\n";
     return err;
@@ -580,15 +581,15 @@ const string& Cinfo::srcFinfoName(BindIndex bid) const
 const string& Cinfo::destFinfoName(FuncId fid) const
 {
     static const string err = "";
-    for (vector<Finfo*>::const_iterator i = destFinfos_.begin();
-         i != destFinfos_.end(); ++i) {
+    for(vector<Finfo*>::const_iterator i = destFinfos_.begin();
+        i != destFinfos_.end(); ++i) {
         const DestFinfo* df = dynamic_cast<const DestFinfo*>(*i);
         assert(df);
-        if (df->getFid() == fid) {
+        if(df->getFid() == fid) {
             return df->name();
         }
     }
-    if (baseCinfo_)
+    if(baseCinfo_)
         return baseCinfo_->destFinfoName(fid);
     cout << "Error: Cinfo::destFinfoName( " << fid << " ): not found\n";
     return err;
@@ -601,16 +602,14 @@ void Cinfo::rebuildOpIndex()
 {
     numCoreOpFunc_ = OpFunc::rebuildOpIndex();
     unsigned int num = 0;
-    for (map<string, Cinfo*>::iterator i = cinfoMap().begin();
-         i != cinfoMap().end(); ++i) {
+    for(map<string, Cinfo*>::iterator i = cinfoMap().begin();
+        i != cinfoMap().end(); ++i) {
         vector<const OpFunc*>& vec = i->second->funcs_;
-        for (vector<const OpFunc*>::iterator j = vec.begin(); j != vec.end();
-             ++j) {
+        for(vector<const OpFunc*>::iterator j = vec.begin(); j != vec.end();
+            ++j) {
             OpFunc* of = const_cast<OpFunc*>(*j);
             num += of->setIndex(num);
         }
     }
-    // cout << "on node " << Shell::myNode() << ": oldNumOpFunc = " <<
-    // numCoreOpFunc_ << ", new = " << num << endl;
     numCoreOpFunc_ = num;
 }

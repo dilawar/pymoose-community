@@ -56,14 +56,14 @@ inline ObjId mooseObjIdPath(const string& p)
     string path(p);
 
     // If path is a relative path.
-    if (p[0] != '/') {
+    if(p[0] != '/') {
         string cwepath(mooseGetCweId().path());
-        if (cwepath.back() != '/')
+        if(cwepath.back() != '/')
             cwepath.push_back('/');
         path = cwepath + p;
     }
     ObjId oid(path);
-    if (oid.bad()) {
+    if(oid.bad()) {
         cerr << "moose.element: " << path << " does not exist!" << endl;
     }
     return oid;
@@ -91,14 +91,14 @@ inline ObjId mooseCreateFromPath(const string type, const string& p,
 
     // relative path.
     string path(p);
-    if (path[0] != '/')
+    if(path[0] != '/')
         path = mooseGetCweId().path() + '/' + path;
 
     // If path exists and user is asking for the same type then return the
     // object else raise exception.
-    if (mooseExists(path)) {
+    if(mooseExists(path)) {
         auto oid = ObjId(path);
-        if (oid.element()->cinfo()->name() == type)
+        if(oid.element()->cinfo()->name() == type)
             return oid;
     }
 
@@ -108,7 +108,7 @@ inline ObjId mooseCreateFromPath(const string type, const string& p,
     // Name must not end with [\d*] etc.  normalizePath takes care of it if
     // enabled.
     string name(pp.second);
-    if (name.back() == ']')
+    if(name.back() == ']')
         name = name.substr(0, name.find_last_of('['));
     return getShellPtr()->doCreate2(type, ObjId(pp.first), name, numdata);
 }
@@ -126,7 +126,7 @@ inline ObjId mooseCreateFromId(const string& type, const Id& id,
 }
 
 inline ObjId mooseCreateFromMooseVec(const string& type, const MooseVec& vec,
-                               unsigned int numData)
+                                     unsigned int numData)
 {
     return vec.obj();
 }
@@ -183,5 +183,7 @@ py::cpp_function getPropertyDestFinfo(const ObjId& oid, const Finfo* finfo);
 
 vector<string> mooseGetFieldNames(const string& className,
                                   const string& finfoType);
+
+string finfoNotFoundMsg(const Cinfo* cinfo);
 
 #endif /* end of include guard: HELPER_H */

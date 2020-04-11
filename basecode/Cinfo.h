@@ -15,7 +15,6 @@ class Finfo;
 class OpFunc;
 class FinfoWrapper;
 
-
 /**
  * Class to manage class information for all the other classes.
  */
@@ -24,7 +23,7 @@ public:
     /**
      * The Cinfo intializer is used for static initialization
      * of all the MOOSE Cinfos. Each MOOSE class must set up
-     * a function to build its Cinfo. This function must be 
+     * a function to build its Cinfo. This function must be
      * called statically in the MOOSE class .cpp file.
      * Note how it takes the base *Cinfo as an argument. This
      * lets us call the base Cinfo initializer when making

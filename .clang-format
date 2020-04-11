@@ -31,7 +31,7 @@ SpacesBeforeTrailingComments: 2
 Cpp11BracedListStyle: true
 Standard:        Auto
 IndentWidth:     4
-TabWidth:        8
+TabWidth:        4
 UseTab:          Never
 BreakBeforeBraces: Stroustrup
 IndentFunctionDeclarationAfterType: true

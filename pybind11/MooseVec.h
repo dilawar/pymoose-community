@@ -171,13 +171,6 @@ public:
 private:
     ObjId oid_;
     std::string path_;
-
-    // Objects
-    // Turns a ObjId to vector. Use dataIndex whenever available such as
-    // >>> a = moose.Pool('a', 100)
-    // >>> av = moose.vec(a)
-    // will use dataIndex for indexing.
-    // For FieldElementInfo, create objects.
     vector<ObjId> objs_;
 };
 

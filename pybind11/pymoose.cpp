@@ -218,26 +218,31 @@ PYBIND11_MODULE(_moose, m)
     // class bind both __getitem__ to the getter function call.
     // Note that both a.isA["Compartment"] and a.isA("Compartment") are valid
     // now.
-    py::class_<__Finfo__>(m, "__Field__")
+    py::class_<__Finfo__>(m, "mfield", py::dynamic_attr())
         .def(py::init<const ObjId &, const Finfo *, const char *>())
-        .def_property_readonly("type", &__Finfo__::type)
-        .def_property("num", &__Finfo__::getNumField, &__Finfo__::setNumField)
-        .def_property_readonly(
-             "vec", [](__Finfo__ &finfo) { return finfo.getMooseVecPtr(); },
-             py::return_value_policy::reference_internal)
-
         // Only for FieldElementFinfos
         .def("__len__", &__Finfo__::getNumField)
         .def("__call__", &__Finfo__::operator())
         .def("__getitem__", &__Finfo__::getItem)
         .def("__setitem__", &__Finfo__::setItem)
-        .def("__setattr_",
+        .def("__setattr__",
              [](__Finfo__ &f, const string &key, const py::object &val) {
+             // FIXME: `num` is a special case here.
+             if(key == "num")
+                 return f.setNumField(val.cast<unsigned int>());
              return f.getMooseVecPtr()->setAttribute(key, val);
          })
-        .def("__getattr_", [](__Finfo__ &f, const string &key) {
+        .def("__getattr__", [](__Finfo__ &f, const string &key) {
+            // FIXME: `num` is a special case.
+             if(key == "num")
+                 return py::cast(f.getNumField());
              return f.getMooseVecPtr()->getAttribute(key);
-         });
+         })
+        .def_property_readonly("type", &__Finfo__::type)
+        .def_property("num", &__Finfo__::getNumField, &__Finfo__::setNumField)
+        .def_property_readonly(
+             "vec", [](__Finfo__ &finfo) { return finfo.getMooseVecPtr(); },
+             py::return_value_policy::reference_internal);
 
     /**
      * @name ObjId. It is a base of all other moose objects.

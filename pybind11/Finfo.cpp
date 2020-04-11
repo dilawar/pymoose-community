@@ -265,7 +265,7 @@ py::object __Finfo__::getElementFinfoItem(const ObjId& oid, const Finfo* f,
                                           int index)
 {
     size_t numFields = getNumFieldStatic(oid, f);
-    size_t i = (index < 0) ? (int) numFields + index : index;
+    size_t i = (index < 0) ? (int)numFields + index : index;
     if(i >= numFields)
         throw py::index_error("Index " + to_string(i) + " out of range.");
     auto o = ObjId(oid.path() + '/' + f->name());
@@ -320,8 +320,53 @@ MooseVec __Finfo__::getMooseVec()
 
 MooseVec* __Finfo__::getMooseVecPtr()
 {
-    if(! pVec_)
+    if(!pVec_)
         pVec_.reset(new MooseVec(getObjId()));
     return pVec_.get();
 }
 
+vector<pair<string, string>> __Finfo__::finfoNames(const Cinfo* cinfo,
+                                                   const string& what = "*")
+{
+
+    vector<pair<string, string>> ret;
+
+    if(!cinfo) {
+        cerr << "Invalid class name." << endl;
+        return ret;
+    }
+
+    if(what == "valueFinfo" || what == "value" || what == "*") {
+        for(unsigned int ii = 0; ii < cinfo->getNumValueFinfo(); ++ii) {
+            Finfo* finfo = cinfo->getValueFinfo(ii);
+            ret.push_back({finfo->name(), finfo->rttiType()});
+        }
+    } else if(what == "srcFinfo" || what == "src" || what == "*") {
+        for(unsigned int ii = 0; ii < cinfo->getNumSrcFinfo(); ++ii) {
+            Finfo* finfo = cinfo->getSrcFinfo(ii);
+            ret.push_back({finfo->name(), finfo->rttiType()});
+        }
+    } else if(what == "destFinfo" || what == "dest" || what == "*") {
+        for(unsigned int ii = 0; ii < cinfo->getNumDestFinfo(); ++ii) {
+            Finfo* finfo = cinfo->getDestFinfo(ii);
+            ret.push_back({finfo->name(), finfo->rttiType()});
+        }
+    } else if(what == "lookupFinfo" || what == "lookup" || what == "*") {
+        for(unsigned int ii = 0; ii < cinfo->getNumLookupFinfo(); ++ii) {
+            Finfo* finfo = cinfo->getLookupFinfo(ii);
+            ret.push_back({finfo->name(), finfo->rttiType()});
+        }
+    } else if(what == "sharedFinfo" || what == "shared" || what == "*") {
+        for(unsigned int ii = 0; ii < cinfo->getNumSrcFinfo(); ++ii) {
+            Finfo* finfo = cinfo->getSrcFinfo(ii);
+            ret.push_back({finfo->name(), finfo->rttiType()});
+        }
+    } else if(what == "fieldElementFinfo" || what == "fieldElement" ||
+              what == "*") {
+        for(unsigned int ii = 0; ii < cinfo->getNumFieldElementFinfo(); ++ii) {
+            Finfo* finfo = cinfo->getFieldElementFinfo(ii);
+            ret.push_back({finfo->name(), finfo->rttiType()});
+        }
+    }
+    return ret;
+}
