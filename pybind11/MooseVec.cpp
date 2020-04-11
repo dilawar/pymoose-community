@@ -11,6 +11,12 @@
 
 using namespace std;
 
+#include "../external/pybind11/include/pybind11/pybind11.h"
+#include "../external/pybind11/include/pybind11/numpy.h"
+#include "../external/pybind11/include/pybind11/stl.h"
+
+namespace py = pybind11;
+
 #include "../utility/strutil.h"
 #include "helper.h"
 #include "pymoose.h"
@@ -139,6 +145,46 @@ py::object MooseVec::getAttribute(const string& name)
         res[i] = getFieldGeneric(getItem((int)i), name);
     return py::cast(res);
 }
+
+
+/* --------------------------------------------------------------------------*/
+/**
+ * @Synopsis  API function. Set attribute on vector. This is the top-level
+ * generic function.
+ *
+ * @Param name
+ * @Param val 
+ *
+ * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+bool MooseVec::setAttribute(const string& name, const py::object& val)
+{
+    auto cinfo = oid_.element()->cinfo();
+    auto finfo = cinfo->findFinfo(name);
+    auto rttType = finfo->rttiType();
+
+    bool isVector = false;
+    if(py::isinstance<py::iterable>(val) and (not py::isinstance<py::str>(val)))
+        isVector = true;
+
+    if(isVector) {
+        if(rttType == "double")
+            return setAttrOneToOne<double>(name, val.cast<vector<double>>());
+        if(rttType == "unsigned int")
+            return setAttrOneToOne<unsigned int>(name, val.cast<vector<unsigned int>>());
+    }
+    else {
+        if(rttType == "double")
+            return setAttrOneToAll<double>(name, val.cast<double>());
+        if(rttType == "unsigned int")
+            return setAttrOneToAll<unsigned int>(name, val.cast<unsigned int>());
+    }
+
+    py::print("Not implemented yet.", name, "val:", val);
+    throw runtime_error(__func__ + string("::NotImplementedError."));
+}
+
 
 ObjId MooseVec::connectToSingle(const string& srcfield, const ObjId& tgt,
                                 const string& tgtfield, const string& msgtype)

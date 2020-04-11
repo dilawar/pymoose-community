@@ -141,6 +141,8 @@ public:
 
     // Get attributes.
     py::object getAttribute(const string& key);
+
+    // Set attribute.
     bool setAttribute(const string& name, const py::object& val);
 
     vector<ObjId> objs() const;

@@ -136,7 +136,7 @@ py::object getFieldGeneric(const ObjId &oid, const string &fieldName)
     string finfoType = cinfo->getFinfoType(finfo);
 
     // Things are very compilcated here. There return object from this function
-    // can be of different types: a simple value (ValueFinfo), list, dict or 
+    // can be of different types: a simple value (ValueFinfo), list, dict or
     // DestFinfo setter which is a function.
     if(finfoType == "ValueFinfo")
         return __Finfo__::getFieldValue(oid, finfo);
@@ -147,7 +147,7 @@ py::object getFieldGeneric(const ObjId &oid, const string &fieldName)
         // This is a function.
         return py::cast(__Finfo__(oid, finfo, "LookupValueFinfo"));
     } else if(finfoType == "DestFinfo") {
-        // Return a setter function. 
+        // Return a setter function.
         // It can be used to set field on DestFinfo.
         return __Finfo__::getDestFinfoSetterFunc(oid, finfo);
     }
@@ -203,7 +203,7 @@ PYBIND11_MODULE(_moose, m)
         .def("__ne__", [](const Id &a, const Id &b) { return a != b; })
         .def("__hash__", &Id::value)
 
-        // Id attributes are same as ObjItem attributes. 
+        // Id attributes are same as ObjItem attributes.
         .def("__getattr__", [](const Id &id, const string &key) {
              return getFieldGeneric(ObjId(id), key);
          })
@@ -218,7 +218,7 @@ PYBIND11_MODULE(_moose, m)
     // class bind both __getitem__ to the getter function call.
     // Note that both a.isA["Compartment"] and a.isA("Compartment") are valid
     // now.
-    py::class_<__Finfo__>(m, "__Field__", py::dynamic_attr())
+    py::class_<__Finfo__>(m, "__Field__")
         .def(py::init<const ObjId &, const Finfo *, const char *>())
         .def_property_readonly("type", &__Finfo__::type)
         .def_property("num", &__Finfo__::getNumField, &__Finfo__::setNumField)
@@ -231,7 +231,13 @@ PYBIND11_MODULE(_moose, m)
         .def("__call__", &__Finfo__::operator())
         .def("__getitem__", &__Finfo__::getItem)
         .def("__setitem__", &__Finfo__::setItem)
-        ;
+        .def("__setattr_",
+             [](__Finfo__ &f, const string &key, const py::object &val) {
+             return f.getMooseVecPtr()->setAttribute(key, val);
+         })
+        .def("__getattr_", [](__Finfo__ &f, const string &key) {
+             return f.getMooseVecPtr()->getAttribute(key);
+         });
 
     /**
      * @name ObjId. It is a base of all other moose objects.
@@ -335,20 +341,12 @@ PYBIND11_MODULE(_moose, m)
                  return py::make_iterator(v.objref().begin(), v.objref().end());
              },
              py::keep_alive<0, 1>())
-
         .def("__getitem__", &MooseVec::getItem)
         .def("__getitem__", &MooseVec::getItemRange)
 
         // Templated function won't work here. The first one is always called.
         .def("__getattr__", &MooseVec::getAttribute)
-        .def("__setattr__", &MooseVec::setAttrOneToOne<double>)
-        .def("__setattr__", &MooseVec::setAttrOneToOne<int>)
-        .def("__setattr__", &MooseVec::setAttrOneToOne<unsigned int>)
-        .def("__setattr__", &MooseVec::setAttrOneToOne<bool>)
-        .def("__setattr__", &MooseVec::setAttrOneToAll<double>)
-        .def("__setattr__", &MooseVec::setAttrOneToAll<int>)
-        .def("__setattr__", &MooseVec::setAttrOneToAll<unsigned int>)
-        .def("__setattr__", &MooseVec::setAttrOneToAll<bool>)
+        .def("__setattr__", &MooseVec::setAttribute)
         .def("__repr__", [](const MooseVec & v)->string {
              return "<moose.vec class=" + v.dtype() + " path=" + v.path() +
                     " id=" + std::to_string(v.id()) + " size=" +
