@@ -418,6 +418,7 @@ double HSolvePassive::getV( unsigned int row ) const
 //~ #include <sstream>
 
 #include <limits>
+
 /**
  * Check 2 floating-point numbers for "equality".
  * Algorithm (from Knuth) 'a' and 'b' are close if:

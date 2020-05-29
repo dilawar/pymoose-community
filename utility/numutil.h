@@ -15,20 +15,19 @@
 #include "../randnum/RNG.h"
 #include "../basecode/global.h"
 
-
 /**
  * Functions for floating point comparisons
  */
-    template<class T>
-bool isNaN( T value )
+template <class T>
+bool isNaN(T value)
 {
     return value != value;
 }
 
-    template< typename T >
-bool isInfinity( T value )
+template <typename T>
+bool isInfinity(T value)
 {
-    return value == std::numeric_limits< T >::infinity();
+    return value == std::numeric_limits<T>::infinity();
 }
 
 /**
@@ -40,29 +39,28 @@ bool isInfinity( T value )
  * In this function, 'e' is computed as:
  * 	    e = tolerance * machine-epsilon
  */
-    template< class T >
-bool isClose( T a, T b, T tolerance )
+template <class T>
+bool isClose(T a, T b, T tolerance)
 {
-    T epsilon = std::numeric_limits< T >::epsilon();
+    T epsilon = std::numeric_limits<T>::epsilon();
 
-    if ( a == b )
+    if(a == b)
         return true;
 
-    if ( a == 0 || b == 0 )
-        return ( fabs( a - b ) < tolerance * epsilon );
+    if(a == 0 || b == 0)
+        return (fabs(a - b) < tolerance * epsilon);
 
-    return (
-            fabs( ( a - b ) / a ) < tolerance * epsilon
-            &&
-            fabs( ( a - b ) / b ) < tolerance * epsilon
-           );
+    return (fabs((a - b) / a) < tolerance * epsilon &&
+            fabs((a - b) / b) < tolerance * epsilon);
 }
 
 bool almostEqual(float x, float y, float epsilon = FLT_EPSILON);
 bool almostEqual(double x, double y, double epsilon = DBL_EPSILON);
-bool almostEqual(long double x, long double y, long double epsilon = LDBL_EPSILON);
+bool almostEqual(long double x, long double y,
+                 long double epsilon = LDBL_EPSILON);
 double approximateWithInteger(const double x, moose::RNG& rng);
 double approximateWithInteger(const double x);
-double approximateWithInteger_debug(const char* name, const double x, moose::RNG& rng);
+double approximateWithInteger_debug(const char* name, const double x,
+                                    moose::RNG& rng);
 
 #endif
