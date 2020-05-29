@@ -1,20 +1,31 @@
 # python REST server using flask.
 
 import moose
+import sys
 import flask
+import tempfile
+from pathlib import Path
+import subprocess
 
 from flask import request, jsonify
 from flask_cors import CORS
 
 stop_all_ = False
 
-async def send_data(websocket, path):
-    name = await websocket.recv()
-    print(f"< {name}")
+def run_simulation_file(post):
+    wdir = tempfile.mkdtemp()
+    # with tempfile.TemporaryDirectory(delete=False) as wdir:
+    print(f'-> temp {wdir}')
+    data = post.json['content']
+    print(data)
+    with open(Path(wdir)/'incoming.py', 'w') as f:
+        f.write(data)
 
-    greeting = f"Hello {name}"
-    await websocket.send(greeting)
-    print(f"> {greeting}")
+    try:
+        return subprocess.check_output([sys.executable, f.name], cwd=wdir)
+    except Exception as e:
+        return str(e)
+
 
 def main(args):
     app = flask.Flask(__name__)
@@ -32,7 +43,7 @@ def main(args):
     @app.route('/run/file', methods=['GET', 'POST'])
     def run_file():
         if request.method == 'POST':
-            return 'Simulating'
+            return run_simulation_file(request)
         return 'GET'
 
     app.run(host='0.0.0.0', port=args.port)
