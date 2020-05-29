@@ -21,3 +21,8 @@ from moose.wrapper import *
 
 # Import moose test.
 from moose.moose_test import test
+
+try:
+    from moose.flask import *
+except Exception as e:
+    pass
