@@ -874,10 +874,8 @@ def mergeChemModel(modelpath, dest):
     dest : path
         Existing MOOSE path.
 
-# Import moose test.
-from moose.moose_test import test
-
-try:
-    from moose.flask import *
-except Exception as e:
-    pass
+    TODO
+    ----
+        No example file which shows its use. Deprecated?
+    """
+    return model_utils.mooseMergeChemModel(modelpath, dest)
