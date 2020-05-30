@@ -62,6 +62,14 @@ map<string, string> mooseVersionInfo()
             {"compiler_string", string(COMPILER_STRING)}};
 }
 
+map<string, string> mooseEnv()
+{
+    return { {"MOOSE_STATUS", getenv("MOOSE_STATUS")},
+        {"MOOSE_CURRENT_TIME", getenv("MOOSE_CURRENT_TIME")},
+        {"MOOSE_RUNTIME", getenv("MOOSE_RUNTIME")}
+    };
+}
+
 bool setFieldGeneric(const ObjId &oid, const string &fieldName,
                      const py::object &val)
 {
@@ -427,7 +435,6 @@ PYBIND11_MODULE(_moose, m)
     m.def("__generatedoc__", &mooseDoc,
           "Generate class documentation (developer only)");
 
-    m.def("getField", [](const ObjId &oid, const string &fieldName) {
         // ftype is not needed anymore.
         return getFieldGeneric(oid, fieldName);
     });
@@ -436,12 +443,14 @@ PYBIND11_MODULE(_moose, m)
           "toGlobal"_a = false, "copyExtMsgs"_a = false);
 
     m.def("version_info", &mooseVersionInfo);
+    m.def("env", &mooseEnv);
 
     // Attributes.
     m.attr("NA") = NA;
     m.attr("PI") = PI;
     m.attr("FaradayConst") = FaradayConst;
     m.attr("GasConst") = GasConst;
+
 
     // Version information.
     m.attr("__version__") = MOOSE_VERSION;

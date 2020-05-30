@@ -1,11 +1,14 @@
 # python REST server using flask.
+import matplotlib
+matplotlib.use('Agg')
 
-import moose
+import importlib
+import os
 import sys
 import flask
+import moose
 import tempfile
 from pathlib import Path
-import subprocess
 
 from flask import request, jsonify
 from flask_cors import CORS
@@ -17,15 +20,12 @@ def run_simulation_file(post):
     # with tempfile.TemporaryDirectory(delete=False) as wdir:
     print(f'-> temp {wdir}')
     data = post.json['content']
-    print(data)
-    with open(Path(wdir)/'incoming.py', 'w') as f:
-        f.write(data)
-
     try:
-        return subprocess.check_output([sys.executable, f.name], cwd=wdir)
+        a = exec(data)
+        importlib.reload(moose)
+        return a
     except Exception as e:
         return str(e)
-
 
 def main(args):
     app = flask.Flask(__name__)
@@ -39,6 +39,12 @@ def main(args):
     @app.route('/about', methods=['GET'])
     def about():
         return moose.about()
+
+    @app.route('/status', methods=['GET'])
+    def status():
+        e = moose.env()
+        print('--> env', e)
+        return e
 
     @app.route('/run/file', methods=['GET', 'POST'])
     def run_file():
