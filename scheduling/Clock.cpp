@@ -1001,9 +1001,9 @@ void Clock::writeEnv( )
     const string envfile = ".moose_status";
     ofstream f;
     f.open(envfile);
-    f << "{ MOOSE_STATUS : '" << moose::getEnv("MOOSE_STATUS")
-        << "', MOOSE_CURRENT_TIME : " << moose::getEnv("MOOSE_CURRENT_TIME")
-        << ", MOOSE_RUNTIME : " << moose::getEnv("MOOSE_RUNTIME")
+    f << "{ \"MOOSE_STATUS\" : " << '"' << moose::getEnv("MOOSE_STATUS") << '"'
+        << ", \"MOOSE_CURRENT_TIME\" : " << moose::getEnv("MOOSE_CURRENT_TIME")
+        << ", \"MOOSE_RUNTIME\" : " << moose::getEnv("MOOSE_RUNTIME")
         << "}";
     f.close();
 }
