@@ -1,40 +1,48 @@
 # python REST server using flask.
-import matplotlib
-matplotlib.use('Agg')
 
 import importlib
 import os
 import sys
 import flask
-import moose
 import tempfile
+import subprocess
+import moose
 from pathlib import Path
 
 from flask import request, jsonify
 from flask_cors import CORS
 
 stop_all_ = False
+moose_process_ = None
+cwd_ = None
+
+def getstatus():
+    global cwd_
+    global moose_process_
+    if moose_process_ is None or (not cwd_):
+        return { 'MOOSE_STATUS': 'STOPPED' }
+
+    stFile = cwd_ / '.moose_status'
+    if not stFile.exists():
+        return { 'MOOSE_STATUS': 'STOPPED' }
+
+    return stFile.read_text()
+
 
 def run_simulation_file(post):
-    wdir = Path(tempfile.mkdtemp())
-    # with tempfile.TemporaryDirectory(delete=False) as wdir:
-    print(f'-> temp {wdir}')
-
+    global cwd_, moose_process_
+    cwd_ = Path(tempfile.mkdtemp())
+    print(f'-> temp {cwd_}')
     data = post.json['content']
-    with open(wdir/'matplotlibrc') as f:
-        f.write('interactive: true')
+    with open(cwd_/'matplotlibrc', 'w') as f:
+        f.write('interactive: True\n')
+        f.write('backend: Agg\n')
 
-    with open(wdir/'main.py', 'w') as f:
+    with open(cwd_/'main.py', 'w') as f:
         f.write(data)
-    p = subprocess.check_output([sys.executable, f.name] , cwd=wdir)
-    return True
+    moose_process_ = subprocess.Popen([sys.executable, f.name] , cwd=cwd_)
+    return 'DONE'
 
-    # try:
-    #     a = exec(data)
-    #     importlib.reload(moose)
-    #     return a
-    # except Exception as e:
-    #     return str(e)
 
 def main(args):
     app = flask.Flask(__name__)
@@ -51,7 +59,7 @@ def main(args):
 
     @app.route('/status', methods=['GET'])
     def status():
-        e = moose.env()
+        e = getstatus()
         print('--> env', e)
         return e
 

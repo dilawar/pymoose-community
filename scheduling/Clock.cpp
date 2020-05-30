@@ -50,6 +50,7 @@
 
 #include "../basecode/header.h"
 #include "../utility/numutil.h"
+#include "../utility/utility.h"
 
 #include "Clock.h"
 
@@ -429,6 +430,9 @@ Clock::Clock()
     setenv("MOOSE_STATUS", "INTIALIZED", 1);
     setenv("MOOSE_RUNTIME", "-1", 1);
     setenv("MOOSE_CURRENT_TIME", "0", 1);
+
+    // write the env to .pid file.
+    writeEnv();
 #endif
 
     buildDefaultTick();
@@ -451,6 +455,7 @@ Clock::~Clock()
 
 #if ENABLE_ENV_STATUS
     setenv("MOOSE_STATUS", "FINALIZED", 1);
+    writeEnv();
 #endif
 
 }
@@ -686,6 +691,7 @@ void Clock::handleStep(const Eref& e, unsigned long numSteps)
     setenv("MOOSE_STATUS", "RUNNING", 1);
     setenv("MOOSE_RUNTIME", to_string(runTime_).c_str(), 1);
     setenv("MOOSE_CURRENT_TIME", to_string(currentTime_).c_str(), 1);
+    writeEnv();
 #endif
 
     for(isRunning_ = (activeTicks_.size() > 0);
@@ -723,6 +729,7 @@ void Clock::handleStep(const Eref& e, unsigned long numSteps)
             setenv("MOOSE_STATUS", "COMPLETED", 1);
             setenv("MOOSE_RUNTIME", to_string(runTime_).c_str(), 1);
             setenv("MOOSE_CURRENT_TIME", to_string(currentTime_).c_str(), 1);
+            writeEnv();
         }
 #endif
 
@@ -738,7 +745,9 @@ void Clock::handleStep(const Eref& e, unsigned long numSteps)
     setenv("MOOSE_STATUS", "COMPLETED", 1);
     setenv("MOOSE_RUNTIME", to_string(runTime_).c_str(), 1);
     setenv("MOOSE_CURRENT_TIME", to_string(currentTime_).c_str(), 1);
+    writeEnv();
 #endif
+
 }
 
 /**
@@ -985,4 +994,16 @@ unsigned int Clock::lookupDefaultTick(const string& className)
         return 0;
     }
     return i->second;
+}
+
+void Clock::writeEnv( )
+{
+    const string envfile = ".moose_status";
+    ofstream f;
+    f.open(envfile);
+    f << "{ 'MOOSE_STATUS' : " << moose::getEnv("MOOSE_STATUS")
+        << ", 'MOOSE_CURRENT_TIME' : " << moose::getEnv("MOOSE_CURRENT_TIME")
+        << ", 'MOOSE_RUNTIME' : " << moose::getEnv("MOOSE_RUNTIME")
+        << "}";
+    f.close();
 }
