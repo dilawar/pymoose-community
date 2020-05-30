@@ -435,6 +435,7 @@ PYBIND11_MODULE(_moose, m)
     m.def("__generatedoc__", &mooseDoc,
           "Generate class documentation (developer only)");
 
+    m.def("getField", [](const ObjId &oid, const string &fieldName) {
         // ftype is not needed anymore.
         return getFieldGeneric(oid, fieldName);
     });

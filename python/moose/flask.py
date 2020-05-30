@@ -16,16 +16,25 @@ from flask_cors import CORS
 stop_all_ = False
 
 def run_simulation_file(post):
-    wdir = tempfile.mkdtemp()
+    wdir = Path(tempfile.mkdtemp())
     # with tempfile.TemporaryDirectory(delete=False) as wdir:
     print(f'-> temp {wdir}')
+
     data = post.json['content']
-    try:
-        a = exec(data)
-        importlib.reload(moose)
-        return a
-    except Exception as e:
-        return str(e)
+    with open(wdir/'matplotlibrc') as f:
+        f.write('interactive: true')
+
+    with open(wdir/'main.py', 'w') as f:
+        f.write(data)
+    p = subprocess.check_output([sys.executable, f.name] , cwd=wdir)
+    return True
+
+    # try:
+    #     a = exec(data)
+    #     importlib.reload(moose)
+    #     return a
+    # except Exception as e:
+    #     return str(e)
 
 def main(args):
     app = flask.Flask(__name__)
