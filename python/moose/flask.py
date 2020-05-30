@@ -1,6 +1,6 @@
 # python REST server using flask.
 
-import importlib
+import time
 import os
 import sys
 import flask
@@ -40,8 +40,12 @@ def run_simulation_file(post):
 
     with open(cwd_/'main.py', 'w') as f:
         f.write(data)
+    t0 = time.time()
     moose_process_ = subprocess.Popen([sys.executable, f.name] , cwd=cwd_)
-    return 'DONE'
+    moose_process_.communicate()
+
+    t = time.time() - t0
+    return {'status': 'finished', 'time': t}
 
 
 def main(args):
