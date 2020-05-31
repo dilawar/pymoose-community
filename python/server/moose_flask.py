@@ -1,7 +1,12 @@
 # python REST server using flask.
 
+# DOCS
+# Integrate with apache:
+# https://flask.palletsprojects.com/en/1.1.x/deploying/mod_wsgi/
+
 import time
 import os
+import re
 import sys
 import shutil
 import flask
@@ -137,7 +142,7 @@ def run_simulation_file(post):
     return {'status': 'finished', 'time': f'{t:.2f}', 'images': images}
 
 
-def main(args):
+def main(**kwargs):
     app = flask.Flask(__name__)
     CORS(app)
     app.config['DEBUG'] = True
@@ -162,7 +167,7 @@ def main(args):
             return run_simulation_file(request)
         return 'GET'
 
-    app.run(host='0.0.0.0', port=args.port)
+    return app
 
 
 if __name__ == '__main__':
@@ -178,8 +183,9 @@ if __name__ == '__main__':
     class Args: pass 
     args = Args()
     parser.parse_args(namespace=args)
+    app = main(vars(args))
     try:
-        main(args)
-    except KeyboardInterrupt as e:
+        app.run(host='0.0.0.0', port=args.port)
+    except KeyboardInterrupt:
         stop_all_ = True
         quit(1)
