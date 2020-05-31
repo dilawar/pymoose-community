@@ -7,6 +7,8 @@ import flask
 import tempfile
 import subprocess
 import moose
+import tarfile
+
 from pathlib import Path
 
 from flask import request, jsonify
@@ -15,6 +17,35 @@ from flask_cors import CORS
 stop_all_ = False
 moose_process_ = None
 cwd_ = None
+
+
+# Matplotlib patch for saving each files into separate PNG files.
+matplotlibText = """
+print( '>>>> saving all figues')
+import matplotlib.pyplot as plt
+def multipage(filename, figs=None, dpi=200):
+    pp = PdfPages(filename)
+    if figs is None:
+        figs = [plt.figure(n) for n in plt.get_fignums()]
+    for fig in figs:
+        fig.savefig(pp, format='pdf')
+    pp.close()
+
+def saveall(prefix='results', figs=None):
+    if figs is None:
+        figs = [plt.figure(n) for n in plt.get_fignums()]
+    for i, fig in enumerate(figs):
+        outfile = '%s.%d.png' % (prefix, i)
+        fig.savefig(outfile)
+        print( '>>>> %s saved.' % outfile )
+    plt.close()
+
+try:
+    saveall()
+except Exception as e:
+    print( '>>>> Error in saving: %s' % e )
+    quit(0)
+"""
 
 def getstatus():
     global cwd_
@@ -29,6 +60,25 @@ def getstatus():
     return stFile.read_text()
 
 
+def bzip_data_to_send(tdir, notTheseFiles = []):
+    # Only send new files.
+    resdir = tempfile.mkdtemp()
+    resfile = os.path.join(resdir, 'results.tar.bz2')
+    with tarfile.open( resfile, 'w|bz2') as tf:
+        for f in find_files(tdir, ext='png'):
+            logger_.info( "Adding file %s" % f )
+            tf.add(f, os.path.basename(f))
+
+    time.sleep(0.01)
+    # now send the tar file back to client
+    data = []
+    with open(resfile, 'rb' ) as f:
+        data = f.read()
+        logger_.info( 'Total bytes to send to client: %d' % len(data))
+    shutil.rmtree(resdir)
+    return data
+
+
 def run_simulation_file(post):
     global cwd_, moose_process_
     cwd_ = Path(tempfile.mkdtemp())
@@ -38,14 +88,19 @@ def run_simulation_file(post):
         f.write('interactive: True\n')
         f.write('backend: Agg\n')
 
-    with open(cwd_/'main.py', 'w') as f:
+    mainfile = cwd_/'main.py'
+    with open(mainfile, 'w') as f:
         f.write(data)
+        f.write('\n')
+        f.write(matplotlibText)
+
     t0 = time.time()
     moose_process_ = subprocess.Popen([sys.executable, f.name] , cwd=cwd_)
     moose_process_.communicate()
 
     t = time.time() - t0
-    return {'status': 'finished', 'time': t}
+    bzip = bzip_data_to_send(cwd_)
+    return {'status': 'finished', 'time': t, 'bzip': bzip}
 
 
 def main(args):

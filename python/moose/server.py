@@ -307,6 +307,7 @@ def find_files_to_run( files ):
                     toRun.append(f)
     return toRun
 
+
 def simulate( tfile, conn ):
     """Simulate a given tar file.
     """
