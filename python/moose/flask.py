@@ -3,9 +3,11 @@
 import time
 import os
 import sys
+import shutil
 import flask
 import tempfile
 import subprocess
+import base64
 import moose
 import tarfile
 
@@ -60,13 +62,34 @@ def getstatus():
     return stFile.read_text()
 
 
+def find_files(dirname, ext=None, name_contains=None, text_regex_search=None):
+    files = []
+    for d, sd, fs in os.walk(dirname):
+        for f in fs:
+            fpath = os.path.join(d,f)
+            include = True
+            if ext is not None:
+                if f.split('.')[-1] != ext:
+                    include = False
+            if name_contains:
+                if name_contains not in os.path.basename(f):
+                    include = False
+            if text_regex_search:
+                with open(fpath, 'r' ) as f:
+                    txt = f.read()
+                    if re.search(text_regex_search, txt) is None:
+                        include = False
+            if include:
+                files.append(fpath)
+    return files
+
+
 def bzip_data_to_send(tdir, notTheseFiles = []):
     # Only send new files.
     resdir = tempfile.mkdtemp()
     resfile = os.path.join(resdir, 'results.tar.bz2')
-    with tarfile.open( resfile, 'w|bz2') as tf:
+    with tarfile.open(resfile, 'w|bz2') as tf:
         for f in find_files(tdir, ext='png'):
-            logger_.info( "Adding file %s" % f )
             tf.add(f, os.path.basename(f))
 
     time.sleep(0.01)
@@ -74,7 +97,7 @@ def bzip_data_to_send(tdir, notTheseFiles = []):
     data = []
     with open(resfile, 'rb' ) as f:
         data = f.read()
-        logger_.info( 'Total bytes to send to client: %d' % len(data))
+        print('Total bytes to send to client: %d' % len(data))
     shutil.rmtree(resdir)
     return data
 
@@ -100,7 +123,8 @@ def run_simulation_file(post):
 
     t = time.time() - t0
     bzip = bzip_data_to_send(cwd_)
-    return {'status': 'finished', 'time': t, 'bzip': bzip}
+    data = base64.b64encode(bzip)
+    return {'status': 'finished', 'time': t, 'output': data}
 
 
 def main(args):
