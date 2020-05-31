@@ -102,6 +102,15 @@ def bzip_data_to_send(tdir, notTheseFiles = []):
     return data
 
 
+def images_as_b64(wdir):
+    images = find_files(wdir, 'png')
+    data = [ ]
+    for img in images:
+        with open(img, 'rb') as f:
+            data.append(base64.b64encode(f.read()))
+    return data
+
+
 def run_simulation_file(post):
     global cwd_, moose_process_
     cwd_ = Path(tempfile.mkdtemp())
@@ -122,9 +131,10 @@ def run_simulation_file(post):
     moose_process_.communicate()
 
     t = time.time() - t0
-    bzip = bzip_data_to_send(cwd_)
-    data = base64.b64encode(bzip)
-    return {'status': 'finished', 'time': t, 'output': data}
+    # bzip = bzip_data_to_send(cwd_)
+    # data = base64.b64encode(bzip)
+    images = images_as_b64(cwd_);
+    return {'status': 'finished', 'time': f'{t:.2f}', 'images': images}
 
 
 def main(args):

@@ -726,7 +726,7 @@ void Clock::handleStep(const Eref& e, unsigned long numSteps)
 
 #ifdef ENABLE_ENV_STATUS
         if(isClose(fmod((100.0 * currentTime_) / runTime_, 10.0), 0.0, 1e-6)) {
-            setenv("MOOSE_STATUS", "COMPLETED", 1);
+            setenv("MOOSE_STATUS", "RUNNING", 1);
             setenv("MOOSE_RUNTIME", to_string(runTime_).c_str(), 1);
             setenv("MOOSE_CURRENT_TIME", to_string(currentTime_).c_str(), 1);
             writeEnv();
