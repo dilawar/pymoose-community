@@ -183,7 +183,7 @@ if __name__ == '__main__':
     class Args: pass 
     args = Args()
     parser.parse_args(namespace=args)
-    app = main(vars(args))
+    app = main(**vars(args))
     try:
         app.run(host='0.0.0.0', port=args.port)
     except KeyboardInterrupt:
