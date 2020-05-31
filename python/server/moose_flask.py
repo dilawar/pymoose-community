@@ -18,7 +18,7 @@ import tarfile
 
 from pathlib import Path
 
-from flask import request, jsonify
+from flask import request
 from flask_cors import CORS
 
 stop_all_ = False
@@ -110,9 +110,9 @@ def bzip_data_to_send(tdir, notTheseFiles = []):
 def images_as_b64(wdir):
     images = find_files(wdir, 'png')
     data = [ ]
-    for img in images:
+    for img in images:   
         with open(img, 'rb') as f:
-            data.append(base64.b64encode(f.read()))
+            data.append(base64.b64encode(f.read()).decode())
     return data
 
 
