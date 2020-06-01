@@ -7,8 +7,9 @@
 import sys
 import os
 scpath = os.path.dirname(__file__)
-sys.path.insert(0, os.path.join(scpath, '../'))
+
 sys.path.insert(0, scpath)
+sys.path.insert(0, os.path.join(scpath, '..'))
 
 from moose_flask import main
 

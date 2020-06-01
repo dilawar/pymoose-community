@@ -8,6 +8,7 @@ import time
 import os
 import re
 import sys
+from datetime import datetime
 import shutil
 import flask
 import tempfile
@@ -22,8 +23,9 @@ from flask import request
 from flask_cors import CORS
 
 stop_all_ = False
+lines_ = []
 moose_process_ = None
-cwd_ = None
+cwd_ = Path()
 
 
 # Matplotlib patch for saving each files into separate PNG files.
@@ -57,14 +59,27 @@ except Exception as e:
 def getstatus():
     global cwd_
     global moose_process_
+    global lines_
+
     if moose_process_ is None or (not cwd_):
-        return { 'MOOSE_STATUS': 'STOPPED' }
+        return { 'MOOSE_STATUS': 'WAITING'
+                , '__file__' : moose.__file__
+                , 'cwd' : str(cwd_)
+                , 'code' : 1
+                }
 
     stFile = cwd_ / '.moose_status'
     if not stFile.exists():
-        return { 'MOOSE_STATUS': 'STOPPED' }
+        return {'MOOSE_STATUS': 'WAITING', 'cwd': str(cwd_), 'code':2}
 
-    return stFile.read_text()
+    txt = stFile.read_text().strip()
+    # append current line to the text.
+    txt = txt[:-1]
+    l = '\n'.join(lines_) if lines_ else ''
+    lines_ = []
+    b64line = base64.b64encode(l.encode())
+    txt += ', "b64line" : "' + b64line.decode() + '"}'
+    return txt
 
 
 def find_files(dirname, ext=None, name_contains=None, text_regex_search=None):
@@ -102,14 +117,14 @@ def bzip_data_to_send(tdir, notTheseFiles = []):
     data = []
     with open(resfile, 'rb' ) as f:
         data = f.read()
-        print('Total bytes to send to client: %d' % len(data))
+        print('[DEBUG] Total bytes to send to client: %d' % len(data))
     shutil.rmtree(resdir)
     return data
 
 
 def images_as_b64(wdir):
     images = find_files(wdir, 'png')
-    data = [ ]
+    data = []
     for img in images:   
         with open(img, 'rb') as f:
             data.append(base64.b64encode(f.read()).decode())
@@ -117,9 +132,11 @@ def images_as_b64(wdir):
 
 
 def run_simulation_file(post):
-    global cwd_, moose_process_
-    cwd_ = Path(tempfile.mkdtemp())
-    print(f'-> temp {cwd_}')
+    global cwd_, moose_process_, lines_
+
+    cwd_ = Path(tempfile.mkdtemp(prefix='moose'))
+    print(f'[DEBUG] Temp {cwd_}')
+
     data = post.json['content']
     with open(cwd_/'matplotlibrc', 'w') as f:
         f.write('interactive: True\n')
@@ -131,15 +148,30 @@ def run_simulation_file(post):
         f.write('\n')
         f.write(matplotlibText)
 
+    # before running MOOSE, chdir to cwd_ so that .moose_status is created in
+    # this direcotry.
+    wd = os.getcwd()
+    os.chdir(cwd_)
     t0 = time.time()
-    moose_process_ = subprocess.Popen([sys.executable, f.name] , cwd=cwd_)
-    moose_process_.communicate()
-
+    moose_process_ = subprocess.Popen([sys.executable, f.name]
+            , cwd=cwd_
+            , stdout=subprocess.PIPE
+            , stderr=subprocess.STDOUT
+            , env={'PYTHONPATH': os.getenv('PYTHONPATH', '')}
+            )
+    while True:
+        line = moose_process_.stdout.readline().decode('utf8')
+        if not line:
+            break
+        lines_.append(f"{datetime.now()} : {line}")
     t = time.time() - t0
-    # bzip = bzip_data_to_send(cwd_)
-    # data = base64.b64encode(bzip)
     images = images_as_b64(cwd_);
-    return {'status': 'finished', 'time': f'{t:.2f}', 'images': images}
+    os.chdir(wd)
+    return {'status': 'finished'
+            , 'time': f'{t:.2f}'
+            , 'images': images
+            , 'output': '\n'.join(lines_)
+            }
 
 
 def main(**kwargs):
@@ -148,8 +180,11 @@ def main(**kwargs):
     app.config['DEBUG'] = True
 
     @app.route('/', methods=['GET'])
+    @app.route('/ping', methods=['GET'])
     def ping():
-        return {'alive': True, 'version': moose.version()}
+        return {'alive': True, 'version': moose.version()
+                , 'python': sys.executable
+                }
 
     @app.route('/about', methods=['GET'])
     def about():
@@ -158,14 +193,18 @@ def main(**kwargs):
     @app.route('/status', methods=['GET'])
     def status():
         e = getstatus()
-        print('--> env', e)
         return e
 
-    @app.route('/run/file', methods=['GET', 'POST'])
+    @app.route('/run/file', methods=['GET', 'POST'])   # deprecated
+    @app.route('/simulation/start/file', methods=['GET', 'POST'])
     def run_file():
         if request.method == 'POST':
             return run_simulation_file(request)
         return 'GET'
+
+    @app.route('/simulation/stop/<pid>', methods=['GET', 'POST'])
+    def sim_stop(pid):
+        return f'NOT IMPLEMNETED: {pid}'
 
     return app
 

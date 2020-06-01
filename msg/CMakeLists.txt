@@ -8,5 +8,6 @@ add_library(msg
     SingleMsg.cpp
     SparseMsg.cpp
     OneToOneDataIndexMsg.cpp
-    testMsg.cpp
-    )
+    testMsg.cpp)
+
+target_compile_options(msg PRIVATE "-DENABLE_ENV_STATUS")

@@ -119,7 +119,7 @@ add_custom_target(pymoose_sdist ALL
 
 add_custom_command(OUTPUT ${PYMOOSE_BDIST_FILE}
   COMMAND ${PYTHON_EXECUTABLE} setup.py build_py  
-  COMMAND ${PYTHON_EXECUTABLE} setup.py bdist_dumb 
+  COMMAND ${PYTHON_EXECUTABLE} setup.py bdist_dumb
     --skip-build -p "${_platform}" -d ${CMAKE_BINARY_DIR} 
   COMMAND ${CMAKE_COMMAND} -E chdir ${PYMOOSE_INSTALL_DIR} tar xf ${PYMOOSE_BDIST_FILE}
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}

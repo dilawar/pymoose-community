@@ -453,7 +453,7 @@ Clock::~Clock()
         }
     }
 
-#if ENABLE_ENV_STATUS
+#ifdef ENABLE_ENV_STATUS
     setenv("MOOSE_STATUS", "FINALIZED", 1);
     writeEnv();
 #endif
@@ -999,6 +999,8 @@ unsigned int Clock::lookupDefaultTick(const string& className)
 void Clock::writeEnv( )
 {
     const string envfile = ".moose_status";
+    // cout << "DEBUG: writing env " << envfile << endl;
+
     ofstream f;
     f.open(envfile);
     f << "{ \"MOOSE_STATUS\" : " << '"' << moose::getEnv("MOOSE_STATUS") << '"'

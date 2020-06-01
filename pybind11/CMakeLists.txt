@@ -46,6 +46,16 @@ else(APPLE)
         ${SYSTEM_SHARED_LIBS})
 endif()
 
+add_custom_target(wheel 
+    DEPENDS _moose
+    COMMAND ${PYTHON_EXECUTABLE} setup.py build_py  
+    COMMAND ${PYTHON_EXECUTABLE} setup.py bdist_wheel
+        --skip-build
+        -d ${CMAKE_BINARY_DIR}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Building wheel"
+    VERBATIM)
+
 
 # Copy python tree to BUILD directory. User can set PYTHONPATH to
 # ${CMAKE_BINARY_DIR}/python. 
