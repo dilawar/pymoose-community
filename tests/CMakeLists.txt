@@ -13,7 +13,7 @@ foreach(_test_script ${PY_TEST_SCRIPTS} )
     get_filename_component(_name_we ${_test_script} NAME_WE)
     set(_test_name "core_${_name_we}")
     add_test(NAME ${_test_name}
-        COMMAND ${PYTHON_EXECUTABLE} ${_test_script}
+        COMMAND ${Python3_EXECUTABLE} ${_test_script}
         WORKING_DIRECTORY ${PYMOOSE_TEST_DIRECTORY})
      set_tests_properties(${_test_name}
          PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python"
@@ -27,7 +27,7 @@ foreach(_test_script ${PY_TEST_SCRIPTS} )
     get_filename_component(_name_we ${_test_script} NAME_WE)
     set(_test_name "support_${_name_we}")
     add_test(NAME ${_test_name}
-        COMMAND ${PYTHON_EXECUTABLE} ${_test_script}
+        COMMAND ${Python3_EXECUTABLE} ${_test_script}
         WORKING_DIRECTORY ${SUPPORT_TEST_DIRECTORY})
      set_tests_properties(${_test_name}
          PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python"
@@ -41,7 +41,7 @@ foreach(_test_script ${RDES_TEST_SCRIPTS})
     get_filename_component(_name_we ${_test_script} NAME_WE)
     set(_test_name "rdes_${_name_we}")
     add_test(NAME ${_test_name}
-        COMMAND ${PYTHON_EXECUTABLE} ${_test_script}
+        COMMAND ${Python3_EXECUTABLE} ${_test_script}
         WORKING_DIRECTORY ${RDES_TEST_DIRECTORY}
         )
     set_tests_properties(${_test_name} PROPERTIES 
@@ -56,7 +56,7 @@ foreach( _test_script ${PY_FIXME_TEST_SCRIPTS} )
     get_filename_component( _name_we ${_test_script} NAME_WE)
     set(_test_name "alpha_${_name_we}")
     add_test( NAME ${_test_name}
-        COMMAND ${PYTHON_EXECUTABLE} ${_test_script}
+        COMMAND ${Python3_EXECUTABLE} ${_test_script}
         CONFIGURATIONS alpha
 	WORKING_DIRECTORY ${PYMOOSE_ALPHA_TEST_DIRECTORY}
         )
@@ -72,7 +72,7 @@ foreach(_test_script ${PY_ISSUES_SCRIPTS})
     get_filename_component(_file_name ${_test_script} NAME_WE)
     set(_test_name "issue_${_file_name}")
     add_test(NAME ${_test_name}
-        COMMAND ${PYTHON_EXECUTABLE} ${_test_script}
+        COMMAND ${Python3_EXECUTABLE} ${_test_script}
 	CONFIGURATIONS Devel
 	WORKING_DIRECTORY ${PYMOOSE_ISSUES_DIRECTORY}
         )
@@ -94,7 +94,7 @@ foreach(_test_script ${PYTEST_TEST_SCRIPTS})
     add_custom_target(${_test_name}
         # We collect coverage data but do not show report during each test.
         # We show report at the end of all tests. Set `--cov-report=` 
-        COMMAND ${PYTHON_EXECUTABLE} -m pytest 
+        COMMAND ${Python3_EXECUTABLE} -m pytest 
             --cov=moose --cov=rdesigneur --cov-append --cov-report= 
             ${_test_script}
         DEPENDS _moose
@@ -106,8 +106,8 @@ endforeach()
 
 # Generate report at the end.
 add_custom_command(TARGET coverage POST_BUILD
-    COMMAND ${PYTHON_EXECUTABLE} -m coverage report 
-    COMMAND ${PYTHON_EXECUTABLE} -m coverage html 
+    COMMAND ${Python3_EXECUTABLE} -m coverage report 
+    COMMAND ${Python3_EXECUTABLE} -m coverage html 
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT "Genearting coverage report"
     VERBATIM)

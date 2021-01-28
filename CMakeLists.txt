@@ -390,6 +390,11 @@ foreach(_py_script ${PY_SCRIPTS})
     add_dependencies(pylint ${TGT_NAME} )
 endforeach( )
 
+add_custom_target(lint DEPENDS pylint
+    COMMAND ${Python3_EXECUTABLE} -m mypy ${CMAKE_CURRENT_BINARY_DIR}/python
+    COMMENT "Running pylint and mypy"
+    )
+
 ########################  DOCS ###############################################
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
