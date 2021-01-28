@@ -1,5 +1,7 @@
 # Add pybind11 module.
 
+find_package(Python3 COMPONENTS Interpreter Development)
+
 execute_process(COMMAND ${CMAKE_CXX_COMPILER} --version
     OUTPUT_VARIABLE COMPILER_STRING
     OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -69,8 +71,8 @@ set(PYMOOSE_INSTALL_DIR ${CMAKE_BINARY_DIR}/_pymoose_temp_install)
 file(MAKE_DIRECTORY ${PYMOOSE_INSTALL_DIR})
 
 add_custom_command(OUTPUT ${PYMOOSE_BDIST_FILE}
-  COMMAND ${PYTHON_EXECUTABLE} setup.py build_py  
-  COMMAND ${PYTHON_EXECUTABLE} setup.py bdist_dumb 
+  COMMAND ${Python3_EXECUTABLE} setup.py build_py  
+  COMMAND ${Python3_EXECUTABLE} setup.py bdist_dumb 
     --skip-build -p "${_platform}" -d ${CMAKE_BINARY_DIR} 
   COMMAND ${CMAKE_COMMAND} -E chdir ${PYMOOSE_INSTALL_DIR} tar xf ${PYMOOSE_BDIST_FILE}
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}

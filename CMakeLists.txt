@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 3.2.3 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
 # Project to build MOOSE's python module.
 project(PyMOOSE)
 
-# minimum cxx standard required is 14
-set(CMAKE_CXX_STANDARD 14)
+# minimum cxx standard required is 17
+set(CMAKE_CXX_STANDARD 17)
 
 # cmake related macros.
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -14,19 +14,15 @@ include(CheckIncludeFileCXX)
 # We find python executable here. Though mainly used inside pymoose. 
 # FIXME: When cmake 3.12 is widely available use the following:
 #   find_package(Python3 COMPONENTS Interpreter Numpy)
-#   set(PYTHON_EXECUTABLE ${Python3_EXECUTABLE})
-set(Python_ADDITIONAL_VERSIONS 2.7)
-find_package(PythonInterp 3.5)
-if(NOT PYTHONINTERP_FOUND)
-  find_package(PythonInterp 2.7)
-endif()
+#   set(Python3_EXECUTABLE ${Python3_EXECUTABLE})
+find_package(Python3 REQUIRED)
 
 set(CMAKE_MACOSX_RPATH OFF)
 
 # NOTE: version should be changed in setup.py file.
 # If moose version is not given, use setup.py file to get the default version.
 if(NOT VERSION_MOOSE)
-    execute_process(COMMAND ${PYTHON_EXECUTABLE} setup.py --version
+    execute_process(COMMAND ${Python3_EXECUTABLE} setup.py --version
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         OUTPUT_VARIABLE VERSION_MOOSE
         OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -67,7 +63,6 @@ option(WITH_ASAN            "Use AddressSanitizer in DEBUG mode." OFF)
 
 option(WITH_NSDF            "Enable NSDF support. Requires hdf5" OFF )
 
-option(WITH_LEGACY_BINDING  "Use legacy python-bindings" OFF)
 
 ############################ BUILD CONFIGURATION #################################
 
@@ -301,20 +296,15 @@ endif( WITH_BOOST )
 
 ######################### BUILD PYMOOSE ########################################
 
-if(NOT WITH_LEGACY_BINDING)
-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/pybind11-2.6.1)
-    add_subdirectory(pybind11)
-else()
-    message(STATUS "Building legacy python binding.")
-    add_subdirectory(pymoose)
-endif()
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/pybind11-2.6.1)
+add_subdirectory(pybind11)
 
 
 # always override debian default installation directory. It will be installed in
 # site-packages instead of dist-packages.
 # See https://bugs.launchpad.net/ubuntu/+source/python2.6/+bug/362570
 # HACK: Get platform information from python and use it to fix the layout.
-execute_process(COMMAND ${PYTHON_EXECUTABLE} -mplatform OUTPUT_VARIABLE _platform_desc)
+execute_process(COMMAND ${Python3_EXECUTABLE} -mplatform OUTPUT_VARIABLE _platform_desc)
 message(STATUS "Platform: ${_platform_desc}")
 
 # DISTUTILS_EXTRA_ARGS may come of top-level cmake script. On DEBIAN/UBUNTU, it
@@ -355,14 +345,14 @@ add_subdirectory(tests)
 ########################### RELEASE #########################################
 set(PYMOOSE_SDIST_FILE ${CMAKE_BINARY_DIR}/pymoose-${VERSION_MOOSE}.tar.gz)
 add_custom_target(sdist
-    COMMAND ${PYTHON_EXECUTABLE} setup.py sdist --formats=gztar 
+    COMMAND ${Python3_EXECUTABLE} setup.py sdist --formats=gztar 
         -d ${CMAKE_BINARY_DIR}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Creating sdist ${PYMOOSE_SDIST_FILE}" 
     VERBATIM)
 
 add_custom_target(upload_test DEPENDS sdist
-    COMMAND ${PYTHON_EXECUTABLE} -m twine upload 
+    COMMAND ${Python3_EXECUTABLE} -m twine upload 
         --user $ENV{PYMOOSE_PYPI_USER} --password $ENV{PYMOOSE_PYPI_PASSWORD}
         --repository-url https://test.pypi.org/legacy/
         ${PYMOOSE_SDIST_FILE}
@@ -370,7 +360,7 @@ add_custom_target(upload_test DEPENDS sdist
     VERBATIM)
 
 add_custom_target(upload DEPENDS sdist
-    COMMAND ${PYTHON_EXECUTABLE} -m twine upload 
+    COMMAND ${Python3_EXECUTABLE} -m twine upload 
         --user $ENV{PYMOOSE_PYPI_USER} --password $ENV{PYMOOSE_PYPI_PASSWORD}
         ${PYMOOSE_SDIST_FILE}
     COMMENT "Uploading source distribution to PyPI"
@@ -393,7 +383,7 @@ foreach(_py_script ${PY_SCRIPTS})
             --disable=no-method-argument
         )
     add_custom_target( ${TGT_NAME}
-        COMMAND ${PYTHON_EXECUTABLE} -m pylint -E ${PYLINT_OPTIONS} ${_py_script}
+        COMMAND ${Python3_EXECUTABLE} -m pylint -E ${PYLINT_OPTIONS} ${_py_script}
         COMMENT "Running pylint on ${_py_script}"
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         )
