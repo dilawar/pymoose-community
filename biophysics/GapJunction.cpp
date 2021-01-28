@@ -48,47 +48,38 @@
 #include "../basecode/header.h"
 #include "GapJunction.h"
 
-static SrcFinfo2< double, double >* channel1Out()
+static SrcFinfo2<double, double>* channel1Out()
 {
-    static SrcFinfo2< double, double > channel1Out(
-        "channel1Out",
-        "Sends Gk and Vm from one compartment to the other");
+    static SrcFinfo2<double, double> channel1Out(
+        "channel1Out", "Sends Gk and Vm from one compartment to the other");
     return &channel1Out;
 }
 
-static SrcFinfo2< double, double >* channel2Out()
+static SrcFinfo2<double, double>* channel2Out()
 {
-    static SrcFinfo2< double, double > channel2Out(
-        "channel2Out",
-        "Sends Gk and Vm from one compartment to the other");
+    static SrcFinfo2<double, double> channel2Out(
+        "channel2Out", "Sends Gk and Vm from one compartment to the other");
     return &channel2Out;
 }
 
 const Cinfo* GapJunction::initCinfo()
 {
 
-    static ValueFinfo< GapJunction, double > Gk(
-        "Gk",
-        "Conductance of the gap junction",
-        &GapJunction::setGk,
+    static ValueFinfo<GapJunction, double> Gk(
+        "Gk", "Conductance of the gap junction", &GapJunction::setGk,
         &GapJunction::getGk);
 
     ///////////////////////////////////////////////////////////////////
     // Shared messages
     ///////////////////////////////////////////////////////////////////
     static DestFinfo process(
-        "process",
-        "Handles 'process' call",
-        new ProcOpFunc< GapJunction >( &GapJunction::process ) );
+        "process", "Handles 'process' call",
+        new ProcOpFunc<GapJunction>(&GapJunction::process));
 
-    static DestFinfo reinit(
-        "reinit",
-        "Handles 'reinit' call",
-        new ProcOpFunc< GapJunction >( &GapJunction::reinit ) );
+    static DestFinfo reinit("reinit", "Handles 'reinit' call",
+                            new ProcOpFunc<GapJunction>(&GapJunction::reinit));
 
-    static Finfo* processShared[] = {
-        &process, &reinit
-    };
+    static Finfo* processShared[] = {&process, &reinit};
 
     static SharedFinfo proc(
         "proc",
@@ -100,74 +91,68 @@ const Cinfo* GapJunction::initCinfo()
         "ProcInfo, which holds lots of information about current "
         "time, thread, dt and so on. The second entry is a MsgDest "
         "for the Reinit operation. It also uses ProcInfo. ",
-        processShared, sizeof( processShared ) / sizeof( Finfo* ));
+        processShared, sizeof(processShared) / sizeof(Finfo*));
 
     static DestFinfo Vm1(
-        "Vm1",
-        "Handles Vm message from compartment",
-        new OpFunc1 < GapJunction, double >( &GapJunction::setVm1 ));
+        "Vm1", "Handles Vm message from compartment",
+        new OpFunc1<GapJunction, double>(&GapJunction::setVm1));
 
-    static Finfo * channel1Shared[] = {
-        channel1Out(), &Vm1,
+    static Finfo* channel1Shared[] = {
+        channel1Out(),
+        &Vm1,
     };
 
     static SharedFinfo channel1(
         "channel1",
         "This is a shared message to couple the conductance and Vm from\n"
-        "terminal 2 to the compartment at terminal 1. The first entry is source\n"
+        "terminal 2 to the compartment at terminal 1. The first entry is "
+        "source\n"
         "sending out Gk and Vm2, the second entry is destination for Vm1.",
-        channel1Shared, sizeof(channel1Shared)/sizeof(Finfo*));
+        channel1Shared, sizeof(channel1Shared) / sizeof(Finfo*));
 
     static DestFinfo Vm2(
-        "Vm2",
-        "Handles Vm message from another compartment",
-        new OpFunc1< GapJunction, double >( &GapJunction::setVm2 ));
+        "Vm2", "Handles Vm message from another compartment",
+        new OpFunc1<GapJunction, double>(&GapJunction::setVm2));
 
-    static Finfo * channel2Shared[] = {
-        channel2Out(), &Vm2,
+    static Finfo* channel2Shared[] = {
+        channel2Out(),
+        &Vm2,
     };
 
     static SharedFinfo channel2(
         "channel2",
         "This is a shared message to couple the conductance and Vm from\n"
-        "terminal 1 to the compartment at terminal 2. The first entry is source\n"
+        "terminal 1 to the compartment at terminal 2. The first entry is "
+        "source\n"
         "sending out Gk and Vm1, the second entry is destination for Vm2.",
-        channel2Shared, sizeof(channel2Shared)/sizeof(Finfo*));
+        channel2Shared, sizeof(channel2Shared) / sizeof(Finfo*));
 
-    static Finfo * gapJunctionFinfos[] =
-    {
-        &channel1,
-        &channel2,
-        &Gk,
-        &proc
-    };
+    static Finfo* gapJunctionFinfos[] = {&channel1, &channel2, &Gk, &proc};
 
     static string doc[] = {
-        "Name", "GapJunction",
-        "Author", "Subhasis Ray, 2013",
-        "Description", "Implementation of gap junction between two compartments. The shared\n"
+        "Name",
+        "GapJunction",
+        "Author",
+        "Subhasis Ray, 2013",
+        "Description",
+        "Implementation of gap junction between two compartments. The shared\n"
         "fields, 'channel1' and 'channel2' can be connected to the 'channel'\n"
         "message of the compartments at either end of the gap junction. The\n"
         "compartments will send their Vm to the gap junction and receive the\n"
         "conductance 'Gk' of the gap junction and the Vm of the other\n"
-        "compartment."
-    };
+        "compartment."};
 
-	static Dinfo< GapJunction > dinfo;
-    static Cinfo gapJunctionCinfo(
-        "GapJunction",
-        Neutral::initCinfo(),
-        gapJunctionFinfos,
-        sizeof(gapJunctionFinfos)/sizeof(Finfo*),
-		&dinfo,
-        doc,
-        sizeof(doc) / sizeof(string));
+    static Dinfo<GapJunction> dinfo;
+    static Cinfo gapJunctionCinfo("GapJunction", Neutral::initCinfo(),
+                                  gapJunctionFinfos,
+                                  sizeof(gapJunctionFinfos) / sizeof(Finfo*),
+                                  &dinfo, doc, sizeof(doc) / sizeof(string));
     return &gapJunctionCinfo;
 }
 
-static const Cinfo * gapJunctionCinfo = GapJunction::initCinfo();
+static const Cinfo* gapJunctionCinfo = GapJunction::initCinfo();
 
-GapJunction::GapJunction():Vm1_(0.0), Vm2_(0.0), Gk_(1e-9)
+GapJunction::GapJunction() : Vm1_(0.0), Vm2_(0.0), Gk_(1e-9)
 {
     ;
 }
@@ -177,7 +162,7 @@ GapJunction::~GapJunction()
     ;
 }
 
-void GapJunction::setGk( double g )
+void GapJunction::setGk(double g)
 {
     Gk_ = g;
 }
@@ -187,29 +172,27 @@ double GapJunction::getGk() const
     return Gk_;
 }
 
-void GapJunction::setVm1( double v )
+void GapJunction::setVm1(double v)
 {
     Vm1_ = v;
 }
 
-void GapJunction::setVm2( double v )
+void GapJunction::setVm2(double v)
 {
     Vm2_ = v;
 }
 
-void GapJunction::process( const Eref& e, ProcPtr p )
+void GapJunction::process(const Eref& e, ProcPtr p)
 {
     channel1Out()->send(e, Gk_, Vm2_);
     channel2Out()->send(e, Gk_, Vm1_);
 }
 
-void GapJunction::reinit( const Eref&, ProcPtr p )
+void GapJunction::reinit(const Eref&, ProcPtr p)
 {
     Vm1_ = 0.0;
     Vm2_ = 0.0;
 }
-
-
 
 //
 // GapJunction.cpp ends here

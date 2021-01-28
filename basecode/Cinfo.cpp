@@ -147,7 +147,7 @@ void Cinfo::registerFinfo(Finfo* f)
 
 /* --------------------------------------------------------------------------*/
 /**
- * @Synopsis Finfo derived class, using `dynamic_cast` figure out. 
+ * @Synopsis Finfo derived class, using `dynamic_cast` to figure out. 
  *
  * @Param f const Finfo*
  *

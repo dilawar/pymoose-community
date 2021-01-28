@@ -27,89 +27,93 @@
  */
 
 static const unsigned int UnreasonablyLargeArray = 1000000;
-template< class T > class Conv
-{
-    public:
-        /**
-         * Size, in units of sizeof(double). So a double would be 1,
-         * something with 1 chars would be 1 as well, but something
-         * with 9 chars would be 2.
-         */
-        static unsigned int size( const T& val )
-        {
-            return 1 + ( sizeof( T ) - 1 ) / sizeof( double );
-        }
+template <class T>
+class Conv {
+public:
+    /**
+     * Size, in units of sizeof(double). So a double would be 1,
+     * something with 1 chars would be 1 as well, but something
+     * with 9 chars would be 2.
+     */
+    static unsigned int size(const T& val)
+    {
+        return 1 + (sizeof(T) - 1) / sizeof(double);
+    }
 
+    static const T& buf2val(double** buf)
+    {
+        const T* ret = reinterpret_cast<const T*>(*buf);
+        *buf += size(*ret);
+        return *ret;
+    }
 
-        static const T& buf2val( double** buf ) {
-            const T* ret = reinterpret_cast< const T* >( *buf );
-            *buf += size( *ret );
-            return *ret;
-        }
+    /**
+     * Converts data contents into double* buf. Buf must be allocated
+     * ahead of time. Returns size of value.
+     * Needs to be specialized for variable size and pointer-containing
+     * types T.
+     */
+    static void val2buf(const T& val, double** buf)
+    {
+        *reinterpret_cast<T*>(*buf) = val;
+        *buf += size(val);
+    }
 
-        /**
-         * Converts data contents into double* buf. Buf must be allocated
-         * ahead of time. Returns size of value.
-         * Needs to be specialized for variable size and pointer-containing
-         * types T.
-         */
-        static void val2buf( const T& val, double** buf ) {
-            *reinterpret_cast< T* >( *buf ) = val;
-            *buf += size( val );
-        }
+    /**
+     * Default conversion from string just puts the string
+     * into the char* pointer.
+     */
+    static void str2val(T& val, const string& s)
+    {
+        istringstream is(s);
+        is >> val;
+    }
 
-        /**
-         * Default conversion from string just puts the string
-         * into the char* pointer.
-         */
-        static void str2val( T& val, const string& s ) {
-            istringstream is( s );
-            is >> val;
-        }
+    /**
+     * Default conversion into string just puts the char* representation
+     * into the string. Arguably a bad way to do it.
+     */
+    static void val2str(string& s, const T& val)
+    {
+        stringstream ss;
+        ss << val;
+        s = ss.str();
+        // ostringstream os( s );
+        // os << val;
+    }
 
-        /**
-         * Default conversion into string just puts the char* representation
-         * into the string. Arguably a bad way to do it.
-         */
-        static void val2str( string& s, const T& val ) {
-            stringstream ss;
-            ss << val;
-            s = ss.str();
-            // ostringstream os( s );
-            // os << val;
-        }
-
-        static string rttiType() {
-            if ( typeid( T ) == typeid( char ))
-                return "char";
-            if ( typeid( T ) == typeid( int ) )
-                return "int";
-            if ( typeid( T ) == typeid( short ) )
-                return "short";
-            if ( typeid( T ) == typeid( long ) )
-                return "long";
-            if ( typeid( T ) == typeid( size_t ) )
-                return "size_t";
-            if ( typeid( T ) == typeid( unsigned int ) )
-                return "unsigned int";
-            if ( typeid( T ) == typeid( unsigned long ) )
-                return "unsigned long";
-            if ( typeid( T ) == typeid( float ) )
-                return "float";
-            if ( typeid( T ) == typeid( double ) )
-                return "double";
-            if ( typeid( T ) == typeid( Id ) )
-                return "Id";
-            if ( typeid( T ) == typeid( ObjId ) )
-                return "ObjId";
-            if ( typeid( T ) == typeid( vector<ObjId>) )
-                return "vector<ObjId>";
-            if ( typeid( T ) == typeid( vector<ObjId>*) )
-                return "vector<ObjId>*";
-            if ( typeid( T ) == typeid( vector<Id>) )
-                return "vector<Id>";
-            if ( typeid( T ) == typeid( vector<Id>*) )
-                return "vector<Id>*";
+    static string rttiType()
+    {
+        if(typeid(T) == typeid(char))
+            return "char";
+        if(typeid(T) == typeid(int))
+            return "int";
+        if(typeid(T) == typeid(short))
+            return "short";
+        if(typeid(T) == typeid(long))
+            return "long";
+        if(typeid(T) == typeid(size_t))
+            return "size_t";
+        if(typeid(T) == typeid(unsigned int))
+            return "unsigned int";
+        if(typeid(T) == typeid(unsigned long))
+            return "unsigned long";
+        if(typeid(T) == typeid(float))
+            return "float";
+        if(typeid(T) == typeid(double))
+            return "double";
+        if(typeid(T) == typeid(Id))
+            return "Id";
+        if(typeid(T) == typeid(ObjId))
+            return "ObjId";
+        if(typeid(T) == typeid(vector<ObjId>))
+            return "vector<ObjId>";
+        if(typeid(T) == typeid(vector<ObjId>*))
+            return "vector<ObjId>*";
+        if(typeid(T) == typeid(vector<Id>))
+            return "vector<Id>";
+        if(typeid(T) == typeid(vector<Id>*))
+            return "vector<Id>*";
 #if 0
             // typeid of incomplete type Neutral (after forward declarting it)
             // is not supported by c++ standard. Though following compiles with
@@ -121,373 +125,422 @@ template< class T > class Conv
             if ( typeid( T ) == typeid( vector<Neutral>*) )
                 return "vector<Neutral>*";
 #endif
-            if ( typeid( T ) == typeid( vector<string>) )
-                return "vector<string>";
-            if ( typeid( T ) == typeid( vector<double>) )
-                return "vector<double>";
-            if ( typeid( T ) == typeid( vector<double>*) )
-                return "vector<double>*";
-            if ( typeid( T ) == typeid( vector<bool>) )
-                return "vector<bool>";
-            if ( typeid( T ) == typeid( vector<bool>*) )
-                return "vector<bool>*";
-            if ( typeid( T ) == typeid( vector<unsigned int>) )
-                return "vector<unsigned int>";
-            if ( typeid( T ) == typeid( vector<unsigned int>*) )
-                return "vector<unsigned int>*";
-            if ( typeid( T ) == typeid( vector<vector<double>>) )
-                return "vector<vector<double>>";
-            if ( typeid( T ) == typeid( vector<vector<double>>*) )
-                return "vector<vector<double>>*";
-            if ( typeid( T ) == typeid( vector<vector<ObjId>>) )
-                return "vector<vector<ObjId>>";
-            if ( typeid( T ) == typeid( vector<vector<ObjId>>*) )
-                return "vector<vector<ObjId>>*";
-            if ( typeid( T ) == typeid( vector<vector<Id>>) )
-                return "vector<vector<Id>>";
-            if ( typeid( T ) == typeid( vector<vector<Id>>*) )
-                return "vector<vector<Id>>*";
-            if ( typeid( T ) == typeid( vector<vector<string>>) )
-                return "vector<vector<string>>";
-            if ( typeid( T ) == typeid( vector<vector<string>>*) )
-                return "vector<vector<string>>*";
-            return typeid(T).name(); // this is not portable but may be more useful than "bad"
-        }
+        if(typeid(T) == typeid(vector<string>))
+            return "vector<string>";
+        if(typeid(T) == typeid(vector<double>))
+            return "vector<double>";
+        if(typeid(T) == typeid(vector<double>*))
+            return "vector<double>*";
+        if(typeid(T) == typeid(vector<bool>))
+            return "vector<bool>";
+        if(typeid(T) == typeid(vector<bool>*))
+            return "vector<bool>*";
+        if(typeid(T) == typeid(vector<unsigned int>))
+            return "vector<unsigned int>";
+        if(typeid(T) == typeid(vector<unsigned int>*))
+            return "vector<unsigned int>*";
+        if(typeid(T) == typeid(vector<vector<double>>))
+            return "vector<vector<double>>";
+        if(typeid(T) == typeid(vector<vector<double>>*))
+            return "vector<vector<double>>*";
+        if(typeid(T) == typeid(vector<vector<ObjId>>))
+            return "vector<vector<ObjId>>";
+        if(typeid(T) == typeid(vector<vector<ObjId>>*))
+            return "vector<vector<ObjId>>*";
+        if(typeid(T) == typeid(vector<vector<Id>>))
+            return "vector<vector<Id>>";
+        if(typeid(T) == typeid(vector<vector<Id>>*))
+            return "vector<vector<Id>>*";
+        if(typeid(T) == typeid(vector<vector<string>>))
+            return "vector<vector<string>>";
+        if(typeid(T) == typeid(vector<vector<string>>*))
+            return "vector<vector<string>>*";
+        return typeid(T).name();  // this is not portable but may be more useful
+                                  // than "bad"
+    }
 
-    private:
+private:
 };
 
 /**
  * This stores the data as the equivalent of a char* string, terminated with
  * the usual \0, but allocates it as a double[].
  */
-template<> class Conv< string >
-{
-    public:
-        /**
-         * This is the size used in the serialized form, as a double*
-         * Note that we do some ugly stuff to get alignment on 8-byte
-         * boundaries.
-         * We need to have strlen + 1 as a minimum.
-         */
-        static unsigned int size( const string& val )
-        {
-            // extra char for termination of the string.
-            return 1 + val.length() / sizeof( double );
-        }
+template <>
+class Conv<string> {
+public:
+    /**
+     * This is the size used in the serialized form, as a double*
+     * Note that we do some ugly stuff to get alignment on 8-byte
+     * boundaries.
+     * We need to have strlen + 1 as a minimum.
+     */
+    static unsigned int size(const string& val)
+    {
+        // extra char for termination of the string.
+        return 1 + val.length() / sizeof(double);
+    }
 
-        // The return cannot be a reference, because the function may
-        // be called many times in succession.
-        static const string buf2val( double** buf ) {
-            static string ret;
-            ret = reinterpret_cast< const char* >( *buf );
-            *buf += size( ret );
-            return ret;
-        }
+    // The return cannot be a reference, because the function may
+    // be called many times in succession.
+    static const string buf2val(double** buf)
+    {
+        static string ret;
+        ret = reinterpret_cast<const char*>(*buf);
+        *buf += size(ret);
+        return ret;
+    }
 
-        /**
-         * Converts data contents into double* buf. Buf must be allocated
-         * ahead of time. Returns size of value.
-         * Needs to be specialized for variable size and pointer-containing
-         * types T.
-         */
-        static void val2buf( const string& val, double** buf ) {
-            char* temp = reinterpret_cast< char* >( *buf );
-            strcpy( temp, val.c_str() );
-            *buf += size( val );
-        }
+    /**
+     * Converts data contents into double* buf. Buf must be allocated
+     * ahead of time. Returns size of value.
+     * Needs to be specialized for variable size and pointer-containing
+     * types T.
+     */
+    static void val2buf(const string& val, double** buf)
+    {
+        char* temp = reinterpret_cast<char*>(*buf);
+        strcpy(temp, val.c_str());
+        *buf += size(val);
+    }
 
-        static void str2val( string& val, const string& s ) {
-            val = s;
-        }
+    static void str2val(string& val, const string& s)
+    {
+        val = s;
+    }
 
-        static void val2str( string& s, const string& val ) {
-            s = val;
-        }
+    static void val2str(string& s, const string& val)
+    {
+        s = val;
+    }
 
-        static string rttiType() {
-            return "string";
-        }
-    private:
+    static string rttiType()
+    {
+        return "string";
+    }
+
+private:
 };
 
 /**
  * The template specialization of Conv< unsigned int > sets up alignment on
  * word boundaries by storing the data as a double.
  */
-template<> class Conv< double >
-{
-    public:
-        /**
-         * This is the size used in the serialized form.
-         */
-        static unsigned int size( double val )
-        {
-            return 1;
-        }
+template <>
+class Conv<double> {
+public:
+    /**
+     * This is the size used in the serialized form.
+     */
+    static unsigned int size(double val)
+    {
+        return 1;
+    }
 
-        static const double buf2val( double** buf ) {
-            double ret = **buf;
-            (*buf)++;
-            return ret;
-        }
-        static void val2buf( double val, double** buf ) {
-            **buf = val;
-            (*buf)++;
-        }
+    static const double buf2val(double** buf)
+    {
+        double ret = **buf;
+        (*buf)++;
+        return ret;
+    }
+    static void val2buf(double val, double** buf)
+    {
+        **buf = val;
+        (*buf)++;
+    }
 
-        static void str2val( double &val, const string& s ) {
-            val = atof( s.c_str() );
-        }
+    static void str2val(double& val, const string& s)
+    {
+        val = atof(s.c_str());
+    }
 
-        static void val2str( string& s, double val ) {
-            stringstream ss;
-            ss << val;
-            s = ss.str();
-        }
+    static void val2str(string& s, double val)
+    {
+        stringstream ss;
+        ss << val;
+        s = ss.str();
+    }
 
-        static string rttiType() {
-            return "double";
-        }
-    private:
+    static string rttiType()
+    {
+        return "double";
+    }
+
+private:
 };
 
 /**
  * The template specialization of Conv< unsigned int > sets up alignment on
  * word boundaries by storing the data as a double.
  */
-template<> class Conv< float >
-{
-    public:
-        /**
-         * This is the size used in the serialized form.
-         */
-        static unsigned int size( float val )
-        {
-            return 1;
-        }
+template <>
+class Conv<float> {
+public:
+    /**
+     * This is the size used in the serialized form.
+     */
+    static unsigned int size(float val)
+    {
+        return 1;
+    }
 
-        static const float buf2val( double** buf ) {
-            float ret = **buf;
-            (*buf)++;
-            return ret;
-        }
-        static void val2buf( float val, double** buf ) {
-            **buf = val;
-            (*buf)++;
-        }
+    static const float buf2val(double** buf)
+    {
+        float ret = **buf;
+        (*buf)++;
+        return ret;
+    }
+    static void val2buf(float val, double** buf)
+    {
+        **buf = val;
+        (*buf)++;
+    }
 
-        static void str2val( float& val, const string& s ) {
-            val = atof( s.c_str() );
-        }
+    static void str2val(float& val, const string& s)
+    {
+        val = atof(s.c_str());
+    }
 
-        static void val2str( string& s, float val ) {
-            stringstream ss;
-            ss << val;
-            s = ss.str();
-        }
+    static void val2str(string& s, float val)
+    {
+        stringstream ss;
+        ss << val;
+        s = ss.str();
+    }
 
-        static string rttiType() {
-            return "float";
-        }
-    private:
+    static string rttiType()
+    {
+        return "float";
+    }
+
+private:
 };
 
 /**
  * The template specialization of Conv< unsigned int > sets up alignment on
  * word boundaries by storing the data as a double.
  */
-template<> class Conv< unsigned int >
-{
-    public:
-        /**
-         * This is the size used in the serialized form.
-         */
-        static unsigned int size( int val )
-        {
-            return 1;
-        }
+template <>
+class Conv<unsigned int> {
+public:
+    /**
+     * This is the size used in the serialized form.
+     */
+    static unsigned int size(int val)
+    {
+        return 1;
+    }
 
-        static const unsigned int buf2val( double** buf ) {
-            unsigned int ret = (unsigned int)**buf;
-            (*buf)++;
-            return ret;
-        }
-        static void val2buf( unsigned int val, double** buf ) {
-            **buf = val;
-            (*buf)++;
-        }
+    static const unsigned int buf2val(double** buf)
+    {
+        unsigned int ret = (unsigned int)**buf;
+        (*buf)++;
+        return ret;
+    }
+    static void val2buf(unsigned int val, double** buf)
+    {
+        **buf = val;
+        (*buf)++;
+    }
 
-        static void str2val( unsigned int& val, const string& s ) {
-            val = atoi( s.c_str() );
-        }
+    static void str2val(unsigned int& val, const string& s)
+    {
+        val = atoi(s.c_str());
+    }
 
-        static void val2str( string& s, unsigned int val ) {
-            stringstream ss;
-            ss << val;
-            s = ss.str();
-        }
+    static void val2str(string& s, unsigned int val)
+    {
+        stringstream ss;
+        ss << val;
+        s = ss.str();
+    }
 
-        static string rttiType() {
-            return "unsigned int";
-        }
-    private:
+    static string rttiType()
+    {
+        return "unsigned int";
+    }
+
+private:
 };
 
 /**
  * The template specialization of Conv< int > sets up alignment on
  * word boundaries by storing the data as a double.
  */
-template<> class Conv< int >
-{
-    public:
-        /**
-         * This is the size used in the serialized form.
-         */
-        static unsigned int size( int val )
-        {
-            return 1;
-        }
+template <>
+class Conv<int> {
+public:
+    /**
+     * This is the size used in the serialized form.
+     */
+    static unsigned int size(int val)
+    {
+        return 1;
+    }
 
-        static const int buf2val( double** buf ) {
-            int ret = (int)**buf;
-            (*buf)++;
-            return ret;
-        }
-        static void val2buf( int val, double** buf ) {
-            **buf = val;
-            (*buf)++;
-        }
+    static const int buf2val(double** buf)
+    {
+        int ret = (int)**buf;
+        (*buf)++;
+        return ret;
+    }
+    static void val2buf(int val, double** buf)
+    {
+        **buf = val;
+        (*buf)++;
+    }
 
-        static void str2val( int& val, const string& s ) {
-            val = atoi( s.c_str() );
-        }
+    static void str2val(int& val, const string& s)
+    {
+        val = atoi(s.c_str());
+    }
 
-        static void val2str( string& s, int val ) {
-            stringstream ss;
-            ss << val;
-            s = ss.str();
-        }
+    static void val2str(string& s, int val)
+    {
+        stringstream ss;
+        ss << val;
+        s = ss.str();
+    }
 
-        static string rttiType() {
-            return "int";
-        }
-    private:
+    static string rttiType()
+    {
+        return "int";
+    }
+
+private:
 };
 
-template<> class Conv< unsigned short >
-{
-    public:
-        /**
-         * This is the size used in the serialized form.
-         */
-        static unsigned int size( unsigned short val )
-        {
-            return 1;
-        }
+template <>
+class Conv<unsigned short> {
+public:
+    /**
+     * This is the size used in the serialized form.
+     */
+    static unsigned int size(unsigned short val)
+    {
+        return 1;
+    }
 
-        static const unsigned short buf2val( double** buf ) {
-            unsigned short ret = (unsigned int)**buf;
-            (*buf)++;
-            return ret;
-        }
-        static void val2buf( unsigned short val, double** buf ) {
-            **buf = (double)val;
-            (*buf)++;
-        }
+    static const unsigned short buf2val(double** buf)
+    {
+        unsigned short ret = (unsigned int)**buf;
+        (*buf)++;
+        return ret;
+    }
+    static void val2buf(unsigned short val, double** buf)
+    {
+        **buf = (double)val;
+        (*buf)++;
+    }
 
-        static void str2val( unsigned short& val, const string& s ) {
-            val = atoi( s.c_str() );
-        }
+    static void str2val(unsigned short& val, const string& s)
+    {
+        val = atoi(s.c_str());
+    }
 
-        static void val2str( string& s, unsigned short val ) {
-            stringstream ss;
-            ss << val;
-            s = ss.str();
-        }
+    static void val2str(string& s, unsigned short val)
+    {
+        stringstream ss;
+        ss << val;
+        s = ss.str();
+    }
 
-        static string rttiType() {
-            return "unsigned short";
-        }
-    private:
+    static string rttiType()
+    {
+        return "unsigned short";
+    }
+
+private:
 };
 
-template<> class Conv< short >
-{
-    public:
-        /**
-         * This is the size used in the serialized form.
-         */
-        static unsigned int size( short val )
-        {
-            return 1;
-        }
+template <>
+class Conv<short> {
+public:
+    /**
+     * This is the size used in the serialized form.
+     */
+    static unsigned int size(short val)
+    {
+        return 1;
+    }
 
-        static const short buf2val( double** buf ) {
-            short ret = (short)**buf;
-            (*buf)++;
-            return ret;
-        }
-        static void val2buf( short val, double** buf ) {
-            **buf = val;
-            (*buf)++;
-        }
+    static const short buf2val(double** buf)
+    {
+        short ret = (short)**buf;
+        (*buf)++;
+        return ret;
+    }
+    static void val2buf(short val, double** buf)
+    {
+        **buf = val;
+        (*buf)++;
+    }
 
-        static void str2val( short& val, const string& s ) {
-            val = atoi( s.c_str() );
-        }
+    static void str2val(short& val, const string& s)
+    {
+        val = atoi(s.c_str());
+    }
 
-        static void val2str( string& s, short val ) {
-            stringstream ss;
-            ss << val;
-            s = ss.str();
-        }
+    static void val2str(string& s, short val)
+    {
+        stringstream ss;
+        ss << val;
+        s = ss.str();
+    }
 
-        static string rttiType() {
-            return "short";
-        }
-    private:
+    static string rttiType()
+    {
+        return "short";
+    }
+
+private:
 };
 
-template<> class Conv< bool >
-{
-    public:
-        /**
-         * This is the size used in the serialized form.
-         */
-        static unsigned int size( bool val )
-        {
-            return 1;
-        }
+template <>
+class Conv<bool> {
+public:
+    /**
+     * This is the size used in the serialized form.
+     */
+    static unsigned int size(bool val)
+    {
+        return 1;
+    }
 
-        static const bool buf2val( double** buf ) {
-            bool ret = (**buf > 0.5);
-            (*buf)++;
-            return ret;
-        }
-        static void val2buf( bool val, double** buf ) {
-            **buf = val;
-            (*buf)++;
-        }
+    static const bool buf2val(double** buf)
+    {
+        bool ret = (**buf > 0.5);
+        (*buf)++;
+        return ret;
+    }
+    static void val2buf(bool val, double** buf)
+    {
+        **buf = val;
+        (*buf)++;
+    }
 
-        static void str2val( bool& val, const string& s ) {
-            if ( s == "0" || s == "false" || s == "False" )
-                val = 0;
-            else
-                val = 1;
-        }
+    static void str2val(bool& val, const string& s)
+    {
+        if(s == "0" || s == "false" || s == "False")
+            val = 0;
+        else
+            val = 1;
+    }
 
-        static void val2str( string& s, bool val ) {
-            if ( val > 0.5 )
-                s = "1";
-            else
-                s = "0";
-        }
+    static void val2str(string& s, bool val)
+    {
+        if(val > 0.5)
+            s = "1";
+        else
+            s = "0";
+    }
 
-        static string rttiType() {
-            return "bool";
-        }
-    private:
+    static string rttiType()
+    {
+        return "bool";
+    }
+
+private:
 };
 
 /**
@@ -496,40 +549,46 @@ template<> class Conv< bool >
  * the string conversion issues.
  */
 
-template<> class Conv< Id >
-{
-    public:
-        /**
-         * This is the size used in the serialized form.
-         */
-        static unsigned int size( Id val )
-        {
-            return 1;
-        }
+template <>
+class Conv<Id> {
+public:
+    /**
+     * This is the size used in the serialized form.
+     */
+    static unsigned int size(Id val)
+    {
+        return 1;
+    }
 
-        static const Id buf2val( double** buf ) {
-            Id ret( (unsigned int)**buf );
-            (*buf)++;
-            return ret;
-        }
-        static void val2buf( Id id, double** buf ) {
-            **buf = id.value();
-            (*buf)++;
-        }
+    static const Id buf2val(double** buf)
+    {
+        Id ret((unsigned int)**buf);
+        (*buf)++;
+        return ret;
+    }
+    static void val2buf(Id id, double** buf)
+    {
+        **buf = id.value();
+        (*buf)++;
+    }
 
-        static void str2val( Id& val, const string& s ) {
-            Id temp( s ); // converts the path
-            val = temp;
-        }
+    static void str2val(Id& val, const string& s)
+    {
+        Id temp(s);  // converts the path
+        val = temp;
+    }
 
-        static void val2str( string& s, Id val ) {
-            s = val.path();
-        }
+    static void val2str(string& s, Id val)
+    {
+        s = val.path();
+    }
 
-        static string rttiType() {
-            return "Id";
-        }
-    private:
+    static string rttiType()
+    {
+        return "Id";
+    }
+
+private:
 };
 
 /**
@@ -545,64 +604,69 @@ template<> class Conv< Id >
  * 1:numDim	:  Dimensions of right index. Any and all can be zero. Double.
  * numDim+1 to total: Data, in condensed format.
  */
-template< class T > class Conv< vector< vector< T > > >
-{
-    public:
-        static unsigned int size( const vector< vector < T > > & val)
-        {
-            unsigned int ret = 1 + val.size();
-            for ( unsigned int i = 0; i < val.size(); ++i ) {
-                if ( val[i].size() > 0 ) {
-                    ret += val[i].size() * Conv< T >::size( val[i][0] );
-                } else  {
-                    T temp = T();
-                    ret += val[i].size() * Conv< T >::size( temp );
-                }
+template <class T>
+class Conv<vector<vector<T>>> {
+public:
+    static unsigned int size(const vector<vector<T>>& val)
+    {
+        unsigned int ret = 1 + val.size();
+        for(unsigned int i = 0; i < val.size(); ++i) {
+            if(val[i].size() > 0) {
+                ret += val[i].size() * Conv<T>::size(val[i][0]);
             }
-            return ret;
+            else {
+                T temp = T();
+                ret += val[i].size() * Conv<T>::size(temp);
+            }
         }
+        return ret;
+    }
 
-        static const vector< vector< T > > buf2val( double** buf )
-        {
-            static vector< vector< T > > ret;
-            ret.clear();
-            unsigned int numEntries = **buf; // first entry is vec size
-            ret.resize( numEntries );
+    static const vector<vector<T>> buf2val(double** buf)
+    {
+        static vector<vector<T>> ret;
+        ret.clear();
+        unsigned int numEntries = **buf;  // first entry is vec size
+        ret.resize(numEntries);
+        (*buf)++;
+        for(unsigned int i = 0; i < numEntries; ++i) {
+            unsigned int rowSize = **buf;
             (*buf)++;
-            for ( unsigned int i = 0; i < numEntries; ++i ) {
-                unsigned int rowSize = **buf;
-                (*buf)++;
-                for ( unsigned int j = 0; j < rowSize; ++j )
-                    ret[i].push_back( Conv< T >::buf2val( buf ) );
+            for(unsigned int j = 0; j < rowSize; ++j)
+                ret[i].push_back(Conv<T>::buf2val(buf));
+        }
+        return ret;
+    }
+
+    static void val2buf(const vector<vector<T>>& val, double** buf)
+    {
+        double* temp = *buf;
+        *temp++ = val.size();
+        for(unsigned int i = 0; i < val.size(); ++i) {
+            *temp++ = val[i].size();
+            for(unsigned int j = 0; j < val[i].size(); ++j) {
+                Conv<T>::val2buf(val[i][j], &temp);
             }
-            return ret;
         }
+        *buf = temp;
+    }
 
-        static void val2buf( const vector< vector< T > >& val, double**buf )
-        {
-            double* temp = *buf;
-            *temp++ = val.size();
-            for( unsigned int i = 0; i < val.size(); ++i ) {
-                *temp++ = val[i].size();
-                for ( unsigned int j = 0; j < val[i].size(); ++j ) {
-                    Conv< T >::val2buf( val[i][j], &temp );
-                }
-            }
-            *buf = temp;
-        }
+    static void str2val(vector<vector<T>>& val, const string& s)
+    {
+        cout << "Specialized Conv< vector< vector< T > > >::str2val not done\n";
+    }
 
-        static void str2val( vector< vector< T > >& val, const string& s ) {
-            cout << "Specialized Conv< vector< vector< T > > >::str2val not done\n";
-        }
+    static void val2str(string& s, const vector<vector<T>>& val)
+    {
+        cout << "Specialized Conv< vector< vector< T > > >::val2str not done\n";
+    }
+    static string rttiType()
+    {
+        string ret = "vector< vector<" + Conv<T>::rttiType() + "> >";
+        return ret;
+    }
 
-        static void val2str( string& s, const vector< vector< T > >& val ) {
-            cout << "Specialized Conv< vector< vector< T > > >::val2str not done\n";
-        }
-        static string rttiType() {
-            string ret = "vector< vector<" + Conv< T >::rttiType() + "> >";
-            return ret;
-        }
-    private:
+private:
 };
 
 /**
@@ -612,54 +676,59 @@ template< class T > class Conv< vector< vector< T > > >
  * The first double in the vector vec_ holds the # of data entries that
  * follow it. This excludes the space for the size entry itself.
  */
-template< class T > class Conv< vector< T > >
-{
-    public:
-        /**
-         * Size of returned array in doubles.
-         */
-        static unsigned int size( const vector< T >& val )
-        {
-            unsigned int ret = 1;
-            for ( unsigned int i = 0; i < val.size(); ++i ) {
-                ret += Conv< T >::size( val[i] );
-            }
-            return ret;
+template <class T>
+class Conv<vector<T>> {
+public:
+    /**
+     * Size of returned array in doubles.
+     */
+    static unsigned int size(const vector<T>& val)
+    {
+        unsigned int ret = 1;
+        for(unsigned int i = 0; i < val.size(); ++i) {
+            ret += Conv<T>::size(val[i]);
         }
+        return ret;
+    }
 
-        static const vector< T > buf2val( double** buf )
-        {
-            static vector< T > ret;
-            ret.clear();
-            unsigned int numEntries = (unsigned int)**buf; // first entry is vec size
-            (*buf)++;
-            for ( unsigned int i = 0; i < numEntries; ++i )
-                ret.push_back( Conv< T >::buf2val( buf ) );
-            return ret;
-        }
+    static const vector<T> buf2val(double** buf)
+    {
+        static vector<T> ret;
+        ret.clear();
+        unsigned int numEntries =
+            (unsigned int)**buf;  // first entry is vec size
+        (*buf)++;
+        for(unsigned int i = 0; i < numEntries; ++i)
+            ret.push_back(Conv<T>::buf2val(buf));
+        return ret;
+    }
 
-        static void val2buf( const vector< T >& val, double**buf )
-        {
-            double* temp = *buf;
-            *temp++ = val.size();
-            for( unsigned int i = 0; i < val.size(); ++i ) {
-                Conv< T >::val2buf( val[i], &temp );
-            }
-            *buf = temp;
+    static void val2buf(const vector<T>& val, double** buf)
+    {
+        double* temp = *buf;
+        *temp++ = val.size();
+        for(unsigned int i = 0; i < val.size(); ++i) {
+            Conv<T>::val2buf(val[i], &temp);
         }
+        *buf = temp;
+    }
 
-        static void str2val( vector< T >& val, const string& s ) {
-            cout << "Specialized Conv< vector< T > >::str2val not done\n";
-        }
+    static void str2val(vector<T>& val, const string& s)
+    {
+        cout << "Specialized Conv< vector< T > >::str2val not done\n";
+    }
 
-        static void val2str( string& s, const vector< T >& val ) {
-            cout << "Specialized Conv< vector< T > >::val2str not done\n";
-        }
-        static string rttiType() {
-            string ret = "vector<" + Conv< T >::rttiType() + ">";
-            return ret;
-        }
-    private:
+    static void val2str(string& s, const vector<T>& val)
+    {
+        cout << "Specialized Conv< vector< T > >::val2str not done\n";
+    }
+    static string rttiType()
+    {
+        string ret = "vector<" + Conv<T>::rttiType() + ">";
+        return ret;
+    }
+
+private:
 };
 
-#endif // _CONV_H
+#endif  // _CONV_H
