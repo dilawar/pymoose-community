@@ -8,7 +8,6 @@ add_library(utility
     Annotator.cpp
     Vec.cpp
     cnpy.cpp
-    fileutils.cpp
     utility.cpp)
 
 target_link_libraries(utility CONAN_PKG::boost CONAN_PKG::fmt)
