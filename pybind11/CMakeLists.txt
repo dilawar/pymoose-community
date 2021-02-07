@@ -13,10 +13,8 @@ add_dependencies(_moose libmoose)
 target_compile_definitions(_moose PRIVATE
     COMPILER_STRING="${CMAKE_CXX_COMPILER_ID},${CMAKE_CXX_COMPILER},${CMAKE_CXX_COMPILER_VERSION}")
 
-set_target_properties(_moose PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/python/moose
-    PREFIX ""
-    SUFFIX ".so")
+set_target_properties(_moose PROPERTIES SUFFIX ".so" PREFIX "")
+target_link_libraries(_moose PRIVATE CONAN_PKG::pybind11)
 
 if(APPLE)
     set(CMAKE_MODULE_LINKER_FLAGS "-undefined dynamic_lookup")
@@ -41,6 +39,13 @@ else(APPLE)
         "-Wl,--no-whole-archive"
         ${SYSTEM_SHARED_LIBS})
 endif()
+
+# NOTE: Because LIBRARY_OUTPUT_DIRECTORY does not work with some new cmake
+# version.
+add_custom_command(TARGET _moose POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:_moose> ${CMAKE_SOURCE_DIR}/python/moose
+    COMMENT "Copying $<TARGET_NAME:_moose> to python src folder"
+    )
 
 
 # Copy python tree to BUILD directory. User can set PYTHONPATH to

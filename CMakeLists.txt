@@ -34,8 +34,7 @@ option(WITH_MPI             "Enable Openmpi support" OFF)
 option(WITH_ASAN            "Use AddressSanitizer in DEBUG mode." OFF)
 option(WITH_NSDF            "Enable NSDF support. Requires hdf5" OFF )
 option(WITH_LEGACY_BINDING  "Use legacy python-bindings" OFF)
-
-option(USE_CONAN  "Use conan to download dependencies" ON)
+option(USE_CONAN            "Use conan to download dependencies" ON)
 
 ############################ BUILD CONFIGURATION #################################
 
@@ -59,28 +58,19 @@ if(USE_CONAN)
         BUILD missing
         BUILD_TYPE "${CMAKE_BUILD_TYPE}")
     include_directories(${CONAN_INCLUDE_DIRS_FMT})
+else()
+    find_package(Boost 1.53 REQUIRED)
+    find_package(Pybind11 REQUIRED)
+    find_package(Eigen3 REQUIRED)
 endif()
 
 # Default definitions.
 add_definitions(-DUSE_GENESIS_PARSER)
-if(DEBUG OR "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     message(STATUS "Building for Debug/Unit testing")
     add_definitions(-DDO_UNIT_TESTS -O)
     set(CMAKE_BUILD_TYPE Debug)
-elseif(ENABLE_UNIT_TESTS)
-    MESSAGE(STATUS "Enabled Unit tests")
-    add_definitions(-DDO_UNIT_TESTS)
-    set(CMAKE_BUILD_TYPE Debug)
-else()
-    message(STATUS "Building for Release/No unit tests.")
-    set(CMAKE_BUILD_TYPE Release)
-    add_definitions(-UDO_UNIT_TESTS -O3 -DDISABLE_DEBUG)
-endif()
-
-if(GPROF AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-    message(STATUS "Compiling with profiling with gprof")
-    add_definitions(-pg)
-    set(CMAKE_EXE_LINKER_FLAGS_DEBUG "-pg")
 endif()
 
 if(WITH_ASAN AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
@@ -94,54 +84,18 @@ endif()
 
 ################################### TARGETS ####################################
 
+find_package(Threads REQUIRED)
+
 add_library(libmoose SHARED basecode/main.cpp)
 set_target_properties(libmoose PROPERTIES PREFIX "")
+
 add_executable(moose.bin basecode/main.cpp)
 add_dependencies(moose.bin libmoose)
-target_link_libraries(moose.bin PRIVATE $<TARGET_FILE:libmoose> ${CMAKE_DL_LIBS})
+target_link_libraries(moose.bin PRIVATE $<TARGET_FILE:libmoose>
+    Threads::Threads ${CMAKE_DL_LIBS})
 
 
 ################################### SETUP BUILD ################################
-
-# Variable to collect all static libraries.
-set(STATIC_LIBRARIES "" )
-# Collect all shared libraries here.
-set(SYSTEM_SHARED_LIBS "")
-
-
-# Openmpi
-if(WITH_MPI)
-    find_package(MPI REQUIRED)
-    if(MPI_CXX_FOUND)
-        message(STATUS "Using MPI from ${MPI_CXX_INCLUDE_PATH}")
-        include_directories(${MPI_CXX_INCLUDE_PATH})
-        set(CMAKE_CXX_COMPILE_FLAGS ${CMAKE_CXX_COMPILE_FLAGS} ${MPI_COMPILE_FLAGS})
-        add_definitions(-DUSE_MPI)
-        SET(CMAKE_CXX_COMPILER ${MPI_CXX_COMPILER})
-        SET(CMAKE_C_COMPILER ${MPI_C_COMPILER})
-    else()
-        message(STATUS "Cound not find MPI")
-        add_definitions(-UUSE_MPI)
-    endif()
-endif(WITH_MPI)
-
-if(WITH_BOOST_ODE)
-    list(APPEND SYSTEM_SHARED_LIBS ${LAPACK_LIBRARIES})
-    list(APPEND SYSTEM_SHARED_LIBS ${Boost_LIBRARIES})
-endif(WITH_BOOST_ODE)
-
-find_package( Threads )
-list(APPEND SYSTEM_SHARED_LIBS ${CMAKE_THREAD_LIBS_INIT})
-
-# These libraries could be static of dynamic. We need to discrimate between
-# these two types because of --whole-archive option. See
-# BhallaLab/moose-core#66,
-
-if(WITH_MPI)
-    if(MPI_CXX_FOUND)
-        list(APPEND SYSTEM_SHARED_LIBS ${MPI_CXX_LIBRARIES})
-    endif()
-endif(WITH_MPI)
 
 # Add subdirectroeis
 add_subdirectory(basecode)
@@ -163,8 +117,6 @@ add_subdirectory(kinetics)
 add_subdirectory(synapse)
 add_subdirectory(intfire)
 add_subdirectory(external)
-
-# development related.
 add_subdirectory(devel)
 
 ###################################### LINKING #################################
@@ -190,28 +142,12 @@ list(APPEND MOOSE_LIBRARIES
     basecode
     )
 
-# Make sure to remove duplicates.
-list(REMOVE_DUPLICATES STATIC_LIBRARIES)
-if(SYSTEM_SHARED_LIBS)
-    list(REMOVE_DUPLICATES SYSTEM_SHARED_LIBS)
-endif( )
-
-# cmake --help-policy CMP0042. Also in pymoose/CMakeLists.txt
-# More details:
-# https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
-# especially section 'Mac OS X and the RPATH'
-# Switching is OFF since all libraries are statically linked in module.
-if(APPLE)
-    set_target_properties(libmoose PROPERTIES MACOSX_RPATH OFF)
-endif(APPLE)
-
 # MAC linker does not understand many of gnu-ld options.
 # message( DEBUG "Shared libs: ${SYSTEM_SHARED_LIBS}")
 if(APPLE)
     target_link_libraries(libmoose
         "-Wl,-all_load"
         ${MOOSE_LIBRARIES}
-        ${STATIC_LIBRARIES}
         )
 
     target_link_libraries(libmoose
@@ -222,36 +158,13 @@ else(APPLE)
     target_link_libraries(libmoose
         "-Wl,--whole-archive"
         ${MOOSE_LIBRARIES}
-        ${STATIC_LIBRARIES}
         "-Wl,--no-whole-archive"
-        ${SYSTEM_SHARED_LIBS}
         )
 endif(APPLE)
 
 
-######################### BUILD PYMOOSE ########################################
-
-# always override debian default installation directory. It will be installed in
-# site-packages instead of dist-packages.
-# See https://bugs.launchpad.net/ubuntu/+source/python2.6/+bug/362570
-# HACK: Get platform information from python and use it to fix the layout.
-execute_process(COMMAND ${PYTHON_EXECUTABLE} -mplatform OUTPUT_VARIABLE _platform_desc)
-message(STATUS "Platform: ${_platform_desc}")
-
-# DISTUTILS_EXTRA_ARGS may come of top-level cmake script. On DEBIAN/UBUNTU, it
-# is most likely to be --install-layout=deb .
-set(EXTRA_ARGS "--prefix ${CMAKE_INSTALL_PREFIX} ${DISTUTILS_EXTRA_ARGS}")
-
-# On Debian/Ubuntu install using debian layout.
-# NOTE: Also create setup.cfg file which setup prefix and install-layout
-# suitable for DEBIAN systems.
-if(${_platform_desc} MATCHES ".*(Ubuntu|debian).*")
-    list(APPEND EXTRA_ARGS "--install-layout=deb")
-    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/setup.cfg
-         "[install]\nprefix=/usr\ninstall-layout=deb"
-       )
-endif()
-
+################################# PYTHON BINDINGS #############################
+add_subdirectory(pybind11)
 
 ######################### INSTALL ##############################################
 
@@ -260,7 +173,7 @@ install(TARGETS libmoose DESTINATION lib CONFIGURATIONS Debug)
 
 
 ############################ CTEST ######################################
-include(CTest)
+enable_testing()
 add_subdirectory(tests)
 
 ########################### RELEASE #########################################
