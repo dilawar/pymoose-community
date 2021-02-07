@@ -9,9 +9,9 @@ add_library(utility
     Vec.cpp
     cnpy.cpp
     fileutils.cpp
-    utility.cpp
-    )
-target_link_libraries(utility PRIVATE fmt)
+    utility.cpp)
+
+target_link_libraries(utility CONAN_PKG::boost CONAN_PKG::fmt)
 
 add_executable(test_cnpy test_cnpy.cpp)
 

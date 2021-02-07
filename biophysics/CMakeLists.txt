@@ -47,7 +47,5 @@ set(BIOPHYSICS_SRCS
     )
 
 add_library(biophysics ${BIOPHYSICS_SRCS})
-
-target_include_directories(biophysics PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/../external/odeint-v2/include)
+target_link_libraries(biophysics CONAN_PKG::boost)
 

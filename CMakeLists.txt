@@ -35,14 +35,15 @@ option(WITH_ASAN            "Use AddressSanitizer in DEBUG mode." OFF)
 option(WITH_NSDF            "Enable NSDF support. Requires hdf5" OFF )
 option(WITH_LEGACY_BINDING  "Use legacy python-bindings" OFF)
 
+option(USE_CONAN  "Use conan to download dependencies" ON)
+
 ############################ BUILD CONFIGURATION #################################
 
 # include conan support.
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/conan.cmake)
 
 # At least version 1.53 (odeint is part of this version)
-find_package(Boost 1.53 QUIET)
-if(NOT Boost_FOUND)
+if(USE_CONAN)
     execute_process(COMMAND ${PYTHON_EXECUTABLE} -m pip install conan)
     if(NOT CMAKE_BUILD_TYPE)
         set(CMAKE_BUILD_TYPE Release)
@@ -52,13 +53,13 @@ if(NOT Boost_FOUND)
             pybind11/2.6.1
             eigen/3.3.9
             fmt/7.1.3
-        BASIC_SETUP CMAKE_TARGETS BUILD missing
-        BUILD_TYPE "${CMAKE_BUILD_TYPE}"
-        )
+        OPTIONS
+            boost:header_only=True
+        BASIC_SETUP CMAKE_TARGETS
+        BUILD missing
+        BUILD_TYPE "${CMAKE_BUILD_TYPE}")
+    include_directories(${CONAN_INCLUDE_DIRS_FMT})
 endif()
-
-find_package(Boost 1.53 REQUIRED)
-include_directories(${Boost_INCLUDE_DIRS})
 
 # Default definitions.
 add_definitions(-DUSE_GENESIS_PARSER)
@@ -93,10 +94,11 @@ endif()
 
 ################################### TARGETS ####################################
 
-link_directories(${CMAKE_BINARY_DIR})
 add_library(libmoose SHARED basecode/main.cpp)
 set_target_properties(libmoose PROPERTIES PREFIX "")
 add_executable(moose.bin basecode/main.cpp)
+add_dependencies(moose.bin libmoose)
+target_link_libraries(moose.bin PRIVATE $<TARGET_FILE:libmoose> ${CMAKE_DL_LIBS})
 
 
 ################################### SETUP BUILD ################################
@@ -226,12 +228,6 @@ else(APPLE)
         )
 endif(APPLE)
 
-add_dependencies(moose.bin libmoose)
-target_link_libraries(moose.bin moose ${CMAKE_DL_LIBS})
-
-if( WITH_BOOST )
-    target_link_libraries( moose.bin ${Boost_LIBRARIES} )
-endif( WITH_BOOST )
 
 ######################### BUILD PYMOOSE ########################################
 
@@ -261,16 +257,6 @@ endif()
 
 install(TARGETS moose.bin DESTINATION bin CONFIGURATIONS Debug)
 install(TARGETS libmoose DESTINATION lib CONFIGURATIONS Debug)
-
-# Print message to start build process
-if(${CMAKE_BUILD_TOOL} MATCHES "make")
-    message(
-        "=======================================\n"
-        "If cmake did not report any error, run \n"
-	" 'make' to build  MOOSE \n"
-        "=======================================\n"
-        )
-endif()
 
 
 ############################ CTEST ######################################

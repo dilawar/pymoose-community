@@ -8,7 +8,7 @@
 #ifndef _STRINGUTIL_H
 #define _STRINGUTIL_H
 
-#include "../external/fmt/include/fmt/core.h"
+#include <fmt/core.h>
 
 #include <string>
 #include <sstream>
