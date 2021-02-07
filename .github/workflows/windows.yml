@@ -26,15 +26,15 @@ jobs:
         PYTHON=$(which python)
         $PYTHON -m pip install pip --upgrade
         $PYTHON -m pip install numpy pytest matplotlib setuptools
-        cmake -DOPTION_PYTHON=ON -DOPTION_EXAMPLES=ON -DPython3_EXECUTABLE=$PYTHON ..
+        cmake -DPython3_EXECUTABLE=$PYTHON ..
         cmake --build . --config Release 
         ctest -C Release
 
     - name: Upload to PyPI
       shell: bash
       env:
-        SMOLDYN_PYPI_TOKEN: ${{ secrets.SMOLDYN_PYPI_TOKEN }}
+        MOOSE_PYPI_TOKEN: ${{ secrets.SMOLDYN_PYPI_TOKEN }}
       run: |
         cd build
         python -m pip install twine --upgrade
-        python -m twine upload -u __token__ -p "$SMOLDYN_PYPI_TOKEN" *.whl --skip-existing || echo "Failed to upload"
+        python -m twine upload -u __token__ -p "$MOOSE_PYPI_TOKEN" *.whl --skip-existing || echo "Failed to upload"
