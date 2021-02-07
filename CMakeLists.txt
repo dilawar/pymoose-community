@@ -26,24 +26,6 @@ endif()
 add_definitions(-DMOOSE_VERSION="${VERSION_MOOSE}")
 message(STATUS "MOOSE Version ${VERSION_MOOSE}")
 
-# This snippet is from LLVM project.
-# Sanity check our source directory to make sure that we are not trying to
-# generate an in-tree build (unless on MSVC_IDE, where it is ok), and to make
-# sure that we don't have any stray generated files lying around in the tree
-# (which would end up getting picked up by header search, instead of the correct
-# versions).
-if( CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR AND NOT MSVC_IDE )
-    message(FATAL_ERROR
-        "======================================================================\n"
-        "In-source builds are not allowed. Remove CMakeCache.txt and CMakeFiles\n"
-        "directory and do something like this inside this directory \n"
-        "    $ mkdir _build_dir \n"
-        "    $ cd _build_dir  \n"
-        "    $ cmake ..  \n"
-        "===================================================================== \n"
-        )
-endif()
-
 ################################ CMAKE OPTIONS ##################################
 option(DEBUG                "Build with debug support" OFF)
 option(GPROF                "Build for profiling using gprof" OFF)
@@ -55,7 +37,26 @@ option(WITH_LEGACY_BINDING  "Use legacy python-bindings" OFF)
 
 ############################ BUILD CONFIGURATION #################################
 
+# include conan support.
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/conan.cmake)
+
 # At least version 1.53 (odeint is part of this version)
+find_package(Boost 1.53 QUIET)
+if(NOT Boost_FOUND)
+    execute_process(COMMAND ${PYTHON_EXECUTABLE} -m pip install conan)
+    if(NOT CMAKE_BUILD_TYPE)
+        set(CMAKE_BUILD_TYPE Release)
+    endif()
+    conan_cmake_run(REQUIRES 
+            boost/1.75.0
+            pybind11/2.6.1
+            eigen/3.3.9
+            fmt/7.1.3
+        BASIC_SETUP CMAKE_TARGETS BUILD missing
+        BUILD_TYPE "${CMAKE_BUILD_TYPE}"
+        )
+endif()
+
 find_package(Boost 1.53 REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
@@ -233,15 +234,6 @@ if( WITH_BOOST )
 endif( WITH_BOOST )
 
 ######################### BUILD PYMOOSE ########################################
-
-if(NOT WITH_LEGACY_BINDING)
-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/pybind11)
-    add_subdirectory(pybind11)
-else()
-    message(STATUS "Building legacy python binding.")
-    add_subdirectory(pymoose)
-endif()
-
 
 # always override debian default installation directory. It will be installed in
 # site-packages instead of dist-packages.
