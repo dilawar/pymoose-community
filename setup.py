@@ -24,12 +24,6 @@ import multiprocessing
 import subprocess
 import datetime
 
-try:
-    cmakeVersion = subprocess.call(["cmake", "--version"], stdout=subprocess.PIPE)
-except Exception as e:
-    print(e)
-    print("[ERROR] cmake is not found. Please install cmake.")
-    quit(-1)
 
 # See https://docs.python.org/3/library/distutils.html
 # setuptools is preferred over distutils. And we are supporting python3 only.
