@@ -15,8 +15,7 @@
  */
 
 
-#include "../basecode/global.h"
-#include "../basecode/header.h"
+
 #include "StreamerBase.h"
 
 #include "../scheduling/Clock.h"
@@ -25,6 +24,10 @@
 #include <algorithm>
 #include <sstream>
 #include <memory>
+#include <string>
+#include <sstream>
+
+using namespace std;
 
 // Class function definitions
 StreamerBase::StreamerBase()
@@ -57,7 +60,7 @@ void StreamerBase::setOutFilepath( string filepath )
 
 void StreamerBase::writeToOutFile( const string& filepath
         , const string& outputFormat
-        , const OpenMode openmode
+        , const enum OpenMode openmode
         , const vector<double>& data
         , const vector<string>& columns
         )
@@ -67,7 +70,7 @@ void StreamerBase::writeToOutFile( const string& filepath
 
     if("npy" == outputFormat  || "npz" == outputFormat)
     {
-        OpenMode m = (openmode == WRITE)?WRITE_BIN:APPEND_BIN;
+        auto m = (openmode == WRITE)?WRITE_BIN:APPEND_BIN;
         writeToNPYFile( filepath, m, data, columns );
     }
     else if( "csv" == outputFormat or "dat" == outputFormat )
@@ -139,8 +142,8 @@ void StreamerBase::writeToNPYFile( const string& filepath, const OpenMode openmo
 
 string StreamerBase::vectorToCSV( const vector<double>& ys, const string& fmt )
 {
-    string res{""};
-    for( auto v : ys )
-        res += std::to_string(v) + ",";
-    return res;
+    stringstream res;
+    for( double v : ys )
+        ss << v << ",";
+    return ss.str();
 }

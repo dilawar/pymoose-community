@@ -11,7 +11,6 @@
 #ifndef _HEADER_H
 #define _HEADER_H
 
-#include <cmath>
 #include <algorithm>
 #include <vector>
 #include <string>
@@ -25,10 +24,11 @@
 
 using namespace std;
 
-constexpr double PI = 3.141592653589793;
 constexpr double NA = 6.0221415e23;
 constexpr double FaradayConst =  96485.3415; // s A / mol
 constexpr double GasConst = 8.3144621; // R, units are J/(K.mol)
+constexpr double M_PI = 3.14159265358979323846;
+constexpr double PI = M_PI;
 
 typedef unsigned short BindIndex;
 

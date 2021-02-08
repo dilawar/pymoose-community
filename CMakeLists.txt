@@ -86,7 +86,14 @@ target_link_libraries(moose.bin PRIVATE $<TARGET_FILE:libmoose>
 
 ################################### SETUP BUILD ################################
 
-# Add subdirectroeis
+# This directory have some external dependencies. It also sets some default
+# include paths.
+add_subdirectory(external)
+
+# Mostly development related scripts. 
+add_subdirectory(devel)
+
+# Source code.
 add_subdirectory(basecode)
 add_subdirectory(msg)
 add_subdirectory(shell)
@@ -105,8 +112,6 @@ add_subdirectory(device)
 add_subdirectory(kinetics)
 add_subdirectory(synapse)
 add_subdirectory(intfire)
-add_subdirectory(external)
-add_subdirectory(devel)
 
 ###################################### LINKING #################################
 list(APPEND MOOSE_LIBRARIES
