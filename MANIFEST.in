@@ -6,8 +6,6 @@ include INSTALL.md
 include LICENSE
 include MANIFEST.in
 include README.md
-include cmake_moose_cpack.cmake
-include cmake_uninstall.cmake.in
 recursive-include basecode *
 recursive-include benchmarks *
 recursive-include biophysics *

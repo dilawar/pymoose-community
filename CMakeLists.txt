@@ -165,30 +165,6 @@ install(TARGETS libmoose DESTINATION lib CONFIGURATIONS Debug)
 enable_testing()
 add_subdirectory(tests)
 
-########################### RELEASE #########################################
-set(PYMOOSE_SDIST_FILE ${CMAKE_BINARY_DIR}/pymoose-${VERSION_MOOSE}.tar.gz)
-add_custom_target(sdist
-    COMMAND ${PYTHON_EXECUTABLE} setup.py sdist --formats=gztar 
-        -d ${CMAKE_BINARY_DIR}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMENT "Creating sdist ${PYMOOSE_SDIST_FILE}" 
-    VERBATIM)
-
-add_custom_target(upload_test DEPENDS sdist
-    COMMAND ${PYTHON_EXECUTABLE} -m twine upload 
-        --user $ENV{PYMOOSE_PYPI_USER} --password $ENV{PYMOOSE_PYPI_PASSWORD}
-        --repository-url https://test.pypi.org/legacy/
-        ${PYMOOSE_SDIST_FILE}
-    COMMENT "Uploading source distribution to test.pypi.org"
-    VERBATIM)
-
-add_custom_target(upload DEPENDS sdist
-    COMMAND ${PYTHON_EXECUTABLE} -m twine upload 
-        --user $ENV{PYMOOSE_PYPI_USER} --password $ENV{PYMOOSE_PYPI_PASSWORD}
-        ${PYMOOSE_SDIST_FILE}
-    COMMENT "Uploading source distribution to PyPI"
-    VERBATIM)
-
 ####################### DEVELOPMENT ########################################
 
 # PYLINT target.

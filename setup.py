@@ -5,15 +5,8 @@
 # Alternatively, you can use cmake build system which provides finer control
 # over the build. This script is called by cmake to install the python module.
 #
-# This script is compatible with python2.7 and python3+. Therefore use of
-# super() is commented out.
-#
-# NOTES:
-#  * Python2
-#   - Update setuptools using `python2 -m pip install setuptools --upgrade --user'.
 
 __author__ = "Dilawar Singh"
-
 __copyright__ = "Copyright 2019-, Dilawar Singh"
 __maintainer__ = "Dilawar Singh"
 __email__ = "dilawar.s.rajput@gmail.com"
@@ -21,32 +14,27 @@ __email__ = "dilawar.s.rajput@gmail.com"
 import os
 import sys
 import multiprocessing
-import subprocess
 import datetime
+from pathlib import Path
+import importlib
 
 
-# See https://docs.python.org/3/library/distutils.html
-# setuptools is preferred over distutils. And we are supporting python3 only.
-from setuptools import setup, Extension, Command
+from setuptools import setup, Extension, Command, find_packages
 from setuptools.command.build_ext import build_ext as _build_ext
-import subprocess
 
 # Global variables.
-sdir_ = os.path.dirname(os.path.realpath(__file__))
+sdir_ = Path(__file__).parent.resolve()
 
 stamp = datetime.datetime.now().strftime("%Y%m%d")
-builddir_ = os.path.join(sdir_, "_temp__build")
+builddir_ = sdir_ / "_temp__build"
 
-if not os.path.exists(builddir_):
-    os.makedirs(builddir_)
+builddir_.mkdir(exist_ok=True, parents=True)
 
-numCores_ = multiprocessing.cpu_count()
+NUM_PROCESSORS = multiprocessing.cpu_count()
 
-version_ = "3.2.1.dev%s" % stamp
+VERSION = "3.2.1.dev%s" % stamp
 
-# importlib is available only for python3. Since we build wheels, prefer .so
-# extension. This way a wheel built by any python3.x will work with any python3.
-
+SUFFIX_ = importlib.machinery.EXTENSION_SUFFIXES[0]
 
 class CMakeExtension(Extension):
     def __init__(self, name, **kwargs):
@@ -75,15 +63,12 @@ class TestCommand(Command):
     def run(self):
         print("[INFO ] Running tests... ")
         os.chdir(builddir_)
-        self.spawn(["ctest", "--output-on-failure", "-j%d" % numCores_])
+        self.spawn(["ctest", "--output-on-failure", "-j%d" % NUM_PROCESSORS])
         os.chdir(sdir_)
 
 
 class build_ext(_build_ext):
     user_options = [
-        ("with-boost", None, "Use Boost Libraries (OFF)"),
-        ("with-gsl", None, "Use Gnu Scienfific Library (ON)"),
-        ("with-gsl-static", None, "Use GNU Scientific Library (static library) (OFF)"),
         ("debug", None, "Build moose in debugging mode (OFF)"),
         ("no-build", None, "DO NOT BUILD. (for debugging/development)"),
     ] + _build_ext.user_options
@@ -96,15 +81,13 @@ class build_ext(_build_ext):
         self.debug = 0
         self.no_build = 0
         self.cmake_options = {}
-        #  super().initialize_options()
-        _build_ext.initialize_options(self)
+        super().initialize_options()
 
     def finalize_options(self):
         # Finalize options.
-        #  super().finalize_options()
-        _build_ext.finalize_options(self)
+        super().finalize_options()
         self.cmake_options["PYTHON_EXECUTABLE"] = os.path.realpath(sys.executable)
-        self.cmake_options["VERSION_MOOSE"] = version_
+        self.cmake_options["VERSION_MOOSE"] = VERSION
         if self.debug:
             self.cmake_options["CMAKE_BUILD_TYPE"] = "Debug"
         else:
@@ -115,11 +98,10 @@ class build_ext(_build_ext):
             return
         for ext in self.extensions:
             self.build_cmake(ext)
-        #  super().run()
-        _build_ext.run(self)
+        super().run()
 
     def build_cmake(self, ext):
-        global numCores_
+        global NUM_PROCESSORS
         global sdir_
         print("\n==========================================================\n")
         print("[INFO ] Building pymoose in %s ..." % builddir_)
@@ -129,16 +111,18 @@ class build_ext(_build_ext):
         os.chdir(str(builddir_))
         self.spawn(["cmake", str(sdir_)] + cmake_args)
         if not self.dry_run:
-            self.spawn(["make", "-j%d" % numCores_])
+            self.spawn(["make", "-j%d" % NUM_PROCESSORS])
         os.chdir(str(sdir_))
 
 
-with open(os.path.join(sdir_, "README.md")) as f:
+with (sdir_ / "README.md").open() as f:
     readme = f.read()
+
+assert (sdir_ / f"python/moose/_moose{SUFFIX_}").exists()
 
 setup(
     name="pymoose",
-    version=version_,
+    version=VERSION,
     description="Python scripting interface of MOOSE Simulator (https://moose.ncbs.res.in)",
     long_description=readme,
     long_description_content_type="text/markdown",
@@ -147,28 +131,19 @@ setup(
     maintainer="Dilawar Singh",
     maintainer_email="dilawars@ncbs.res.in",
     url="http://moose.ncbs.res.in",
-    packages=[
-        "rdesigneur",
-        "moose",
-        "moose.SBML",
-        "moose.genesis",
-        "moose.neuroml",
-        "moose.neuroml2",
-        "moose.chemUtil",
-        "moose.chemMerge",
-    ],
+    packages= find_packages(),
+    include_package_data = True,
     package_dir={
-        "rdesigneur": os.path.join(sdir_, "python", "rdesigneur"),
-        "moose": os.path.join(sdir_, "python", "moose"),
+        "rdesigneur": str(sdir_ / "python"/ "rdesigneur"),
+        "moose": str(sdir_ / "python" / "moose"),
     },
     package_data={
         "moose": [
-            "_moose.so",
+            "*.pyd",
             os.path.join("neuroml2", "schema", "NeuroMLCoreDimensions.xml"),
             os.path.join("chemUtil", "rainbow2.pkl"),
         ]
     },
-    # python2 specific version here as well.
     install_requires=["numpy", "matplotlib"],
     extra_requires={"dev": ["coverage", "pytest", "pytest-cov"]},
     ext_modules=[CMakeExtension("dummy", optional=True)],

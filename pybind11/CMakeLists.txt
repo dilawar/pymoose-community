@@ -12,7 +12,7 @@ add_dependencies(_moose libmoose)
 # Use in version_info dict.
 target_compile_definitions(_moose PRIVATE USE_FMT_LIB=ON)
 
-set_target_properties(_moose PROPERTIES SUFFIX ".so" PREFIX "")
+set_target_properties(_moose PROPERTIES PREFIX "")
 target_link_libraries(_moose PRIVATE CONAN_PKG::pybind11 CONAN_PKG::fmt)
 
 if(APPLE)
@@ -72,19 +72,6 @@ endif()
 set(PYMOOSE_BDIST_FILE ${CMAKE_BINARY_DIR}/pymoose-${VERSION_MOOSE}.${_platform}.${BDIST_EXT})
 set(PYMOOSE_INSTALL_DIR ${CMAKE_BINARY_DIR}/_pymoose_temp_install)
 file(MAKE_DIRECTORY ${PYMOOSE_INSTALL_DIR})
-
-add_custom_command(OUTPUT ${PYMOOSE_BDIST_FILE}
-  COMMAND ${PYTHON_EXECUTABLE} setup.py build_py  
-  COMMAND ${PYTHON_EXECUTABLE} setup.py bdist_dumb 
-    --skip-build -p "${_platform}" -d ${CMAKE_BINARY_DIR} 
-  COMMAND ${CMAKE_COMMAND} -E chdir ${PYMOOSE_INSTALL_DIR} tar xf ${PYMOOSE_BDIST_FILE}
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  COMMENT "python's binary distribution is saved to ${CMAKE_BINARY_DIR}"
-  VERBATIM)
-
-add_custom_target(pymoose_sdist ALL
-    DEPENDS ${PYMOOSE_BDIST_FILE} _moose
-    COMMENT "Building pymoose source distribution.")
 
 add_custom_target(wheel ALL 
     DEPENDS _moose
