@@ -45,7 +45,7 @@ namespace cnpy2
 // https://github.com/rogersce/cnpy
 char BigEndianTest();
 
-void split(vector<string>& strs, string& input, const string& pat);
+vector<string> split(const string& input, const string& pat);
 
 /**
  * @brief Check if a numpy file is sane or not.

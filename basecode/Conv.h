@@ -193,7 +193,7 @@ template<> class Conv< string >
          */
         static void val2buf( const string& val, double** buf ) {
             char* temp = reinterpret_cast< char* >( *buf );
-            strcpy_s( temp, val.size(), val.c_str() );
+            strcpy( temp, val.c_str() );
             *buf += size( val );
         }
 

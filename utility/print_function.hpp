@@ -79,7 +79,7 @@ namespace moose {
     /**
      * @brief Enumerate type for debug and log.
      */
-    constexpr enum serverity_level_ {
+    enum serverity_level_ {
         trace, debug, info , warning, fixme , error, fatal, failed
     };
 

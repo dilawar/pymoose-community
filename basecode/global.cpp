@@ -68,14 +68,15 @@ string joinPath(string& pathA, string& pathB)
 }
 
 /* Fix given path */
-string fixPath(string& path)
+string fixPath(const string& path)
 {
-    int pathOk = moose::checkPath(path);
+    string x(path);
+    int pathOk = moose::checkPath(x);
     if (pathOk == 0)
-        return path;
+        return x;
     else if (pathOk == MISSING_BRACKET_AT_END)
-        return path + "[0]";
-    return path;
+        return x + "[0]";
+    return x;
 }
 
 // MOOSE suffixes [0] to all elements to path. Remove [0] with null
