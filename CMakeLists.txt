@@ -38,44 +38,26 @@ option(USE_CONAN            "Use conan to download dependencies" ON)
 
 ############################ COMPILER OPTIONS ####################################
 if(MSVC)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W2")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W1")
 endif()
 
 ############################ BUILD CONFIGURATION #################################
 
 # include conan support.
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/conan.cmake)
-
-# At least version 1.53 (odeint is part of this version)
 if(USE_CONAN)
-    execute_process(COMMAND ${PYTHON_EXECUTABLE} -m pip install conan)
-    set(CONAN_CMD ${PYTHON_EXECUTABLE} -m conans.conan)
-    if(NOT CMAKE_BUILD_TYPE)
-        set(CMAKE_BUILD_TYPE Release)
-    endif()
-    conan_cmake_run(REQUIRES 
-            boost/1.75.0
-            pybind11/2.6.1
-            eigen/3.3.9
-            fmt/7.1.3
-        OPTIONS
-            boost:header_only=True
-        BASIC_SETUP CMAKE_TARGETS
-        BUILD missing
-        BUILD_TYPE "${CMAKE_BUILD_TYPE}")
-    include_directories(${CONAN_INCLUDE_DIRS_FMT})
-else()
+    include(install_dep)
+else(USE_CONAN)
     find_package(Boost 1.53 REQUIRED)
     find_package(Pybind11 REQUIRED)
     find_package(Eigen3 REQUIRED)
-endif()
+endif(USE_CONAN)
 
 # Default definitions.
 add_definitions(-DUSE_GENESIS_PARSER)
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     message(STATUS "Building for Debug/Unit testing")
-    add_definitions(-DDO_UNIT_TESTS -O)
+    add_definitions(-DDO_UNIT_TESTS)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
 

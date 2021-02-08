@@ -55,7 +55,7 @@ template< class T > class Conv
          */
         static void val2buf( const T& val, double** buf ) {
             *reinterpret_cast< T* >( *buf ) = val;
-            *buf += size( val );
+            *buf +=  size( val );
         }
 
         /**
@@ -170,10 +170,10 @@ template<> class Conv< string >
          * boundaries.
          * We need to have strlen + 1 as a minimum.
          */
-        static size_t size( const string& val )
+        static unsigned int size( const string& val )
         {
             // extra char for termination of the string.
-            return 1 + val.length() / sizeof( double );
+            return 1 + (unsigned int) val.length() / sizeof( double );
         }
 
         // The return cannot be a reference, because the function may
@@ -620,11 +620,11 @@ template< class T > class Conv< vector< T > >
          */
         static unsigned int size( const vector< T >& val )
         {
-            unsigned int ret = 1;
+            size_t ret = 1;
             for ( unsigned int i = 0; i < val.size(); ++i ) {
                 ret += Conv< T >::size( val[i] );
             }
-            return ret;
+            return (unsigned int) ret;
         }
 
         static const vector< T > buf2val( double** buf )
@@ -641,8 +641,8 @@ template< class T > class Conv< vector< T > >
         static void val2buf( const vector< T >& val, double**buf )
         {
             double* temp = *buf;
-            *temp++ = val.size();
-            for( unsigned int i = 0; i < val.size(); ++i ) {
+            *temp++ = (double) val.size();
+            for( size_t i = 0; i < val.size(); ++i ) {
                 Conv< T >::val2buf( val[i], &temp );
             }
             *buf = temp;
