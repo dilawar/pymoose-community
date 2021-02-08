@@ -550,7 +550,7 @@ template< class T > class Conv< vector< vector< T > > >
     public:
         static unsigned int size( const vector< vector < T > > & val)
         {
-            unsigned int ret = 1 + val.size();
+            size_t ret = 1 + val.size();
             for ( unsigned int i = 0; i < val.size(); ++i ) {
                 if ( val[i].size() > 0 ) {
                     ret += val[i].size() * Conv< T >::size( val[i][0] );
@@ -559,7 +559,7 @@ template< class T > class Conv< vector< vector< T > > >
                     ret += val[i].size() * Conv< T >::size( temp );
                 }
             }
-            return ret;
+            return (unsigned int) ret;
         }
 
         static const vector< vector< T > > buf2val( double** buf )
@@ -581,10 +581,10 @@ template< class T > class Conv< vector< vector< T > > >
         static void val2buf( const vector< vector< T > >& val, double**buf )
         {
             double* temp = *buf;
-            *temp++ = val.size();
-            for( unsigned int i = 0; i < val.size(); ++i ) {
-                *temp++ = val[i].size();
-                for ( unsigned int j = 0; j < val[i].size(); ++j ) {
+            *temp++ = (double) val.size();
+            for( size_t i = 0; i < val.size(); ++i ) {
+                *temp++ = (double) val[i].size();
+                for ( size_t j = 0; j < val[i].size(); ++j ) {
                     Conv< T >::val2buf( val[i][j], &temp );
                 }
             }

@@ -27,6 +27,7 @@
 #include <sstream>
 #include <fstream>
 #include <vector>
+#include <array>
 #include <string>
 #include <map>
 #include <iomanip>
@@ -192,13 +193,13 @@ namespace moose {
         {
             if('`' == msg[i])
             {
-                if(!set and reset)
+                if((! set) && reset)
                 {
                     set = true;
                     reset = false;
                     ss << color;
                 }
-                else if(set && !reset)
+                else if(set && (!reset))
                 {
                     reset = true;
                     set = false;
@@ -259,53 +260,6 @@ namespace moose {
     __ss__ << __func__ << ": " << a; moose::__dump__(__ss__.str(), t); \
 }
 #endif     /* -----  not NDEBUG  ----- */
-
-    /*-----------------------------------------------------------------------------
-     *  Log to a file, and also to console.
-     *-----------------------------------------------------------------------------*/
-    inline bool isBackTick(char a)
-    {
-        if('`' == a)
-            return true;
-        return false;
-    }
-
-    inline string formattedMsg(string& msg)
-    {
-        remove_if(msg.begin(), msg.end(), isBackTick);
-        return msg;
-    }
-
-    /**
-     * @brief Log to console (and to a log-file)
-     *
-     * @param msg String, message to be written.
-     * @param type Type of the message.
-     * @param redirectToConsole
-     * @param removeTicks
-     */
-    inline void log(string msg, serverity_level_ type = debug
-            , bool redirectToConsole = true
-            , bool removeTicks = true
-            )
-    {
-
-        if(redirectToConsole)
-            __dump__(msg, type, true);
-
-        /* remove any backtick from the string. */
-        formattedMsg( msg );
-
-        fstream logF;
-        logF.open( "__moose__.log", ios::app);
-        time_t rawtime; time(&rawtime);
-        struct tm* timeinfo;
-        timeinfo = localtime(&rawtime);
-
-        logF << asctime(timeinfo) << ": " << msg;
-
-        logF.close();
-    }
 
     template<typename T>
     void print_array( T* a, size_t n, const string& prefix = "" )

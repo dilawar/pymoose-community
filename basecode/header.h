@@ -11,7 +11,7 @@
 #ifndef _HEADER_H
 #define _HEADER_H
 
-#include <math.h>
+#include <cmath>
 #include <algorithm>
 #include <vector>
 #include <string>
