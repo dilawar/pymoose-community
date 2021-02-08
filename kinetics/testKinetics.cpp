@@ -282,13 +282,6 @@ void testMMenzProcess()
 	cout << "." << flush;
 }
 
-void testWriteKkit( Id id )
-{
-	extern void writeKkit( Id model, const string& s );
-	writeKkit( id, "kkitWriteTest.g" );
-	cout << "." << flush;
-}
-
 void testVolSort()
 {
 	vector< unsigned int > findVolOrder( const vector< double >& vols );
@@ -336,9 +329,6 @@ void testKinetics()
 	testReacVolumeScaling();
 	testReadCspace();
 	testVolSort();
-
-	// This is now handled with real models in the regression tests.
-	// testWriteKkit( Id() );
 }
 
 void testMpiKinetics( )

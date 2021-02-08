@@ -137,26 +137,19 @@ list(APPEND MOOSE_LIBRARIES
     )
 
 # MAC linker does not understand many of gnu-ld options.
-# message( DEBUG "Shared libs: ${SYSTEM_SHARED_LIBS}")
 if(APPLE)
-    target_link_libraries(libmoose
-        "-Wl,-all_load"
-        ${MOOSE_LIBRARIES}
-        )
-
-    target_link_libraries(libmoose
-        ${SYSTEM_SHARED_LIBS}
-        ${CMAKE_DL_LIBS}
-        )
+    target_link_libraries(libmoose "-Wl,-all_load" ${MOOSE_LIBRARIES})
+    target_link_libraries(libmoose ${CMAKE_DL_LIBS})
 elseif(UNIX)
     target_link_libraries(libmoose
         "-Wl,--whole-archive"
         ${MOOSE_LIBRARIES}
         "-Wl,--no-whole-archive"
+        ${CMAKE_DL_LIBS}
         )
 elseif(MSVC)
     target_link_libraries(libmoose ${MOOSE_LIBRARIES})
-endif(WIN32)
+endif()
 
 
 ################################# PYTHON BINDINGS #############################
