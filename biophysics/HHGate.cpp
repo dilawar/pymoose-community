@@ -11,7 +11,10 @@
 #include "../basecode/ElementValueFinfo.h"
 #include "HHGate.h"
 
-static const double SINGULARITY = 1.0e-6;
+#include <cmath>
+using namespace std;
+
+constexpr double SINGULARITY = 1.0e-6;
 
 const Cinfo* HHGate::initCinfo()
 {

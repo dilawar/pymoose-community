@@ -11,9 +11,14 @@
 #include "../basecode/ElementValueFinfo.h"
 #include "../biophysics/CompartmentBase.h"
 #include "../biophysics/Compartment.h"
+
 #include "IntFireBase.h"
 #include "ExIF.h"
 #include "AdExIF.h"
+
+#include <cmath>
+using namespace std;
+
 
 using namespace moose;
 

@@ -23,6 +23,8 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+#include <fmt/core.h>
+
 namespace py = pybind11;
 
 // See

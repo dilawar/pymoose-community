@@ -108,7 +108,7 @@ Id makeReacTest()
     double vol = Field< double >::get( kin, "volume" );
 
     for(unsigned int i = 0; i < 100; ++i)
-        stim[i] = vol*NA*(1.0+sin(i*2.0*PI/100.0));
+        stim[i] = vol*NA*(1.0+sin(i*2.0*M_PI/100.0));
 
     Field< vector< double > >::set( tab, "vector", stim );
     Field< double >::set( tab, "stepSize", 0.0 );
@@ -315,7 +315,7 @@ void testRunGsolve()
     vector< double > stim( 100, 0.0 );
     for ( unsigned int i = 0; i< 100; ++i )
     {
-        stim[i] = volume * NA * (1.0 + sin( i * 2.0 * PI / 100.0 ) );
+        stim[i] = volume * NA * (1.0 + sin( i * 2.0 * M_PI / 100.0 ) );
     }
     Field< vector< double > >::set( ObjId( "/kinetics/tab" ), "vector", stim );
 

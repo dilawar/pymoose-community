@@ -442,7 +442,7 @@ void EndoMesh::matchMeshEntries( const ChemCompt* other,
 	assert( myArea.size() == vol.size() );
 
 	for ( unsigned int i = 0; i < vol.size(); ++i ) {
-		double rSurround = sqrt( vol[i] / (len[i] * PI ) );
+		double rSurround = sqrt( vol[i] / (len[i] * M_PI ) );
 		ret[i].first = ret[i].second = i;
 		ret[i].firstVol = myVol[i];
 		ret[i].secondVol = vol[i];

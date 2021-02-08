@@ -320,7 +320,7 @@ void PsdMesh::setMeshEntryVolume( unsigned int fid, double volume )
 	assert( fid < psd_.size() );
 	vs_[fid] = volume;
 	area_[fid] = volume / thickness_;
-	double dia = 2.0 * sqrt( area_[fid] / PI );
+	double dia = 2.0 * sqrt( area_[fid] / M_PI );
 	psd_[ fid ].setDia( dia );
 }
 

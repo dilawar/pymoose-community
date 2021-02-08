@@ -16,18 +16,19 @@
 
 
 
-#include "StreamerBase.h"
-
-#include "../scheduling/Clock.h"
-#include "../utility/cnpy.hpp"
 
 #include <algorithm>
 #include <sstream>
 #include <memory>
 #include <string>
 #include <sstream>
+#include <vector>
 
 using namespace std;
+
+#include "StreamerBase.h"
+#include "../scheduling/Clock.h"
+#include "../utility/cnpy.hpp"
 
 // Class function definitions
 StreamerBase::StreamerBase()
@@ -117,7 +118,7 @@ void StreamerBase::writeToCSVFile( const string& filepath, const OpenMode openmo
     {
         // Start of a new row.
         for( unsigned int ii = 0; ii < columns.size(); ii++ )
-            text += moose::toString( data[i+ii] ) + delimiter_;
+            text += std::to_string( data[i+ii] ) + delimiter_;
 
         // At the end of each row, we remove the delimiter_ and append newline_.
         *(text.end()-1) = eol;
@@ -142,7 +143,7 @@ void StreamerBase::writeToNPYFile( const string& filepath, const OpenMode openmo
 
 string StreamerBase::vectorToCSV( const vector<double>& ys, const string& fmt )
 {
-    stringstream res;
+    stringstream ss;
     for( double v : ys )
         ss << v << ",";
     return ss.str();

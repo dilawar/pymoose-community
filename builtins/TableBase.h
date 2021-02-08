@@ -11,6 +11,8 @@
 #ifndef _TABLE_BASE_H
 #define _TABLE_BASE_H
 
+class Cinfo;
+
 /**
  * Base class for table operations. Provides basics for looking up table
  * and interpolation, but no process or messaging. Derived classes

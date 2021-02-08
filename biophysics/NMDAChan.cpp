@@ -14,8 +14,10 @@
 #include "SynChan.h"
 #include "NMDAChan.h"
 
-const double EPSILON = 1.0e-12;
-const double NMDAChan::valency_ = 2.0;
+#include <cmath>
+
+constexpr double EPSILON = 1.0e-12;
+constexpr double NMDAChan::valency_ = 2.0;
 
 SrcFinfo1< double >* ICaOut()
 {

@@ -13,6 +13,10 @@
 #include "ChanBase.h"
 #include "HHChannelBase.h"
 
+#include <cmath>
+using namespace std;
+
+
 const Cinfo* HHChannelBase::initCinfo()
 {
     /////////////////////////////////////////////////////////////////////

@@ -63,7 +63,7 @@ void testPoolVolumeScaling()
 	Field< vector< double > >::set( comptId, "coords", coords );
 
 	double volume = Field< double >::get( poolId, "volume" );
-	assert( doubleEq( volume, PI * x1 * (r0+r1) * (r0+r1) / 4.0 ) );
+	assert( doubleEq( volume, M_PI * x1 * (r0+r1) * (r0+r1) / 4.0 ) );
 
 	Field< double >::set( poolId, "n", 400 );
 	double volscale = 1 / ( NA * volume );

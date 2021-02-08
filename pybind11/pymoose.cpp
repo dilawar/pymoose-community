@@ -55,8 +55,7 @@ map<string, string> mooseVersionInfo()
             {"minor", vers[1]},
             {"micro", vers[2]},
             {"releaselevel", vers[3]},
-            {"build_datetime", string(mbstr)},
-            {"compiler_string", string(COMPILER_STRING)}};
+            {"build_datetime", string(mbstr)}};
 }
 
 bool setFieldGeneric(const ObjId &oid, const string &fieldName,
@@ -455,7 +454,7 @@ PYBIND11_MODULE(_moose, m)
 
     // Attributes.
     m.attr("NA") = NA;
-    m.attr("PI") = PI;
+    m.attr("PI") = M_PI;
     m.attr("FaradayConst") = FaradayConst;
     m.attr("GasConst") = GasConst;
 

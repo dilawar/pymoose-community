@@ -388,7 +388,7 @@ void testCylDiffn()
         double x = i * dx + dx * 0.5;
         // This part is the solution as a func of x,t.
         double y = dx *  // This part represents the init n of 1 in dx
-                   ( 1.0 / sqrt( PI * diffConst * runtime ) ) *
+                   ( 1.0 / sqrt( M_PI * diffConst * runtime ) ) *
                    exp( -x * x / ( 4 * diffConst * runtime ) );
         err += ( y - nvec[i] ) * ( y - nvec[i] );
         //cout << i << "	" << x << "	" << y << "	" << conc[i] << endl;
@@ -741,7 +741,7 @@ void testCylDiffnWithStoich()
         double x = i * dx + dx * 0.5;
         // This part is the solution as a func of x,t.
         double y = dx *  // This part represents the init n of 1 in dx
-                   ( 1.0 / sqrt( PI * diffConst * runtime ) ) *
+                   ( 1.0 / sqrt( M_PI * diffConst * runtime ) ) *
                    exp( -x * x / ( 4 * diffConst * runtime ) );
         err += ( y - nvec[i] ) * ( y - nvec[i] );
         //cout << i << "	" << x << "	" << y << "	" << conc[i] << endl;
@@ -864,7 +864,7 @@ void testCalcJunction()
         if ( i < 6 )
         {
             double vol = Field< double >::get( pools[i], "volume" );
-            assert( doubleEq( vol, 10e-6 * 1e-12 * PI ) );
+            assert( doubleEq( vol, 10e-6 * 1e-12 * M_PI ) );
         }
     }
     Id dendsolve = s->doCreate( "Dsolve", model, "dendsolve", 1 );

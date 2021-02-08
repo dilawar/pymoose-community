@@ -12,6 +12,7 @@
 #include "DifShellBase.h"
 #include "DifShell.h"
 
+#include <cmath>
 
 constexpr double DifShell::EPSILON = 1.0e-10;
 constexpr double DifShell::F = 96485.3415; /* C / mol like in genesis */

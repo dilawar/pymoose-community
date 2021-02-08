@@ -11,6 +11,8 @@
 #include "CaConcBase.h"
 #include "CaConc.h"
 
+#include <cmath>
+
 
 const Cinfo* CaConc::initCinfo()
 {

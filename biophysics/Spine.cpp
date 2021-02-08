@@ -14,6 +14,8 @@
 #include "Spine.h"
 #include "Neuron.h"
 
+#include <cmath>
+
 const Cinfo* Spine::initCinfo()
 {
 		//////////////////////////////////////////////////////////////
@@ -309,7 +311,7 @@ void Spine::setHeadDiameter( const Eref& e, double dia )
 double Spine::getPsdArea( const Eref& e ) const
 {
 	double ret = getHeadDiameter( e );
-	return ret * ret * PI / 4.0;
+	return ret * ret * M_PI / 4.0;
 }
 
 void Spine::setPsdArea( const Eref& e, double area )
@@ -317,7 +319,7 @@ void Spine::setPsdArea( const Eref& e, double area )
 	if ( area < 0 ) {
 		setHeadDiameter( e, minimumSize_ );
 	} else  {
-		double dia = 2.0 * sqrt( area / PI );
+		double dia = 2.0 * sqrt( area / M_PI );
 		setHeadDiameter( e, dia );
 	}
 }
@@ -325,19 +327,19 @@ void Spine::setPsdArea( const Eref& e, double area )
 double Spine::getHeadVolume( const Eref& e ) const
 {
 	double dia = getHeadDiameter( e );
-	return getHeadLength( e ) * dia * dia * PI / 4.0;
+	return getHeadLength( e ) * dia * dia * M_PI / 4.0;
 }
 
-// Handle like a cylinder of equal length and dia. vol = PI*dia*dia*len/4
+// Handle like a cylinder of equal length and dia. vol = M_PI*dia*dia*len/4
 void Spine::setHeadVolume( const Eref& e, double volume )
 {
 	if ( volume < 0 )
 		volume = 0.0;
-	double dia = pow( volume * 4.0 / PI, 1.0/3.0 );
+	double dia = pow( volume * 4.0 / M_PI, 1.0/3.0 );
 	if ( dia < minimumSize_ )
-		volume = pow( minimumSize_, 3.0 ) * PI / 4.0;
+		volume = pow( minimumSize_, 3.0 ) * M_PI / 4.0;
 	else if ( dia > maximumSize_ )
-		volume = pow( maximumSize_, 3.0 ) * PI / 4.0;
+		volume = pow( maximumSize_, 3.0 ) * M_PI / 4.0;
 
 	vector< Id > sl = parent_->spineIds( e.fieldIndex() );
 	if ( sl.size() > 1 &&
@@ -345,7 +347,7 @@ void Spine::setHeadVolume( const Eref& e, double volume )
 	{
 		double origLen = Field< double >::get( sl[1], "length" );
 		double origDia = Field< double >::get( sl[1], "diameter" );
-		double oldVolume = origLen * origDia * origDia * PI / 4.0;
+		double oldVolume = origLen * origDia * origDia * M_PI / 4.0;
 		double ratio = pow( volume / oldVolume, 1.0/3.0 );
 
 		SetGet2< double, double >::set(

@@ -12,6 +12,8 @@
 #include "ChanCommon.h"
 #include "SynChan.h"
 
+#include <cmath>
+ 
 const double& SynE() {
 	static const double SynE = exp(1.0);
 	return SynE;

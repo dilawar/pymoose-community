@@ -10,11 +10,10 @@ pybind11_add_module(_moose
 add_dependencies(_moose libmoose)
 
 # Use in version_info dict.
-target_compile_definitions(_moose PRIVATE
-    COMPILER_STRING="${CMAKE_CXX_COMPILER_ID},${CMAKE_CXX_COMPILER},${CMAKE_CXX_COMPILER_VERSION}")
+target_compile_definitions(_moose PRIVATE USE_FMT_LIB=ON)
 
 set_target_properties(_moose PROPERTIES SUFFIX ".so" PREFIX "")
-target_link_libraries(_moose PRIVATE CONAN_PKG::pybind11)
+target_link_libraries(_moose PRIVATE CONAN_PKG::pybind11 CONAN_PKG::fmt)
 
 if(APPLE)
     set(CMAKE_MODULE_LINKER_FLAGS "-undefined dynamic_lookup")

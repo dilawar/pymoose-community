@@ -16,17 +16,14 @@
 
 #define STRINGSTREAM_DOUBLE_PRECISION       10
 
-#include <iostream>
-#include <string>
-#include <map>
+#include "../basecode/header.h"
 #include <fstream>
 #include <sstream>
 
 #include "TableBase.h"
 
-using namespace std;
 
-class TableBase;
+using namespace std;
 
 enum OpenMode {WRITE, APPEND, WRITE_STR, APPEND_STR, WRITE_BIN, APPEND_BIN};
 

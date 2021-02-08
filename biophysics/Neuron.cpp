@@ -696,7 +696,7 @@ static void assignParam( Id obj, const string& field,
         if ( field == "Gbar" )
         {
             if ( val > 0 )
-                Field< double >::set( obj, "Gbar", val * len * dia * PI );
+                Field< double >::set( obj, "Gbar", val * len * dia * M_PI );
         }
         else if ( field == "Ek" )
         {
@@ -722,7 +722,7 @@ static void assignParam( Id obj, const string& field,
             // buffering. This field is deprecated but used in legacy
             // GENESIS scripts.
             Field< double >::set( obj, "B", val /
-                                  ( FaradayConst * len * dia * dia * PI / 4.0 ) );
+                                  ( FaradayConst * len * dia * dia * M_PI / 4.0 ) );
         }
     }
 }
@@ -748,15 +748,15 @@ static void assignSingleCompartmentParams( ObjId compt,
         }
         else if ( field == "RM" )
         {
-            Field< double >::set( compt, "Rm", val / ( len  * dia * PI ) );
+            Field< double >::set( compt, "Rm", val / ( len  * dia * M_PI ) );
         }
         else if ( field == "RA" )
         {
-            Field< double >::set( compt, "Ra", val*len*4 / (dia*dia*PI) );
+            Field< double >::set( compt, "Ra", val*len*4 / (dia*dia*M_PI) );
         }
         else if ( field == "CM" )
         {
-            Field< double >::set( compt, "Cm", val * len * dia * PI );
+            Field< double >::set( compt, "Cm", val * len * dia * M_PI );
         }
         else
         {
@@ -1781,7 +1781,7 @@ string findArg( const vector<string>& line, const string& field )
     }
     else if ( field == "rotationDistrib" )
     {
-        ret = "6.283185307"; // 2*PI
+        ret = "6.283185307"; // 2*M_PI
     }
     else if ( field == "shaftLen" )
     {
@@ -1805,7 +1805,7 @@ string findArg( const vector<string>& line, const string& field )
     }
     else if ( field == "phi" )
     {
-        ret = "1.5707963268"; // PI/2
+        ret = "1.5707963268"; // M_PI/2
     }
     return ret;
 }
@@ -2130,7 +2130,7 @@ void Neuron::scaleBufAndRates( unsigned int spineNum,
 void Neuron::scaleShaftDiffusion( unsigned int spineNum,
                                   double len, double dia) const
 {
-    double diffScale = dia * dia * 0.25 * PI / len;
+    double diffScale = dia * dia * 0.25 * M_PI / len;
     SetGet2< unsigned int, double >::set(
         // Note that the buildNeuroMeshJunctions function is called
         // on the dendDsolve with the args smdsolve, pmdsolve.
@@ -2142,17 +2142,17 @@ void Neuron::scaleShaftDiffusion( unsigned int spineNum,
 void Neuron::scaleHeadDiffusion( unsigned int spineNum,
                                  double len, double dia) const
 {
-    double vol = len * dia * dia * PI * 0.25;
+    double vol = len * dia * dia * M_PI * 0.25;
     // Note that the diffusion scale for the PSD uses half the length
     // of the head compartment. I'm explicitly putting this in below.
-    double diffScale = dia * dia * 0.25 * PI / (len/2.0);
+    double diffScale = dia * dia * 0.25 * M_PI / (len/2.0);
     unsigned int meshIndex = spineToMeshOrdering_[ spineNum ];
     Id headCompt = Field< Id >::get( headDsolve_, "compartment" );
     LookupField< unsigned int, double >::set( headCompt, "oneVoxelVolume",
             meshIndex, vol );
     Id psdCompt = Field< Id >::get( psdDsolve_, "compartment" );
     double thick = Field< double >::get( psdCompt, "thickness" );
-    double psdVol = thick * dia * dia * PI * 0.25;
+    double psdVol = thick * dia * dia * M_PI * 0.25;
     LookupField< unsigned int, double >::set( psdCompt, "oneVoxelVolume",
             meshIndex, psdVol );
     SetGet2< unsigned int, double >::set(

@@ -14,6 +14,10 @@
 #include "IntFireBase.h"
 #include "IzhIF.h"
 
+#include <cmath>
+using namespace std;
+
+
 using namespace moose;
 
 const Cinfo* IzhIF::initCinfo()

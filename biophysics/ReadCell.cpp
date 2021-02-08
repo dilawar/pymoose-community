@@ -14,7 +14,10 @@
 #include "CompartmentBase.h"
 #include "Compartment.h"
 #include "SymCompartment.h"
+
 #include <fstream>
+#include <cmath>
+
 
 double calcSurf( double, double );
 
