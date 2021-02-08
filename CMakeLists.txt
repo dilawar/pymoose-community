@@ -102,6 +102,7 @@ add_subdirectory(intfire)
 list(APPEND MOOSE_LIBRARIES
     moose_builtins
     msg
+    mesh
     shell
     randnum
     scheduling
@@ -112,7 +113,6 @@ list(APPEND MOOSE_LIBRARIES
     synapse
     intfire
     hsolve
-    mesh
     signeur
     diffusion
     ksolve
