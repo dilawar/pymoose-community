@@ -32,7 +32,8 @@
 #include <iomanip>
 #include <ctime>
 #include <algorithm>
-#include <cstring>
+
+using namespace std;
 
 #define T_RESET       "\033[0m"
 #define T_BLACK       "\033[30m"      /* Black */
@@ -51,8 +52,6 @@
 #define T_BOLDMAGENTA "\033[1m\033[35m"      /* Bold Magenta */
 #define T_BOLDCYAN    "\033[1m\033[36m"      /* Bold Cyan */
 #define T_BOLDWHITE   "\033[1m\033[37m"      /* Bold White */
-
-using namespace std;
 
 /* --------------------------------------------------------------------------*/
 /**
@@ -74,16 +73,17 @@ using namespace std;
     moose::showWarn( ss.str() ); \
     }
 
+
 namespace moose {
 
     /**
      * @brief Enumerate type for debug and log.
      */
-    enum serverity_level_ {
+    constexpr enum serverity_level_ {
         trace, debug, info , warning, fixme , error, fatal, failed
     };
 
-    static string levels_[9] = {
+    static array<string,9> levels_ = {
         "TRACE", "DEBUG", "INFO", "WARNING", "FIXME" , "ERROR", "FATAL", "FAILED"
     };
 
@@ -223,25 +223,25 @@ namespace moose {
      */
     inline void showInfo( string msg )
     {
-        moose::__dump__( msg, moose::info );
+        __dump__( msg, moose::info );
     }
 
     inline void showWarn( string msg )
     {
-        moose::__dump__(msg, moose::warning );
+        __dump__(msg, moose::warning );
     }
 
     inline void showDebug( const string msg )
     {
 #ifdef DISABLE_DEBUG
 #else
-        moose::__dump__(msg, moose::debug );
+        __dump__(msg, moose::debug );
 #endif
     }
 
     inline void showError( string msg )
     {
-        moose::__dump__( msg, moose::error );
+        __dump__( msg, moose::error );
     }
 
     /**
@@ -308,7 +308,7 @@ namespace moose {
     }
 
     template<typename T>
-    void print_array( T* a, size_t n, const string prefix = "" )
+    void print_array( T* a, size_t n, const string& prefix = "" )
     {
         stringstream ss;
         ss << prefix;

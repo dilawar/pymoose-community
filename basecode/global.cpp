@@ -60,15 +60,15 @@ int checkPath(const string& path)
 }
 
 /* Join paths */
-string joinPath(string pathA, string pathB)
+string joinPath(string& pathA, string& pathB)
 {
-    pathA = moose::fixPath(pathA);
+    pathA = fixPath(pathA);
     string newPath = pathA + "/" + pathB;
-    return moose::fixPath(newPath);
+    return fixPath(newPath);
 }
 
 /* Fix given path */
-string fixPath(string path)
+string fixPath(string& path)
 {
     int pathOk = moose::checkPath(path);
     if (pathOk == 0)

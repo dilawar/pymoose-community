@@ -16,11 +16,11 @@
  * =====================================================================================
  */
 
+#include "print_function.hpp"
+
 #include "cnpy.hpp"
 #include <fstream>
 #include <iterator>
-
-#include "print_function.hpp"
 
 using namespace std;
 

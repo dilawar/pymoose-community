@@ -36,6 +36,11 @@ option(WITH_NSDF            "Enable NSDF support. Requires hdf5" OFF )
 option(WITH_LEGACY_BINDING  "Use legacy python-bindings" OFF)
 option(USE_CONAN            "Use conan to download dependencies" ON)
 
+############################ COMPILER OPTIONS ####################################
+if(MSVC)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W2")
+endif()
+
 ############################ BUILD CONFIGURATION #################################
 
 # include conan support.
@@ -82,6 +87,7 @@ if(WITH_ASAN AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
         -fno-omit-frame-pointer -fsanitize=leak -fsanitize=address")
     set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -fsanitize=address")
 endif()
+
 
 ################################### TARGETS ####################################
 

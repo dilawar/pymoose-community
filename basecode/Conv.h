@@ -170,7 +170,7 @@ template<> class Conv< string >
          * boundaries.
          * We need to have strlen + 1 as a minimum.
          */
-        static unsigned int size( const string& val )
+        static size_t size( const string& val )
         {
             // extra char for termination of the string.
             return 1 + val.length() / sizeof( double );
@@ -193,7 +193,7 @@ template<> class Conv< string >
          */
         static void val2buf( const string& val, double** buf ) {
             char* temp = reinterpret_cast< char* >( *buf );
-            strcpy( temp, val.c_str() );
+            strcpy_s( temp, val.size(), val.c_str() );
             *buf += size( val );
         }
 
@@ -268,17 +268,17 @@ template<> class Conv< float >
         }
 
         static const float buf2val( double** buf ) {
-            float ret = **buf;
+            float ret = (float) (**buf);
             (*buf)++;
             return ret;
         }
         static void val2buf( float val, double** buf ) {
-            **buf = val;
+            **buf = (double) val;
             (*buf)++;
         }
 
         static void str2val( float& val, const string& s ) {
-            val = atof( s.c_str() );
+            val = (float) atof( s.c_str() );
         }
 
         static void val2str( string& s, float val ) {
@@ -478,7 +478,7 @@ template<> class Conv< bool >
         }
 
         static void val2str( string& s, bool val ) {
-            if ( val > 0.5 )
+            if ( val )
                 s = "1";
             else
                 s = "0";
