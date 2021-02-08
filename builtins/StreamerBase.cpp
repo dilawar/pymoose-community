@@ -64,7 +64,7 @@ void StreamerBase::writeToOutFile( const string& filepath
         auto m = (openmode == WRITE)?WRITE_BIN:APPEND_BIN;
         writeToNPYFile( filepath, m, data, columns );
     }
-    else if( "csv" == outputFormat or "dat" == outputFormat )
+    else if( "csv" == outputFormat || "dat" == outputFormat )
     {
         OpenMode m = (openmode == WRITE)?WRITE_STR:APPEND_STR;
         writeToCSVFile( filepath, m, data, columns );

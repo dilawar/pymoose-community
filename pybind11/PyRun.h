@@ -7,27 +7,11 @@
 #define _PYCALL_H
 
 #include <climits>
+#include <string>
 
-#if PY_MAJOR_VERSION >= 3
-#define PYCODEOBJECT PyObject
+using namespace std;
 
-string get_program_name()
-{
-    wchar_t * progname = Py_GetProgramName();
-    char buffer[PATH_MAX+1];
-    unsigned int ret = wcstombs(buffer, progname, PATH_MAX);
-    buffer[ret] = '\0';
-    return string(buffer);
-}
-#else
-#define PYCODEOBJECT PyCodeObject
-
-string get_program_name()
-{
-    char * progname = Py_GetProgramName();
-    return string(progname);
-}
-#endif
+string get_program_name();
 
 /**
    PyRun allows caling Python functions from moose.
@@ -79,8 +63,8 @@ protected:
     string runstr_;               // statement str for running in each process call
     PyObject * globals_;          // global env dict
     PyObject * locals_;           // local env dict
-    PYCODEOBJECT * runcompiled_;  // compiled form of procstr_
-    PYCODEOBJECT * initcompiled_; // coimpiled form of initstr_
+    PyObject * runcompiled_;      // compiled form of procstr_
+    PyObject * initcompiled_;     // coimpiled form of initstr_
     string inputvar_;             // identifier for input variable.
     string outputvar_;            // identifier for output variable
 };

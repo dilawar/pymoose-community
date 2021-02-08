@@ -18,7 +18,6 @@ target_link_libraries(_moose PRIVATE CONAN_PKG::pybind11 CONAN_PKG::fmt)
 if(APPLE)
     set(CMAKE_MODULE_LINKER_FLAGS "-undefined dynamic_lookup")
     message(STATUS "ADDING some linker flags ${CMAKE_EXE_LINKER_FLAGS}")
-    # cmake --help-policy CMP0042
     set_target_properties(_moose PROPERTIES MACOSX_RPATH OFF)
 endif(APPLE)
 
@@ -29,7 +28,7 @@ if(APPLE)
         ${MOOSE_LIBRARIES}
         ${STATIC_LIBRARIES})
     target_link_libraries(_moose PRIVATE ${SYSTEM_SHARED_LIBS})
-else(APPLE)
+elseif(UNIX)
     # Linux
     target_link_libraries(_moose PRIVATE
         "-Wl,--whole-archive" 
@@ -37,6 +36,8 @@ else(APPLE)
         ${STATIC_LIBRARIES} 
         "-Wl,--no-whole-archive"
         ${SYSTEM_SHARED_LIBS})
+elseif(MSVC)
+    target_link_libraries(_moose PRIVATE ${MOOSE_LIBRARIES} ${STATIC_LIBRARIES})
 endif()
 
 # NOTE: Because LIBRARY_OUTPUT_DIRECTORY does not work with some new cmake
@@ -62,7 +63,13 @@ add_custom_target(copy_python_tree ALL
 # Create a binary distribution inside a directory. Installation will copy that
 # directory.
 set(_platform "CMAKE")
-set(PYMOOSE_BDIST_FILE ${CMAKE_BINARY_DIR}/pymoose-${VERSION_MOOSE}.${_platform}.tar.gz)
+if(WIN32)
+    set(BDIST_EXT "zip")
+elseif(UNIX)
+    set(BDIST_EXT "tar.gz")
+endif()
+
+set(PYMOOSE_BDIST_FILE ${CMAKE_BINARY_DIR}/pymoose-${VERSION_MOOSE}.${_platform}.${BDIST_EXT})
 set(PYMOOSE_INSTALL_DIR ${CMAKE_BINARY_DIR}/_pymoose_temp_install)
 file(MAKE_DIRECTORY ${PYMOOSE_INSTALL_DIR})
 
@@ -78,6 +85,14 @@ add_custom_command(OUTPUT ${PYMOOSE_BDIST_FILE}
 add_custom_target(pymoose_sdist ALL
     DEPENDS ${PYMOOSE_BDIST_FILE} _moose
     COMMENT "Building pymoose source distribution.")
+
+add_custom_target(wheel ALL 
+    DEPENDS _moose
+    COMMAND ${PYTHON_EXECUTABLE} -m pip install wheel --user
+    COMMAND ${PYTHON_EXECUTABLE} setup.py bdist_wheel --skip-build -d ${CMAKE_BINARY_DIR} 
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "python's wheel is saved to ${CMAKE_BINARY_DIR}"
+    VERBATIM)
 
 install(DIRECTORY ${PYMOOSE_INSTALL_DIR}/usr/local/
     DESTINATION ${CMAKE_INSTALL_PREFIX}

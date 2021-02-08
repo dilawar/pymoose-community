@@ -5,9 +5,22 @@
 // Author: subha
 // Created: Sat Oct 11 14:47:22 2014 (+0530)
 
-#include "Python.h"
 #include "../basecode/header.h"
+
+#include "Python.h"
 #include "PyRun.h"
+
+constexpr size_t PATH_MAX = 512;
+using namespace std;
+
+string get_program_name()
+{
+    wchar_t * progname = Py_GetProgramName();
+    char buffer[PATH_MAX+1];
+    unsigned int ret = wcstombs(buffer, progname, PATH_MAX);
+    buffer[ret] = '\0';
+    return string(buffer);
+}
 
 const int PyRun::RUNPROC = 1;
 const int PyRun::RUNTRIG = 2;
@@ -318,8 +331,10 @@ void PyRun::reinit(const Eref &e, ProcPtr p)
             cerr << "Could not initialize locals dict" << endl;
         }
     }
-    initcompiled_ = (PYCODEOBJECT *)Py_CompileString(
-        initstr_.c_str(), get_program_name().c_str(), Py_file_input);
+
+    const char* prgname = get_program_name().c_str();
+
+    initcompiled_ = Py_CompileString(initstr_.c_str(), prgname, Py_file_input);
     if (!initcompiled_) {
         cerr << "Error compiling initString" << endl;
         handleError(true);
@@ -332,8 +347,7 @@ void PyRun::reinit(const Eref &e, ProcPtr p)
 
     assert(runstr_.size() > 0);
 
-    runcompiled_ = (PYCODEOBJECT *)Py_CompileString(
-        runstr_.c_str(), get_program_name().c_str(), Py_file_input);
+    runcompiled_ = Py_CompileString(runstr_.c_str(), prgname, Py_file_input);
     if (!runcompiled_) {
         cerr << "Error compiling runString" << endl;
         handleError(true);

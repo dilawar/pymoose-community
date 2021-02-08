@@ -367,11 +367,13 @@ void mooseReinit()
 /* ----------------------------------------------------------------------------*/
 void mooseStart(double runtime, bool notify = false)
 {
+#if UNIX
     struct sigaction sigHandler;
     sigHandler.sa_handler = handleKeyboardInterrupts;
     sigemptyset(&sigHandler.sa_mask);
     sigHandler.sa_flags = 0;
     sigaction(SIGINT, &sigHandler, NULL);
+#endif
     getShellPtr()->doStart(runtime, notify);
 }
 
