@@ -24,4 +24,4 @@ jobs:
         python -m pip install numpy matplotlib --user
     - name: Build
       run: |
-        python setup.py install
+        mkdir build && cmake .. && make -j3 && ctest --output-on-failure
