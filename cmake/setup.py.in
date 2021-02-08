@@ -1,0 +1,52 @@
+# -*- coding: utf-8 -*-
+# This script can also be called directly to build and install the pymoose
+# module.
+#
+# Alternatively, you can use cmake build system which provides finer control
+# over the build. This script is called by cmake to install the python module.
+#
+
+__author__ = "Dilawar Singh"
+__copyright__ = "Copyright 2019-, Dilawar Singh"
+__maintainer__ = "Dilawar Singh"
+__email__ = "dilawar.s.rajput@gmail.com"
+
+from pathlib import Path
+import os.path
+import importlib
+
+
+from setuptools import setup, find_packages
+
+
+with (Path("@CMAKE_SOURCE_DIR@") / "README.md").open() as f:
+    readme = f.read()
+
+
+setup(
+    name="pymoose",
+    version="@VERSION_MOOSE@",
+    description="Python scripting interface of MOOSE Simulator (https://moose.ncbs.res.in)",
+    long_description=readme,
+    long_description_content_type="text/markdown",
+    author="MOOSERes",
+    author_email="bhalla@ncbs.res.in",
+    maintainer="Dilawar Singh",
+    maintainer_email="dilawars@ncbs.res.in",
+    url="http://moose.ncbs.res.in",
+    packages= find_packages(),
+    include_package_data = True,
+    package_dir={
+        "rdesigneur":  "python/rdesigneur",
+        "moose": "python/moose",
+    },
+    package_data={
+        "moose": [
+            "_moose*.pyd",
+            os.path.join("neuroml2", "schema", "NeuroMLCoreDimensions.xml"),
+            os.path.join("chemUtil", "rainbow2.pkl"),
+        ]
+    },
+    install_requires=["numpy", "matplotlib"],
+    extra_requires={"dev": ["coverage", "pytest", "pytest-cov"]},
+)

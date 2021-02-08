@@ -7,8 +7,6 @@ pybind11_add_module(_moose
     MooseVec.cpp 
     PyRun.cpp)
 
-add_dependencies(_moose libmoose)
-
 # Use in version_info dict.
 target_compile_definitions(_moose PRIVATE USE_FMT_LIB=ON)
 
@@ -23,21 +21,22 @@ endif(APPLE)
 
 if(APPLE)
     # OSX
-    target_link_libraries(_moose PRIVATE
-        "-Wl,-all_load"
-        ${MOOSE_LIBRARIES}
-        ${STATIC_LIBRARIES})
-    target_link_libraries(_moose PRIVATE ${SYSTEM_SHARED_LIBS})
+    target_link_libraries(_moose PRIVATE "-Wl,-all_load" ${MOOSE_LIBRARIES})
+    # target_link_libraries(_moose PRIVATE ${SYSTEM_SHARED_LIBS})
 elseif(UNIX)
     # Linux
     target_link_libraries(_moose PRIVATE
         "-Wl,--whole-archive" 
         ${MOOSE_LIBRARIES} 
-        ${STATIC_LIBRARIES} 
         "-Wl,--no-whole-archive"
         ${SYSTEM_SHARED_LIBS})
 elseif(MSVC)
-    target_link_libraries(_moose PRIVATE ${MOOSE_LIBRARIES} ${STATIC_LIBRARIES})
+    target_link_libraries(_moose PRIVATE ${MOOSE_LIBRARIES})
+    target_link_libraries(_moose PRIVATE ${SYSTEM_SHARED_LIBS})
+    # mimic --whole-archive in MSVC :-/ (requires 2015v2 at least)
+    foreach(_lib in ${MOOSE_LIBRARIES})
+        set_target_properties(_moose PROPERTIES  LINK_FLAGS "/WHOLEARCHIVE:${_lib}")
+    endforeach()
 endif()
 
 # NOTE: Because LIBRARY_OUTPUT_DIRECTORY does not work with some new cmake
@@ -46,6 +45,10 @@ add_custom_command(TARGET _moose POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:_moose> ${CMAKE_SOURCE_DIR}/python/moose
     COMMENT "Copying $<TARGET_NAME:_moose> to python src folder"
     )
+
+# copy setup.py.in as setup.py file in cwd.
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/setup.py.in
+    ${CMAKE_BINARY_DIR}/setup.py)
 
 
 # Copy python tree to BUILD directory. User can set PYTHONPATH to
@@ -77,7 +80,7 @@ add_custom_target(wheel ALL
     DEPENDS _moose
     COMMAND ${PYTHON_EXECUTABLE} -m pip install wheel --user
     COMMAND ${PYTHON_EXECUTABLE} setup.py bdist_wheel --skip-build -d ${CMAKE_BINARY_DIR} 
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "python's wheel is saved to ${CMAKE_BINARY_DIR}"
     VERBATIM)
 

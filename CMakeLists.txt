@@ -14,13 +14,9 @@ find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
 set(PYTHON_EXECUTABLE ${Python3_EXECUTABLE})
 set(CMAKE_MACOSX_RPATH OFF)
 
-# NOTE: version should be changed in setup.py file.
-# If moose version is not given, use setup.py file to get the default version.
 if(NOT VERSION_MOOSE)
-    execute_process(COMMAND ${PYTHON_EXECUTABLE} setup.py --version
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        OUTPUT_VARIABLE VERSION_MOOSE
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
+    string(TIMESTAMP TODAY "%Y%m%d")
+    set(VERSION_MOOSE "3.2.2dev${TODAY}")
 endif()
 
 add_definitions(-DMOOSE_VERSION="${VERSION_MOOSE}")
@@ -71,18 +67,6 @@ if(WITH_ASAN AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 endif()
 
 
-################################### TARGETS ####################################
-
-find_package(Threads REQUIRED)
-
-add_library(libmoose SHARED basecode/main.cpp)
-set_target_properties(libmoose PROPERTIES PREFIX "")
-
-add_executable(moose.bin basecode/main.cpp)
-add_dependencies(moose.bin libmoose)
-target_link_libraries(moose.bin PRIVATE $<TARGET_FILE:libmoose>
-    Threads::Threads ${CMAKE_DL_LIBS})
-
 
 ################################### SETUP BUILD ################################
 
@@ -113,7 +97,8 @@ add_subdirectory(kinetics)
 add_subdirectory(synapse)
 add_subdirectory(intfire)
 
-###################################### LINKING #################################
+################################### TARGETS ####################################
+
 list(APPEND MOOSE_LIBRARIES
     moose_builtins
     msg
@@ -136,20 +121,10 @@ list(APPEND MOOSE_LIBRARIES
     basecode
     )
 
-# MAC linker does not understand many of gnu-ld options.
-if(APPLE)
-    target_link_libraries(libmoose "-Wl,-all_load" ${MOOSE_LIBRARIES})
-    target_link_libraries(libmoose ${CMAKE_DL_LIBS})
-elseif(UNIX)
-    target_link_libraries(libmoose
-        "-Wl,--whole-archive"
-        ${MOOSE_LIBRARIES}
-        "-Wl,--no-whole-archive"
-        ${CMAKE_DL_LIBS}
-        )
-elseif(MSVC)
-    target_link_libraries(libmoose ${MOOSE_LIBRARIES})
-endif()
+find_package(Threads REQUIRED)
+
+add_executable(moose.bin basecode/main.cpp)
+target_link_libraries(moose.bin PRIVATE ${MOOSE_LIBRARIES} Threads::Threads ${CMAKE_DL_LIBS})
 
 
 ################################# PYTHON BINDINGS #############################
@@ -158,7 +133,6 @@ add_subdirectory(pybind11)
 ######################### INSTALL ##############################################
 
 install(TARGETS moose.bin DESTINATION bin CONFIGURATIONS Debug)
-install(TARGETS libmoose DESTINATION lib CONFIGURATIONS Debug)
 
 
 ############################ CTEST ######################################
