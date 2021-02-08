@@ -1,21 +1,12 @@
 /***
- *       Filename:  StreamerBase.cpp
- *
  *    Description:  Stream table data.
- *
- *        Version:  0.0.1
  *        Created:  2016-04-26
 
- *       Revision:  none
- *
  *         Author:  Dilawar Singh <dilawars@ncbs.res.in>
  *   Organization:  NCBS Bangalore
  *
- *        License:  GNU GPL2
+ *        License:  GNU GPLv3
  */
-
-
-
 
 #include <algorithm>
 #include <sstream>
@@ -24,11 +15,10 @@
 #include <sstream>
 #include <vector>
 
-using namespace std;
-
 #include "StreamerBase.h"
 #include "../scheduling/Clock.h"
 #include "../utility/cnpy.hpp"
+
 
 // Class function definitions
 StreamerBase::StreamerBase()

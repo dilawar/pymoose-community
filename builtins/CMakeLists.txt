@@ -59,12 +59,12 @@ set(SRCS
     Interpol.cpp
     StimulusTable.cpp
     TimeTable.cpp
-    StreamerBase.cpp
-    Streamer.cpp
     Stats.cpp
     Interpol2D.cpp
     SpikeStats.cpp
     MooseParser.cpp
+    StreamerBase.cpp
+    Streamer.cpp
     testBuiltins.cpp
     )
 
@@ -86,9 +86,6 @@ if(WITH_NSDF AND HDF5_FOUND)
 endif()
 
 add_library(moose_builtins ${SRCS} )
-if(UNIX)
-    target_compile_options(moose_builtins PRIVATE -DENABLE_SOCKET_STREAMER)
-endif()
 
 if(MSVC)
     # exprtk is a bigobj.

@@ -9,7 +9,6 @@ add_library(shell
     ShellCopy.cpp
     ShellThreads.cpp
     LoadModels.cpp
-    SaveModels.cpp
     Neutral.cpp
     Wildcard.cpp
     testShell.cpp

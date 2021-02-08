@@ -13,6 +13,9 @@
 
 class Cinfo;
 
+// OpenModes.
+enum OpenMode {WRITE, APPEND, WRITE_STR, APPEND_STR, WRITE_BIN, APPEND_BIN};
+
 /**
  * Base class for table operations. Provides basics for looking up table
  * and interpolation, but no process or messaging. Derived classes

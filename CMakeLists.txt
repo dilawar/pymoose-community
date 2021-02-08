@@ -148,13 +148,15 @@ if(APPLE)
         ${SYSTEM_SHARED_LIBS}
         ${CMAKE_DL_LIBS}
         )
-else(APPLE)
+elseif(UNIX)
     target_link_libraries(libmoose
         "-Wl,--whole-archive"
         ${MOOSE_LIBRARIES}
         "-Wl,--no-whole-archive"
         )
-endif(APPLE)
+elseif(MSVC)
+    target_link_libraries(libmoose ${MOOSE_LIBRARIES})
+endif(WIN32)
 
 
 ################################# PYTHON BINDINGS #############################
