@@ -1,4 +1,4 @@
-name: Python package
+name: Build on Linux
 
 on: [push]
 
@@ -24,4 +24,4 @@ jobs:
         python -m pip install numpy matplotlib --user
     - name: Build
       run: |
-        mkdir build && cmake .. && make -j3 && ctest --output-on-failure
+        mkdir build && cd build && cmake .. && make -j3 && ctest --output-on-failure
