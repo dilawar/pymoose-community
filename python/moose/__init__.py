@@ -801,7 +801,7 @@ def writeKkit(modelpath, filepath, sceneitems={}):
     return model_utils.mooseWriteKkit(modelpath, filepath, sceneitems)
 
 
-def readNML2(modelpath, verbose=False):
+def readNML2(modelpath : Path, verbose : bool =False):
     """Load neuroml2 model.
 
     Parameters
@@ -817,6 +817,7 @@ def readNML2(modelpath, verbose=False):
     ------
     FileNotFoundError: If modelpath is not found or not readable.
     """
+    assert modelpath.exists(), f'{modelpath} does not exists'
     return model_utils.mooseReadNML2(modelpath, verbose)
 
 

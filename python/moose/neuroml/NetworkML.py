@@ -28,6 +28,7 @@ import logging
 # define a Handler which writes INFO messages or higher to the sys.stderr
 console = logging.StreamHandler()
 console.setLevel(logging.INFO)
+
 # set a format which is simpler for console use
 formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
 # tell the handler to use this format
@@ -43,7 +44,7 @@ class NetworkML():
         self.model_dir = nml_params['model_dir']
 
     def readNetworkMLFromFile(self,filename,cellSegmentDict,params={}):
-        """
+        """readNetworkMLFromFile
         specify tweak params = {'excludePopulations':[popname1,...], 'excludeProjections':[projname1,...], \
             'onlyInclude':{'includePopulation':(popname,[id1,...]),'includeProjections':(projname1,...)} }
         If excludePopulations is present, then excludeProjections must also be present:
@@ -72,7 +73,7 @@ class NetworkML():
         root_element = tree.getroot()
         _logger.info("Tweaking model ... ")
         tweak_model(root_element, params)
-        _logger.info("Loading model into MOOSE ... ")
+        _logger.info("Constructing MOOSE objects... ")
         return self.readNetworkML(root_element,cellSegmentDict,params,root_element.attrib['lengthUnits'])
 
     def readNetworkML(self,network,cellSegmentDict,params={},lengthUnits="micrometer"):

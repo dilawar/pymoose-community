@@ -48,24 +48,24 @@ In [2]: import moose.neuroml
 In [3]: moose.neuroml.loadNeuroML_L123('Generated.net.xml')
 """
 
+import sys
+from pathlib import Path
+import xml.etree.ElementTree as ET
+
 import moose
 import moose.utils as mu
-import xml.etree.ElementTree as ET
 from moose.neuroml.ChannelML import ChannelML
 from moose.neuroml.MorphML import MorphML
 from moose.neuroml.NetworkML import NetworkML
-
 import moose.neuroml.utils as MNU
 
-import sys
-from os import path
 
 
 class NeuroML:
     def __init__(self):
         pass
 
-    def readNeuroMLFromFile(self, filename, params={}, cellsDict={}):
+    def readNeuroMLFromFile(self, filename : Path, params={}, cellsDict={}):
         """
         For the format of params required to tweak what cells are loaded,
          refer to the doc string of NetworkML.readNetworkMLFromFile().
@@ -74,12 +74,13 @@ class NeuroML:
         """
         mu.info("Loading neuroml file %s " % filename)
         moose.Neutral("/library")  # creates /library in MOOSE tree; elif present, wraps
-        tree = ET.parse(filename)
+        assert filename.exists(), f'{filename} does not exists or not readable'
+        tree = ET.parse(str(filename))
         root_element = tree.getroot()
 
         # if model_path is given in params, use it else use the directory of NML
         # as model_dir.
-        self.model_dir = params.get("model_dir", path.dirname(path.abspath(filename)))
+        self.model_dir : Path = params.get("model_dir", filename.parent.resolve()) 
 
         if "lengthUnits" in list(root_element.attrib.keys()):
             self.lengthUnits = root_element.attrib["lengthUnits"]
@@ -115,10 +116,10 @@ class NeuroML:
             mu.info("Using default temperature of %s degree Celsius" % self.temperature)
         self.nml_params = {
             "temperature": self.temperature,
-            "model_dir": self.model_dir,
+            "model_dir": str(self.model_dir),
         }
 
-        mu.debug("Loading channels and synapses into MOOSE /library ...")
+        mu.info("Loading channels and synapses into MOOSE /library ...")
         cmlR = ChannelML(self.nml_params)
         for channels in root_element.findall(".//{" + MNU.neuroml_ns + "}channels"):
             self.channelUnits = channels.attrib["units"]
@@ -132,7 +133,7 @@ class NeuroML:
             for ionConc in channels.findall(".//{" + MNU.cml_ns + "}ion_concentration"):
                 cmlR.readIonConcML(ionConc, units=self.channelUnits)
 
-        mu.debug("Loading cell definitions into MOOSE /library ...")
+        mu.info("Loading cell definitions into MOOSE /library ...")
         mmlR = MorphML(self.nml_params)
         self.cellsDict = cellsDict
         for cells in root_element.findall(".//{" + MNU.neuroml_ns + "}cells"):
@@ -150,7 +151,7 @@ class NeuroML:
         ):
             return (self.cellsDict, "no populations (L3 NetworkML) found.")
         else:
-            mu.debug("Loading individual cells into MOOSE root ... ")
+            mu.info("Loading individual cells into MOOSE root ... ")
             nmlR = NetworkML(self.nml_params)
             return nmlR.readNetworkML(
                 root_element,
@@ -167,8 +168,9 @@ class NeuroML:
         self.cellsDict = nmlR.cellSegmentDict
 
 
-def loadNeuroML_L123(filename):
+def loadNeuroML_L123(filename : Path):
     neuromlR = NeuroML()
+    assert filename.exists(), f'{filename} does not exists'
     return neuromlR.readNeuroMLFromFile(filename)
 
 
@@ -176,4 +178,4 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         mu.error("You need to specify the neuroml filename.")
         sys.exit(1)
-    print(loadNeuroML_L123(sys.argv[1]))
+    print(loadNeuroML_L123(Path(sys.argv[1])))

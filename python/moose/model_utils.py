@@ -131,19 +131,20 @@ def mooseMergeChemModel(src, des):
 
 
 # NML2 reader and writer function.
-def mooseReadNML2(modelpath, verbose=False):
+def mooseReadNML2(modelpath : Path, verbose : True =False):
     """Read NeuroML model (version 2) and return reader object.
     """
     global nml2Import_, nml2ImportError_
     if not nml2Import_:
         raise RuntimeError("Could not load NML2 support:\n %s" % nml2ImportError_)
 
+    assert modelpath.exists(), f'{modelpath} dot not exists'
     reader = _neuroml2.NML2Reader(verbose=verbose)
     reader.read(modelpath)
     return reader
 
 
-def mooseWriteNML2(outfile):
+def mooseWriteNML2(outfile : Path):
     raise NotImplementedError("Writing to NML2 is not supported yet")
 
 

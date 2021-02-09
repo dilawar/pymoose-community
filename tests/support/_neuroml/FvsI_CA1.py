@@ -13,21 +13,17 @@ All SI units
                     Added unittest
                     Modified for testing with ctest.
 """
-from __future__ import print_function
-
 import os
-os.environ['NUMPTHREADS'] = '1'
-
 import moose
 from moose.neuroml.NeuroML import NeuroML
-
 import numpy as np
+from pathlib import Path
 import unittest
 
 soma_ = None
 cellSpikeTable_ = None
 
-def loadModel(filename):
+def loadModel(filename : Path):
     global soma_, cellSpikeTable_
     neuromlR = NeuroML()
     neuromlR.readNeuroMLFromFile(filename)
@@ -48,7 +44,10 @@ def applyCurrent(currenti):
     global soma_, cellSpikeTable_
     moose.reinit()
     soma_.inject = currenti
-    moose.start(1.0)
+    ksolve = moose.wildcardFind('/##[TYPE=Ksolve]')
+    print(ksolve)
+    moose.start(1.0, True)
+    print(cellSpikeTable_.vector)
     spikesList = np.array(cellSpikeTable_.vector)
     print(spikesList)
     if len(spikesList)>0:

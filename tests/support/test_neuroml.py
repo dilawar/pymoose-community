@@ -14,24 +14,26 @@ __status__           = "Development"
 import sys
 import os
 import moose
+from pathlib import Path
 
 # the model lives in the same directory as the test script
-modeldir = os.path.dirname(__file__)
+modeldir = Path(__file__).parent
 
 import _neuroml
 from _neuroml.FvsI_CA1 import ca1_main, loadModel
 from _neuroml.CA1 import loadGran98NeuroML_L123
 
 def test_ca1():
-    p = os.path.join(modeldir, '_neuroml/cells_channels/CA1soma.morph.xml')
+    p = modeldir / '_neuroml'/'cells_channels'/'CA1soma.morph.xml'
     loadModel(p)
-    assert 10 == ca1_main(4e-13)
-    assert 20 == ca1_main(8e-13)
-    assert 29 == ca1_main(14e-13)
-    assert 34 == ca1_main(18e-13)
+    a = ca1_main(10*4e-13)
+    b = ca1_main(10*8e-13)
+    c = ca1_main(10*14e-13)
+    d = ca1_main(10*18e-13)
+    assert (a, b, c, d) == (10, 20, 29, 34), (a, b, c, d)
 
 def test_gran():
-    p = os.path.join(modeldir, '_neuroml/CA1soma.net.xml')
+    p = modeldir / '_neuroml' / 'CA1soma.net.xml'
     assert loadGran98NeuroML_L123(p) in [8,9]
 
 def main():
