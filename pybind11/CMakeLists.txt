@@ -49,35 +49,23 @@ add_custom_command(TARGET _moose POST_BUILD
     COMMENT "Copying $<TARGET_NAME:_moose> to python src folder"
     )
 
-# copy setup.py.in as setup.py file in cwd.
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/setup.py.in
-    ${CMAKE_BINARY_DIR}/setup.py)
-
 
 # Copy python tree to BUILD directory. User can set PYTHONPATH to
 # ${CMAKE_BINARY_DIR}/python. 
 set(PYMOOSE_BUILD_DIR ${CMAKE_BINARY_DIR}/python)
-add_custom_target(copy_python_tree ALL
+add_custom_command(TARGET _moose POST_BUILD 
     # Copy whole Python's source tree to build directory.
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/python/
         ${PYMOOSE_BUILD_DIR}
     COMMENT "pybind11: Copying Python src ${CMAKE_SOURCE_DIR}/python → ${PYMOOSE_BUILD_DIR}"
-    DEPENDS _moose 
     VERBATIM)
 
  
-# Create a binary distribution inside a directory. Installation will copy that
-# directory.
-set(_platform "CMAKE")
-if(WIN32)
-    set(BDIST_EXT "zip")
-elseif(UNIX)
-    set(BDIST_EXT "tar.gz")
-endif()
-
-set(PYMOOSE_BDIST_FILE ${CMAKE_BINARY_DIR}/pymoose-${VERSION_MOOSE}.${_platform}.${BDIST_EXT})
-set(PYMOOSE_INSTALL_DIR ${CMAKE_BINARY_DIR}/_pymoose_temp_install)
-file(MAKE_DIRECTORY ${PYMOOSE_INSTALL_DIR})
+#
+# Create a wheel 
+# copy setup.py.in as setup.py file in cwd.
+#
+configure_file(${CMAKE_SOURCE_DIR}/cmake/setup.py.in ${CMAKE_BINARY_DIR}/setup.py)
 
 add_custom_target(wheel ALL 
     DEPENDS _moose
@@ -87,6 +75,7 @@ add_custom_target(wheel ALL
     COMMENT "python's wheel is saved to ${CMAKE_BINARY_DIR}"
     VERBATIM)
 
-install(DIRECTORY ${PYMOOSE_INSTALL_DIR}/usr/local/
-    DESTINATION ${CMAKE_INSTALL_PREFIX}
-    CONFIGURATIONS Debug Release)
+#
+# install wheel.
+#
+install(SCRIPT ${CMAKE_SOURCE_DIR}/cmake/pymoose_install.cmake)
