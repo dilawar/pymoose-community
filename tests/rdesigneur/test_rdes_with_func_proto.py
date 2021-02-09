@@ -53,6 +53,7 @@ def test_proto():
 
 def main():
     test_proto()
+    print('[INFO] Done.')
 
 if __name__ == '__main__':
     main()

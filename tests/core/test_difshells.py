@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import moose
-print(moose.about())
 import numpy as np
 import chan_proto
 import param_chan
@@ -215,6 +214,7 @@ def test_diffshell():
 
 def main():
     test_diffshell()
+    print('[INFO] Test is done')
 
 if __name__ == '__main__':
     main()
