@@ -17,8 +17,9 @@
 ## channel conductances, between them.
 ##########################################################################
 
-# FIXME: Deprecated since 3.4
-import imp
+import importlib
+from pathlib import Path
+import typing as T
 
 import os
 import moose
@@ -40,6 +41,9 @@ from moose.neuroml.ChannelML import ChannelML
 import xml.etree.ElementTree as etree
 
 import csv
+
+from loguru import logger
+
 
 # EREST_ACT = -70e-3
 
@@ -191,7 +195,7 @@ class rdesigneur:
             self.buildSpineProto()
             self.buildChemProto()
         except BuildError as msg:
-            print("Error: rdesigneur: Prototype build failed:", msg)
+            logger.error(f"rdesigneur: Prototype build failed: {msg}")
             quit()
 
     ################################################################
@@ -300,7 +304,7 @@ class rdesigneur:
     # Some utility functions for building prototypes.
     ################################################################
     # Return true if it is a function.
-    def buildProtoFromFunction(self, func, protoName):
+    def buildProtoFromFunction(self, func : str, protoName : str):
         bracePos = func.find("()")
         if bracePos == -1:
             return False
@@ -309,27 +313,27 @@ class rdesigneur:
         # to be the function name.
         modPos = func.rfind(".")
         if modPos != -1:  # Function is in a file, load and check
-            resolvedPath = os.path.realpath(func[0:modPos])
-            pathTokens = resolvedPath.split("/")
-            pathTokens = ["/"] + pathTokens
-            modulePath = os.path.realpath(os.path.join(*pathTokens[:-1]))
-            moduleName = pathTokens[-1]
+            resolvedPath = Path(func[0:modPos]).resolve()
+            modulePath : Path = resolvedPath.parent
+            moduleName : str = resolvedPath.name
             funcName = func[modPos + 1 : bracePos]
-            moduleFile, pathName, description = imp.find_module(
-                moduleName, [modulePath]
-            )
+            assert Path(modulePath).exists(), f'directory {modulePath} does not exists'
+            loader_details = (importlib.machinery.SourceFileLoader, importlib.machinery.SOURCE_SUFFIXES)
+            toolsfinder = importlib.machinery.FileFinder(str(modulePath), loader_details)
+            spec = toolsfinder.find_spec(moduleName)
+            assert spec is not None
+
             try:
-                module = imp.load_module(moduleName, moduleFile, pathName, description)
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
                 funcObj = getattr(module, funcName)
                 funcObj(protoName)
                 return True
-            finally:
-                moduleFile.close()
-            return False
+            except Exception as e:
+                logger.error(f'{e}')
+                return False
         if not func[0:bracePos] in globals():
-            raise BuildError(
-                protoName + " Proto: global function '" + func + "' not known."
-            )
+            raise BuildError(f"{protoName} Proto: global function '{func}' not known.")
         globals().get(func[0:bracePos])(protoName)
         return True
 
@@ -373,6 +377,7 @@ class rdesigneur:
 
         if self.buildProtoFromFunction(protoVec[0], protoVec[1]):
             return True
+
         # Maybe the proto is already in memory
         # Avoid relative file paths going toward root
         if protoVec[0][:3] != "../":
@@ -470,6 +475,7 @@ class rdesigneur:
                 chanName = self.parseChanName(i[0])
             else:
                 chanName = i[1]
+
             j = [i[0], chanName]
             if not self.checkAndBuildProto("chan", j, [], ["xml"]):
                 cm = ChannelML({"temperature": self.temperature})

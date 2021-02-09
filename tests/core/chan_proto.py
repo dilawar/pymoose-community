@@ -10,7 +10,6 @@ chan_proto quires alpha and beta params for both activation and inactivation
 If no inactivation, just send in empty Yparam array.
 """
 
-from __future__ import print_function, division
 import moose
 import numpy as np
 from collections import namedtuple

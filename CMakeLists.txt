@@ -141,10 +141,10 @@ elseif(MSVC)
     target_link_libraries(moose.bin PRIVATE ${MOOSE_LIBRARIES} ${SYSTEM_SHARED_LIBS})
     set(MSVC_WHOLE_ARCHIVE "")
     foreach(_lib ${MOOSE_LIBRARIES})
-        message(STATUS " whole archive ${_lib}")
+        # message(STATUS " whole archive ${_lib}")
         set(MSVC_WHOLE_ARCHIVE "${MSVC_WHOLE_ARCHIVE} /WHOLEARCHIVE:${_lib}")
     endforeach()
-    set_target_properties(_moose PROPERTIES LINK_FLAGS "${MSVC_WHOLE_ARCHIVE}")
+    set_target_properties(moose.bin PROPERTIES LINK_FLAGS "${MSVC_WHOLE_ARCHIVE}")
 endif()
 
 

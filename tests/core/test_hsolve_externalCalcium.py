@@ -8,6 +8,7 @@ import time
 import test_difshells as td
 import chan_proto
 import param_chan
+from pathlib import Path
 
 import moose
 print('Using moose from %s' % moose.__file__ )
@@ -15,9 +16,9 @@ print('Using moose from %s' % moose.__file__ )
 difshell_no = 3
 difbuf_no = 0
 
-script_dir_ = os.path.dirname( os.path.abspath( __file__ ) )
+script_dir_ = Path( __file__ ).parent.resolve() 
 
-p_file = os.path.join( script_dir_, "soma.p" )
+p_file = script_dir_ / "soma.p"
 
 cond = {'CaL12':30*0.35e-5, 'SK':0.5*0.35e-6}
 
@@ -35,10 +36,11 @@ def test_hsolve_calcium():
 
     lib = moose.Neutral('/library')
     model = moose.loadModel(p_file,'neuron')
+    assert model, model
     pulse = moose.PulseGen('/neuron/pulse')
     inject = 100e-10
-    chan_proto.chan_proto('/library/SK',param_chan.SK)
-    chan_proto.chan_proto('/library/CaL12',param_chan.Cal)
+    chan_proto.chan_proto('/library/SK', param_chan.SK)
+    chan_proto.chan_proto('/library/CaL12', param_chan.Cal)
     pulse.delay[0] = 8.
     pulse.width[0] = 500e-12
     pulse.level[0] = inject

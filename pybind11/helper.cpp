@@ -57,13 +57,12 @@ Id initShell(void)
 
     Id shellId;
 
-    Element* shelle =
-        new GlobalDataElement(shellId, Shell::initCinfo(), "/", 1);
+    Element* shelle = new GlobalDataElement(shellId, Shell::initCinfo(), "/", 1);
 
     Id clockId = Id::nextId();
     assert(clockId.value() == 1);
     Id classMasterId = Id::nextId();
-    Id postMasterId = Id::nextId();
+    Id postMasterId  = Id::nextId();
 
     Shell* s = reinterpret_cast<Shell*>(shellId.eref().data());
     s->setHardware(1, 1, 0);
@@ -74,8 +73,7 @@ Id initShell(void)
 
     new GlobalDataElement(clockId, Clock::initCinfo(), "clock", 1);
     new GlobalDataElement(classMasterId, Neutral::initCinfo(), "classes", 1);
-    new GlobalDataElement(postMasterId, PostMaster::initCinfo(), "postmaster",
-                          1);
+    new GlobalDataElement(postMasterId, PostMaster::initCinfo(), "postmaster", 1);
 
     assert(shellId == Id());
     assert(clockId == Id(1));
@@ -121,7 +119,7 @@ ObjId createIdFromPath(string path, string type, unsigned int numData)
 
     auto pos = trimmed_path.rfind("/");
     if(pos != string::npos) {
-        name = trimmed_path.substr(pos + 1);
+        name        = trimmed_path.substr(pos + 1);
         parent_path = trimmed_path.substr(0, pos);
     }
     else {
@@ -146,8 +144,7 @@ ObjId createIdFromPath(string path, string type, unsigned int numData)
         return Id();
     }
 
-    auto nId =
-        pShell->doCreate(type, parent_id, string(name), numData, MooseGlobal);
+    auto nId = pShell->doCreate(type, parent_id, string(name), numData, MooseGlobal);
 
     if(nId == Id() && trimmed_path != "/" && trimmed_path != "/root") {
         string message = "no such moose class : " + type;
@@ -162,8 +159,8 @@ bool mooseExists(const string& path)
     return Id(path) != Id() || path == "/" || path == "/root";
 }
 
-ObjId loadModelInternal(const string& fname, const string& modelpath,
-                        const string& solverclass = "")
+ObjId loadModelInternal(
+    const string& fname, const string& modelpath, const string& solverclass = "")
 {
     Id model;
     if(solverclass.empty()) {
@@ -185,8 +182,7 @@ ObjId getElementField(const ObjId objid, const string& fname)
     return ObjId(objid.path() + '/' + fname);
 }
 
-ObjId getElementFieldItem(const ObjId& objid, const string& fname,
-                          unsigned int index)
+ObjId getElementFieldItem(const ObjId& objid, const string& fname, unsigned int index)
 {
     ObjId oid = getElementField(objid, fname);
 
@@ -214,7 +210,7 @@ ObjId getElementFieldItem(const ObjId& objid, const string& fname,
 }
 
 ObjId shellConnect(const ObjId& src, const string& srcField, const ObjId& tgt,
-                   const string& tgtField, const string& msgType)
+    const string& tgtField, const string& msgType)
 {
     auto o = getShellPtr()->doAddMsg(msgType, src, srcField, tgt, tgtField);
     if(o.bad())
@@ -222,9 +218,8 @@ ObjId shellConnect(const ObjId& src, const string& srcField, const ObjId& tgt,
     return o;
 }
 
-ObjId shellConnectToVec(const ObjId& src, const string& srcField,
-                        const MooseVec& tgt, const string& tgtField,
-                        const string& msgType)
+ObjId shellConnectToVec(const ObjId& src, const string& srcField, const MooseVec& tgt,
+    const string& tgtField, const string& msgType)
 {
     auto o = getShellPtr()->doAddMsg(msgType, src, srcField, tgt.obj(), tgtField);
     if(o.bad())
@@ -283,8 +278,8 @@ void mooseSetCwe(const py::object& arg)
     return getShellPtr()->setCwe(arg.cast<ObjId>());
 }
 
-map<string, string> mooseGetFieldDict(const string& className,
-                                      const string& finfoType = "*")
+map<string, string> mooseGetFieldDict(
+    const string& className, const string& finfoType = "*")
 {
     map<string, string> res;
     for(const auto& v : getFieldDict(className, finfoType))
@@ -292,8 +287,7 @@ map<string, string> mooseGetFieldDict(const string& className,
     return res;
 }
 
-map<string, Finfo*> getFieldDict(const string& className,
-                                 const string& finfoType = "*")
+map<string, Finfo*> getFieldDict(const string& className, const string& finfoType = "*")
 {
     const Cinfo* cinfo = Cinfo::find(className);
     if(!cinfo) {
@@ -303,8 +297,7 @@ map<string, Finfo*> getFieldDict(const string& className,
     return innerGetFieldDict(cinfo, finfoType);
 }
 
-map<string, Finfo*> innerGetFieldDict(const Cinfo* cinfo,
-                                      const string& finfoType = "*")
+map<string, Finfo*> innerGetFieldDict(const Cinfo* cinfo, const string& finfoType = "*")
 {
     if(finfoType == "*")
         return cinfo->finfoMap();
@@ -313,38 +306,38 @@ map<string, Finfo*> innerGetFieldDict(const Cinfo* cinfo,
 
     if(finfoType == "valueFinfo" || finfoType == "value") {
         for(unsigned int ii = 0; ii < cinfo->getNumValueFinfo(); ++ii) {
-            auto* finfo = cinfo->getValueFinfo(ii);
+            auto* finfo              = cinfo->getValueFinfo(ii);
             fieldDict[finfo->name()] = finfo;
         }
     }
     else if(finfoType == "srcFinfo" || finfoType == "src") {
         for(unsigned int ii = 0; ii < cinfo->getNumSrcFinfo(); ++ii) {
-            auto* finfo = cinfo->getSrcFinfo(ii);
+            auto* finfo              = cinfo->getSrcFinfo(ii);
             fieldDict[finfo->name()] = finfo;
         }
     }
     else if(finfoType == "destFinfo" || finfoType == "dest") {
         for(unsigned int ii = 0; ii < cinfo->getNumDestFinfo(); ++ii) {
-            auto* finfo = cinfo->getDestFinfo(ii);
+            auto* finfo              = cinfo->getDestFinfo(ii);
             fieldDict[finfo->name()] = finfo;
         }
     }
     else if(finfoType == "lookupFinfo" || finfoType == "lookup") {
         for(unsigned int ii = 0; ii < cinfo->getNumLookupFinfo(); ++ii) {
-            auto* finfo = cinfo->getLookupFinfo(ii);
+            auto* finfo              = cinfo->getLookupFinfo(ii);
             fieldDict[finfo->name()] = finfo;
         }
     }
     else if(finfoType == "sharedFinfo" || finfoType == "shared") {
         for(unsigned int ii = 0; ii < cinfo->getNumSrcFinfo(); ++ii) {
-            auto* finfo = cinfo->getSrcFinfo(ii);
+            auto* finfo              = cinfo->getSrcFinfo(ii);
             fieldDict[finfo->name()] = finfo;
         }
     }
     else if(finfoType == "fieldElementFinfo" || finfoType == "field" ||
             finfoType == "fieldElement") {
         for(unsigned int ii = 0; ii < cinfo->getNumFieldElementFinfo(); ++ii) {
-            auto* finfo = cinfo->getFieldElementFinfo(ii);
+            auto* finfo              = cinfo->getFieldElementFinfo(ii);
             fieldDict[finfo->name()] = finfo;
         }
     }
@@ -383,9 +376,8 @@ void mooseStop()
 }
 
 // Id is synonym with Id in previous binding.
-MooseVec mooseCopy(const py::object& elem, const py::object& newParent,
-                   string newName, unsigned int n = 1, bool toGlobal = false,
-                   bool copyExtMsgs = false)
+MooseVec mooseCopy(const py::object& elem, const py::object& newParent, string newName,
+    unsigned int n = 1, bool toGlobal = false, bool copyExtMsgs = false)
 {
     Id orig = py::cast<Id>(elem);
     ObjId newp;
@@ -393,15 +385,13 @@ MooseVec mooseCopy(const py::object& elem, const py::object& newParent,
         newp = newParent.cast<MooseVec>().obj();
     else
         newp = newParent.cast<ObjId>();
-    return MooseVec(
-        getShellPtr()->doCopy(orig, newp, newName, n, toGlobal, copyExtMsgs));
+    return MooseVec(getShellPtr()->doCopy(orig, newp, newName, n, toGlobal, copyExtMsgs));
 }
 
 /**
   Return a vector of field names of specified finfo type. This is from Subha.
 */
-vector<string> mooseGetFieldNames(const string& className,
-                                  const string& finfoType)
+vector<string> mooseGetFieldNames(const string& className, const string& finfoType)
 {
     vector<string> ret;
     const Cinfo* cinfo = Cinfo::find(className);
@@ -422,22 +412,19 @@ vector<string> mooseGetFieldNames(const string& className,
             ret.push_back(finfo->name());
         }
     }
-    else if(finfoType == "destFinfo" || finfoType == "dest" ||
-            finfoType == "*") {
+    else if(finfoType == "destFinfo" || finfoType == "dest" || finfoType == "*") {
         for(unsigned int ii = 0; ii < cinfo->getNumDestFinfo(); ++ii) {
             Finfo* finfo = cinfo->getDestFinfo(ii);
             ret.push_back(finfo->name());
         }
     }
-    else if(finfoType == "lookupFinfo" || finfoType == "lookup" ||
-            finfoType == "*") {
+    else if(finfoType == "lookupFinfo" || finfoType == "lookup" || finfoType == "*") {
         for(unsigned int ii = 0; ii < cinfo->getNumLookupFinfo(); ++ii) {
             Finfo* finfo = cinfo->getLookupFinfo(ii);
             ret.push_back(finfo->name());
         }
     }
-    else if(finfoType == "sharedFinfo" || finfoType == "shared" ||
-            finfoType == "*") {
+    else if(finfoType == "sharedFinfo" || finfoType == "shared" || finfoType == "*") {
         for(unsigned int ii = 0; ii < cinfo->getNumSrcFinfo(); ++ii) {
             Finfo* finfo = cinfo->getSrcFinfo(ii);
             ret.push_back(finfo->name());
@@ -471,13 +458,12 @@ bool mooseIsRunning()
     return getShellPtr()->isRunning();
 }
 
-string fieldDocFormatted(const string& name, const Cinfo* cinfo,
-                         const Finfo* finfo, const string& prefix = "")
+string fieldDocFormatted(
+    const string& name, const Cinfo* cinfo, const Finfo* finfo, const string& prefix = "")
 {
     return prefix + fmt::format("{0} (type: {1}, class: {3})\n{2}\n\n", name,
-                                finfo->rttiType(),
-                                moose::textwrap(finfo->docs(), prefix + "  "),
-                                cinfo->name());
+                        finfo->rttiType(), moose::textwrap(finfo->docs(), prefix + "  "),
+                        cinfo->name());
 }
 
 string mooseClassAttributeDoc(const Cinfo* cinfo, const string& fname)
@@ -486,11 +472,10 @@ string mooseClassAttributeDoc(const Cinfo* cinfo, const string& fname)
     if(!finfo)
         return "Error: '" + fname + "' not found.";
     return fmt::format("{0}: {1} - {2}\n{3}", fname, finfo->rttiType(),
-                       cinfo->getFinfoType(finfo), finfo->docs());
+        cinfo->getFinfoType(finfo), finfo->docs());
 }
 
-string mooseClassFieldsDoc(const Cinfo* cinfo, const string& ftype,
-                           const string& prefix)
+string mooseClassFieldsDoc(const Cinfo* cinfo, const string& ftype, const string& prefix)
 {
     stringstream ss;
     auto fmap = innerGetFieldDict(cinfo, ftype);
@@ -510,8 +495,7 @@ string mooseClassFieldsDoc(const Cinfo* cinfo, const string& ftype,
         for(const auto& vv : baseFmap) {
             if(fmap.find(vv.first) == fmap.end()) {
                 fmap[vv.first] = vv.second;
-                ss << fieldDocFormatted(vv.first, baseClassCinfo, vv.second,
-                                        prefix);
+                ss << fieldDocFormatted(vv.first, baseClassCinfo, vv.second, prefix);
             }
         }
         baseClassCinfo = baseClassCinfo->baseCinfo();
@@ -545,8 +529,7 @@ string mooseDoc(const string& query)
 
     auto cinfo = Cinfo::find(tokens[0]);
     if(!cinfo)
-        throw py::key_error("Class '" + tokens[0] +
-                            "' is not a valid MOOSE class.");
+        throw py::key_error("Class '" + tokens[0] + "' is not a valid MOOSE class.");
 
     if(tokens.size() == 1)
         return mooseClassDoc(tokens[0]);
@@ -610,9 +593,8 @@ string mooseShowMsg(const ObjId& obj)
             continue;
         }
         ss << fmt::format("  {0}, [{1}] <-- {2}, [{3}]\n", msg->getE2().path(),
-                          moose::vectorToCSV<string>(msg->getDestFieldsOnE2()),
-                          msg->getE1().path(),
-                          moose::vectorToCSV<string>(msg->getSrcFieldsOnE1()));
+            moose::vectorToCSV<string>(msg->getDestFieldsOnE2()), msg->getE1().path(),
+            moose::vectorToCSV<string>(msg->getSrcFieldsOnE1()));
     }
     ss << endl;
     auto outmsgs = Field<vector<ObjId>>::get(obj, "msgOut");
@@ -624,9 +606,8 @@ string mooseShowMsg(const ObjId& obj)
             continue;
         }
         ss << fmt::format("  {0}, [{1}] <-- {2}, [{3}]\n", msg->getE1().path(),
-                          moose::vectorToCSV<string>(msg->getSrcFieldsOnE1()),
-                          msg->getE2().path(),
-                          moose::vectorToCSV<string>(msg->getDestFieldsOnE2()));
+            moose::vectorToCSV<string>(msg->getSrcFieldsOnE1()), msg->getE2().path(),
+            moose::vectorToCSV<string>(msg->getDestFieldsOnE2()));
     }
     return ss.str();
 }
