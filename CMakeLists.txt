@@ -123,8 +123,29 @@ list(APPEND MOOSE_LIBRARIES
 
 find_package(Threads REQUIRED)
 
+set(SYSTEM_SHARED_LIBS Threads::Threads)
+
 add_executable(moose.bin basecode/main.cpp)
-target_link_libraries(moose.bin PRIVATE ${MOOSE_LIBRARIES} Threads::Threads ${CMAKE_DL_LIBS})
+if(APPLE)
+    target_link_libraries(moose.bin PRIVATE "-Wl,-all_load" ${MOOSE_LIBRARIES})
+    target_link_libraries(moose.bin PRIVATE ${SYSTEM_SHARED_LIBS})
+elseif(UNIX)
+    target_link_libraries(moose.bin PRIVATE
+        "-Wl,--whole-archive" 
+        ${MOOSE_LIBRARIES} 
+        "-Wl,--no-whole-archive"
+        ${SYSTEM_SHARED_LIBS})
+elseif(MSVC)
+    # mimic --whole-archive in MSVC :-/ (requires 2015v2 at least)
+    # set_target_properties(_moose PROPERTIES  LINK_FLAGS "/WHOLEARCHIVE")
+    target_link_libraries(moose.bin PRIVATE ${MOOSE_LIBRARIES} ${SYSTEM_SHARED_LIBS})
+    set(MSVC_WHOLE_ARCHIVE "")
+    foreach(_lib ${MOOSE_LIBRARIES})
+        message(STATUS " whole archive ${_lib}")
+        set(MSVC_WHOLE_ARCHIVE "${MSVC_WHOLE_ARCHIVE} /WHOLEARCHIVE:${_lib}")
+    endforeach()
+    set_target_properties(_moose PROPERTIES LINK_FLAGS "${MSVC_WHOLE_ARCHIVE}")
+endif()
 
 
 ################################# PYTHON BINDINGS #############################

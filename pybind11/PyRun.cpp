@@ -10,7 +10,10 @@
 #include "Python.h"
 #include "PyRun.h"
 
+#ifndef PATH_MAX
 constexpr size_t PATH_MAX = 512;
+#endif
+
 using namespace std;
 
 string get_program_name()
