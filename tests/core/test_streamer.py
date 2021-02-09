@@ -118,7 +118,7 @@ def test_abit_more():
     assert csvData.shape[1] == len(npData.dtype)   # cols
 
     for i, name in enumerate(npData.dtype.names):
-        assert (csvData[:,i] == npData[name]).all()
+        assert np.allclose(csvData[:,i], npData[name]), (csvData[:,i] - npData[name])
 
 def main( ):
     test_sanity( )
