@@ -19,9 +19,19 @@ jobs:
     - name: Install dependencies
       run: |
         export DEBIAN_FRONTEND=noninteractive
-        sudo -E apt install -y cmake libboost-dev g++ gcc git 
-        sudo -E apt install python3-tk 
-        python -m pip install numpy matplotlib --user
+        sudo -E apt install -y cmake libboost-dev g++ gcc git
+        sudo -E apt install python3-tk
+        PYTHON=$(which python3)
+        $PYTHON -m pip install numpy matplotlib wheel setuptools --user
+        $PYTHON -m pip install python-libsbml pyneuroml
     - name: Build
       run: |
         mkdir build && cd build && cmake .. && make -j3 && ctest --output-on-failure
+
+    - name: Upload to PyPI
+      env:
+        MOOSE_PYPI_TOKEN: ${{ secrets.SMOLDYN_PYPI_TOKEN }}
+      run: |
+        cd build
+        python -m pip install twine --upgrade
+        python -m twine upload -u __token__ -p "$MOOSE_PYPI_TOKEN" *.whl --skip-existing || echo "Failed to upload"
