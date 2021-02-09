@@ -50,6 +50,8 @@ public:
     unsigned int getNposEigenvalues() const;
     unsigned int getSolutionStatus() const;
 
+    string matrices2str() const;
+
     ///////////////////////////////////////////////////
     // Msg Dest function definitions
     ///////////////////////////////////////////////////

@@ -22,7 +22,8 @@ jobs:
         sudo -E apt install -y cmake libboost-dev g++ gcc git
         sudo -E apt install python3-tk
         PYTHON=$(which python3)
-        $PYTHON -m pip install numpy matplotlib wheel setuptools --user
+        $PYTHON -m pip install pip --upgrade
+        $PYTHON -m pip install scipy pytest numpy matplotlib wheel setuptools 
         $PYTHON -m pip install python-libsbml pyneuroml
     - name: Build
       run: |

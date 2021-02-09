@@ -116,6 +116,10 @@ const Cinfo* SteadyState::initCinfo()
         "0: Good; 1: Failed to find steady states; "
         "2: Failed to find eigenvalues",
         &SteadyState::getSolutionStatus);
+    static ReadOnlyValueFinfo<SteadyState, string> matrices2str("matrices2str",
+        "Return the matrices derived for the calculations on "
+        "the reaction system. returns the Nr, gamma, and total matrices",
+        &SteadyState::matrices2str);
     static LookupValueFinfo<SteadyState, unsigned int, double> total("total",
         "Totals table for conservation laws. The exact mapping of"
         "this to various sums of molecules is given by the "
@@ -156,6 +160,7 @@ const Cinfo* SteadyState::initCinfo()
         "conservation rules. Typically invoked in order to scan"
         "states",
         new EpFunc0<SteadyState>(&SteadyState::randomizeInitialCondition));
+
     ///////////////////////////////////////////////////////
     // Shared definitions
     ///////////////////////////////////////////////////////
@@ -174,6 +179,7 @@ const Cinfo* SteadyState::initCinfo()
         &nNegEigenvalues,       // ReadOnlyValue
         &nPosEigenvalues,       // ReadOnlyValue
         &solutionStatus,        // ReadOnlyValue
+        &matrices2str,          // ReadOnlyValue
         &total,                 // LookupValue
         &eigenvalues,           // ReadOnlyLookupValue
         &setupMatrix,           // DestFinfo
@@ -411,22 +417,28 @@ void SteadyState::assignY(double* S)
 {
 }
 
-void SteadyState::showMatrices()
+string SteadyState::matrices2str() const
 {
     if(!isInitialized_) {
-        cout << "SteadyState::showMatrices: Sorry, the system is not yet "
+        return "SteadyState::showMatrices: Sorry, the system is not yet "
                 "initialized.\n";
-        return;
     }
+    stringstream ss;
     int numConsv = numVarPools_ - rank_;
-    cout << "#variable pools " << numVarPools_ << ", rank=" << rank_ << endl;
-    cout << "Totals:    ";
+    ss << "Number of variable pools=" << numVarPools_ << ", rank=" << rank_ << endl;
+    ss << "Totals:    ";
     for(int i = 0; i < numConsv; ++i)
-        cout << total_[i] << "    ";
-    cout << endl;
-    cout << "gamma =\n" << gamma_ << endl;
-    cout << "Nr =\n" << Nr_ << endl;
-    cout << "LU =\n" << LU_ << endl;
+        ss << total_[i] << "    ";
+    ss << endl;
+    ss << "gamma =\n" << gamma_ << endl;
+    ss << "Nr =\n" << Nr_ << endl;
+    ss << "LU =\n" << LU_ << endl;
+    return ss.str();
+}
+
+void SteadyState::showMatrices()
+{
+    cout << matrices2str();
 }
 
 void SteadyState::setupSSmatrix()
