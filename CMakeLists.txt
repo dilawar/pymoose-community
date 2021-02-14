@@ -16,21 +16,22 @@ set(CMAKE_MACOSX_RPATH OFF)
 
 if(NOT VERSION_MOOSE)
     string(TIMESTAMP TODAY "%Y%m%d")
-    set(VERSION_MOOSE "3.2.2dev${TODAY}")
+    set(VERSION_MOOSE "3.3.0dev${TODAY}")
 endif()
 
 add_definitions(-DMOOSE_VERSION="${VERSION_MOOSE}")
-message(STATUS "MOOSE Version ${VERSION_MOOSE}")
+message(STATUS "MOOSE version ${VERSION_MOOSE}")
 
 ################################ CMAKE OPTIONS ##################################
-option(DEBUG                "Build with debug support" OFF)
-option(GPROF                "Build for profiling using gprof" OFF)
-option(ENABLE_UNIT_TESTS    "Enable unit tests (DEBUG should also be ON)" OFF)
-option(WITH_MPI             "Enable Openmpi support" OFF)
-option(WITH_ASAN            "Use AddressSanitizer in DEBUG mode." OFF)
-option(WITH_NSDF            "Enable NSDF support. Requires hdf5" OFF )
-option(WITH_LEGACY_BINDING  "Use legacy python-bindings" OFF)
+option(WITH_MPI             "Enable Openmpi support (alpha)" OFF)
+option(WITH_NSDF            "Enable NSDF support. Requires hdf5" OFF)
+
+# For developers
 option(USE_CONAN            "Use conan to download dependencies" ON)
+option(WITH_ASAN            "Use AddressSanitizer (dev only)" OFF)
+option(GPROF                "Build for profiling using gprof" OFF)
+option(DEBUG                "Build with debug support" OFF)
+option(ENABLE_UNIT_TESTS    "Enable unit tests (DEBUG should also be ON)" OFF)
 
 ############################ COMPILER OPTIONS ####################################
 if(MSVC)
