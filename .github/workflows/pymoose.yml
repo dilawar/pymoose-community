@@ -31,7 +31,7 @@ jobs:
 
     - name: Upload to PyPI
       env:
-        MOOSE_PYPI_TOKEN: ${{ secrets.SMOLDYN_PYPI_TOKEN }}
+        MOOSE_PYPI_TOKEN: ${{ secrets.MOOSE_PYPI_TOKEN }}
       run: |
         cd build
         python -m pip install twine --upgrade
