@@ -17,22 +17,22 @@
 ## channel conductances, between them.
 ##########################################################################
 
-import importlib
-from pathlib import Path
-import typing as T
-
 import os
-import moose
-import numpy as np
 import math
 import sys
 import time
+import typing as T
+from pathlib import Path
+import importlib.machinery
+
+import numpy as np
 import matplotlib.pyplot as plt
 
 import rdesigneur.rmoogli as rmoogli
 from rdesigneur.rdesigneurProtos import *
-import moose.fixXreacs as fixXreacs
 
+import moose
+import moose.fixXreacs as fixXreacs
 from moose.neuroml.NeuroML import NeuroML
 from moose.neuroml.ChannelML import ChannelML
 
@@ -42,7 +42,8 @@ import xml.etree.ElementTree as etree
 
 import csv
 
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 
 
 # EREST_ACT = -70e-3
