@@ -32,7 +32,7 @@ try:
     logger_ = logger
 except Exception:
     import logging
-    logger_ = logger.getLogger(__name__)
+    logger_ = logging.getLogger(__name__)
 
 
 def info(msg):

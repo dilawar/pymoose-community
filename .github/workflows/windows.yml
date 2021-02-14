@@ -29,7 +29,7 @@ jobs:
         $PYTHON -m pip install python-libsbml pyneuroml
         cmake -DPython3_EXECUTABLE=$PYTHON ..
         cmake --build . --config Release
-        ctest -C Release --output-on-failure
+        ctest -R core_test.* -C Release --output-on-failure
 
     - name: Upload to PyPI
       shell: bash

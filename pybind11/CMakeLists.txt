@@ -42,25 +42,29 @@ elseif(MSVC)
     set_target_properties(_moose PROPERTIES LINK_FLAGS "${MSVC_WHOLE_ARCHIVE}")
 endif()
 
-# NOTE: Because LIBRARY_OUTPUT_DIRECTORY does not work with some new cmake
-# version.
+# Move _moose.so to python/moose directory.
+# FIXME: LIBRARY_OUTPUT_DIRECTORY does not work with some new cmake
+# version. Probably a bug in CMake. Let's just do it explicitly.
 add_custom_command(TARGET _moose POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:_moose> ${CMAKE_SOURCE_DIR}/python/moose
     COMMENT "Copying $<TARGET_NAME:_moose> to python src folder"
     )
 
-
+#
+# COPY Python module to binary directory.
 # Copy python tree to BUILD directory. User can set PYTHONPATH to
-# ${CMAKE_BINARY_DIR}/python. 
+# ${CMAKE_BINARY_DIR}/python and also to ${CMAKE_SOURE_DIR}/python
+# Usually its a good practice to keep final module in binary directory.
 set(PYMOOSE_BUILD_DIR ${CMAKE_BINARY_DIR}/python)
-add_custom_command(TARGET _moose POST_BUILD 
+file(GLOB_RECURSE PY_SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../python/*.py)
+add_custom_target(_copy_python_source 
+    DEPENDS _moose  ${PY_SOURCE_FILES}
     # Copy whole Python's source tree to build directory.
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/python/
         ${PYMOOSE_BUILD_DIR}
     COMMENT "pybind11: Copying Python src ${CMAKE_SOURCE_DIR}/python → ${PYMOOSE_BUILD_DIR}"
     VERBATIM)
 
- 
 #
 # Create a wheel 
 # copy setup.py.in as setup.py file in cwd.
