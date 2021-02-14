@@ -20,7 +20,8 @@ build:
     - python3 -m pip install pytest --user --upgrade
     - mkdir _build && cd _build && cmake .. && make -j$(nproc) && ctest --output-on-failure -j2
     - make install
-    - python3 -c "import moose.tests; moose.tests.test()"
+    - python3 -c "import moose; print(moose.__version__)"
+    - python3 -c "import moose.tests; moose.tests.test()" || echo "Failed"
 
   except:
       - devel

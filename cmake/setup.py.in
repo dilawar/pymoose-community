@@ -15,9 +15,9 @@ from pathlib import Path
 import os.path
 import importlib
 
-
 from setuptools import setup, find_packages
 
+EXT = importlib.machinery.EXTENSION_SUFFIXES[0]
 
 with (Path("@CMAKE_SOURCE_DIR@") / "README.md").open() as f:
     readme = f.read()
@@ -34,15 +34,15 @@ setup(
     maintainer="Dilawar Singh",
     maintainer_email="dilawars@ncbs.res.in",
     url="http://moose.ncbs.res.in",
-    packages= find_packages(),
-    include_package_data = True,
+    packages=["moose", "rdesigneur"],
+    include_package_data=True,
     package_dir={
-        "rdesigneur":  "python/rdesigneur",
-        "moose": "python/moose",
+        "rdesigneur": str(Path("python")/"rdesigneur"),
+        "moose": str(Path("python")/"moose"),
     },
     package_data={
         "moose": [
-            "_moose*.pyd",
+            f"_moose*{EXT}",
             os.path.join("neuroml2", "schema", "NeuroMLCoreDimensions.xml"),
             os.path.join("chemUtil", "rainbow2.pkl"),
         ]
