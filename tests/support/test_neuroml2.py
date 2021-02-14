@@ -15,13 +15,13 @@ import moose
 import moose.utils as mu
 import os
 import numpy as np
+from pathlib import Path
 
-SCRIPT_DIR = os.path.dirname( os.path.realpath( __file__ ) )
-
+SCRIPT_DIR = Path(__file__).parent
 
 def test_nml2( nogui = True ):
     global SCRIPT_DIR
-    filename = os.path.join(SCRIPT_DIR, 'test_files/passiveCell.nml' )
+    filename = SCRIPT_DIR / 'test_files'/'passiveCell.nml'
     mu.info('Loading: %s' % filename )
     nml = moose.readNML2( filename )
     if not nml:

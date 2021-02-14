@@ -26,10 +26,10 @@ from _neuroml.CA1 import loadGran98NeuroML_L123
 def test_ca1():
     p = modeldir / '_neuroml'/'cells_channels'/'CA1soma.morph.xml'
     loadModel(p)
-    a = ca1_main(10*4e-13)
-    b = ca1_main(10*8e-13)
-    c = ca1_main(10*14e-13)
-    d = ca1_main(10*18e-13)
+    a = ca1_main(4e-13)
+    b = ca1_main(8e-13)
+    c = ca1_main(14e-13)
+    d = ca1_main(18e-13)
     assert (a, b, c, d) == (10, 20, 29, 34), (a, b, c, d)
 
 def test_gran():
