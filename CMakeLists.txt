@@ -3,24 +3,6 @@ cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 # Project to build MOOSE's python module.
 project(PyMOOSE LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-# cmake related macros.
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-
-# We find python executable here. Though mainly used inside pymoose. 
-find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
-set(PYTHON_EXECUTABLE ${Python3_EXECUTABLE})
-set(CMAKE_MACOSX_RPATH OFF)
-
-if(NOT VERSION_MOOSE)
-    string(TIMESTAMP TODAY "%Y%m%d")
-    set(VERSION_MOOSE "3.3.0dev${TODAY}")
-endif()
-
-add_definitions(-DMOOSE_VERSION="${VERSION_MOOSE}")
-message(STATUS "MOOSE version ${VERSION_MOOSE}")
 
 ################################ CMAKE OPTIONS ##################################
 option(WITH_MPI             "Enable Openmpi support (alpha)" OFF)
@@ -34,15 +16,31 @@ option(DEBUG                "Build with debug support" OFF)
 option(ENABLE_UNIT_TESTS    "Enable unit tests (DEBUG should also be ON)" OFF)
 
 ############################ COMPILER OPTIONS ####################################
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 if(MSVC)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W1")
 endif()
+
+# We find python executable here. Though mainly used inside pymoose. 
+find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+set(PYTHON_EXECUTABLE ${Python3_EXECUTABLE})
+set(CMAKE_MACOSX_RPATH OFF)
+
+if(NOT VERSION_MOOSE)
+    string(TIMESTAMP TODAY "%Y%m%d")
+    set(VERSION_MOOSE "3.3.0dev${TODAY}")
+endif()
+
+
+add_definitions(-DMOOSE_VERSION="${VERSION_MOOSE}")
+message(STATUS "MOOSE version ${VERSION_MOOSE}")
 
 ############################ BUILD CONFIGURATION #################################
 
 # include conan support.
 if(USE_CONAN)
-    include(install_dep)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/install_dep.cmake)
 else(USE_CONAN)
     find_package(Boost 1.53 REQUIRED)
     find_package(Pybind11 REQUIRED)

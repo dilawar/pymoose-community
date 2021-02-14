@@ -7,9 +7,6 @@
 ** See the file COPYING.LIB for the full notice.
 **********************************************************************/
 
-#include <fstream>
-#include <filesystem>
-
 #include "../basecode/header.h"
 #include "Shell.h"
 #include "../utility/strutil.h"
