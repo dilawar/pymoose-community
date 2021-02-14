@@ -8,7 +8,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        python-version: [3.8]
+        python-version: [3.7, 3.8, 3.9]
 
     steps:
     - uses: actions/checkout@v2
@@ -29,7 +29,7 @@ jobs:
         $PYTHON -m pip install python-libsbml pyneuroml
         cmake -DPython3_EXECUTABLE=$PYTHON ..
         cmake --build . --config Release
-        ctest -C Release
+        ctest -C Release --output-on-failure
 
     - name: Upload to PyPI
       shell: bash

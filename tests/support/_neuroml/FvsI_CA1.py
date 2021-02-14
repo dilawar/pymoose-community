@@ -50,6 +50,7 @@ def applyCurrent(currenti):
     soma_.inject = currenti
     moose.start(1.0)
     spikesList = np.array(cellSpikeTable_.vector)
+    print(spikesList)
     if len(spikesList)>0:
         spikesList = spikesList[np.where(spikesList>0.0)[0]]
         spikesNow = len(spikesList)
