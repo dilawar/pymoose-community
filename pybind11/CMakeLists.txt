@@ -57,7 +57,7 @@ add_custom_command(TARGET _moose POST_BUILD
 # Usually its a good practice to keep final module in binary directory.
 set(PYMOOSE_BUILD_DIR ${CMAKE_BINARY_DIR}/python)
 file(GLOB_RECURSE PY_SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../python/*.py)
-add_custom_target(_copy_python_source 
+add_custom_target(_copy_python_source ALL
     DEPENDS _moose  ${PY_SOURCE_FILES}
     # Copy whole Python's source tree to build directory.
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/python/
