@@ -47,7 +47,7 @@ endif()
 # version. Probably a bug in CMake. Let's just do it explicitly.
 add_custom_command(TARGET _moose POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:_moose> ${CMAKE_SOURCE_DIR}/python/moose
-    COMMENT "Copying $<TARGET_NAME:_moose> to python src folder"
+    COMMENT "Copying _moose module to python src folder"
     )
 
 #
@@ -63,7 +63,7 @@ add_custom_target(_copy_python_source ALL
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/python/
         ${PYMOOSE_BUILD_DIR}
     COMMENT "pybind11: Copying Python src ${CMAKE_SOURCE_DIR}/python → ${PYMOOSE_BUILD_DIR}"
-    VERBATIM)
+    )
 
 #
 # Create a wheel 

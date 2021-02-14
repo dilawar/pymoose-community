@@ -24,15 +24,8 @@ except Exception as e:
     logger_.warn("Plot utilities are not loaded due to '%s'" % e)
 
 # Global logger.
-logger_ = None
-try:
-    # loguru is a very good logger. Use it if available. Very helpful in
-    # debugging and tracing.
-    from loguru import logger
-    logger_ = logger
-except Exception:
-    import logging
-    logger_ = logging.getLogger(__name__)
+import logging
+logger_ = logging.getLogger(__name__)
 
 
 def info(msg):
