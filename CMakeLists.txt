@@ -29,7 +29,7 @@ set(CMAKE_MACOSX_RPATH OFF)
 
 if(NOT VERSION_MOOSE)
     string(TIMESTAMP TODAY "%Y%m%d")
-    set(VERSION_MOOSE "3.3.0dev${TODAY}")
+    set(VERSION_MOOSE "3.3.0.dev${TODAY}")
 endif()
 
 

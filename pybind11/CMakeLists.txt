@@ -80,20 +80,9 @@ add_custom_target(wheel ALL
     VERBATIM)
 
 #
-# Install the wheel in a local directory. This directory can be moved by cmake
-# using install command to ${CMAKE_INSTALL_PREFIX}. I can't can think of a
-# better way to make sure `make install` installs the python package to
-# ${CMAKE_INSTALL_PREFIX}
-
-set(PYMOOSE_TEMP_INSTALL_DIR ${CMAKE_BINARY_DIR}/__pymoose_temp_install)
-file(MAKE_DIRECTORY ${PYMOOSE_TEMP_INSTALL_DIR})
-add_custom_command(TARGET _moose POST_BUILD
-    COMMAND ${PYTHON_EXECUTABLE} -m pip install pymoose-*.whl
-        --prefix ${PYMOOSE_TEMP_INSTALL_DIR}
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    COMMENT "Unarchiving ${PYMOOSE_WHEEL_FILE} -> ${PYMOOSE_TEMP_INSTALL_DIR}")
-
+# Install the wheel in a local directory. 
 #
-# install wheel.
-#
-install(DIRECTORY ${PYMOOSE_TEMP_INSTALL_DIR}/ DESTINATION ${CMAKE_INSTALL_PREFIX})
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/install_wheel.py.in
+    ${CMAKE_BINARY_DIR}/install_wheel.py)
+
+install(CODE "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_BINARY_DIR}/install_wheel.py)")
