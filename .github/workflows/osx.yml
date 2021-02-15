@@ -19,4 +19,6 @@ jobs:
     - name: build, test and deploy
       env:
         PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-      run: cd ./.ci && PYPI_PASSWORD=$PYPI_PASSWORD ./build_wheels_osx.sh
+      run: |
+        ./.ci/travis_prepare_osx.sh
+        ./.ci/travis_build_osx.sh

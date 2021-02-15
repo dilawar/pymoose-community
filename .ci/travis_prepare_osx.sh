@@ -28,21 +28,13 @@ brew install python
 brew install numpy
 brew install boost
 
-PYTHON3=$(which python3)
+PYTHON3=$(which python)
 
-#brew outdated python || brew install python
-#brew outdated numpy || brew install homebrew/python/numpy
 brew unlink numpy && brew link numpy || echo "Failed to link numpy"
-# Numpy caveats
-#mkdir -p $HOME/Library/Python/2.7/lib/python/site-packages
-#echo 'import sys; sys.path.insert(1, "/usr/local/lib/python2.7/site-packages")' >> $HOME/Library/Python/2.7/lib/python/site-packages/homebrew.pth
 
-# To make sure that we do not pick python from /opt etc.
-PATH=/usr/local/bin:/usr/bin:$PATH
-# ensurepip
-$PYTHON3 -m ensurepip
-$PYTHON3 -m pip install matplotlib --user --upgrade
-$PYTHON3 -m pip install pyNeuroML libNeuroML --user
-$PYTHON3 -m pip install scipy --user
-$PYTHON3 -m pip install pylint --user
-$PYTHON3 -m pip install pytest --user
+$PYTHON3 -m pip install pip setuptools wheel --upgrade 
+$PYTHON3 -m pip install matplotlib 
+$PYTHON3 -m pip install pyNeuroML libNeuroML
+$PYTHON3 -m pip install scipy
+$PYTHON3 -m pip install pylint
+$PYTHON3 -m pip install pytest
