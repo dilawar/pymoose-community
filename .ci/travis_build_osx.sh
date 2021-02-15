@@ -22,7 +22,7 @@ set -e
 
 BUILDDIR=_build_travis
 
-NPROC=$(nproc)
+NPROC=3
 (
     PYTHON3=$(which python)
 
