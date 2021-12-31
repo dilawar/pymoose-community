@@ -17,19 +17,19 @@ class DestFinfo;
 
 enum AssignmentType { SINGLE, VECTOR, REPEAT };
 
-// These Finfo objects are exposed to other classes for convenience in test cases and other functions.
-// NOTE: These should never be re-registered in an initCinfo of another class.
-//extern SrcFinfo4< Id, DataId, FuncId, unsigned int >* requestGet(); // Not available
+// These Finfo objects are exposed to other classes for convenience in test cases and
+// other functions. NOTE: These should never be re-registered in an initCinfo of another
+// class.
+// extern SrcFinfo4< Id, DataId, FuncId, unsigned int >* requestGet(); // Not available
 extern DestFinfo* receiveGet();
-//extern SrcFinfo2< unsigned int, unsigned int >* ack(); // Not currently used.
+// extern SrcFinfo2< unsigned int, unsigned int >* ack(); // Not currently used.
 
 enum NodePolicy { MooseGlobal, MooseBlockBalance, MooseSingleNode };
 
-class NodeBalance
-{
+class NodeBalance {
 public:
-    NodeBalance( unsigned int nd, NodePolicy np, unsigned int node )
-        : numData( nd ), policy( np ), preferredNode( node )
+    NodeBalance(unsigned int nd, NodePolicy np, unsigned int node)
+        : numData(nd), policy(np), preferredNode(node)
     {
         ;
     }
@@ -39,8 +39,7 @@ public:
     unsigned int preferredNode;
 };
 
-class Shell
-{
+class Shell {
 public:
     Shell();
     ~Shell();
@@ -56,7 +55,7 @@ public:
     /**
      * Assigns the current working Element of the Shell
      */
-    void setCwe( ObjId cwe );
+    void setCwe(ObjId cwe);
 
     /**
      * Returns the current working Element of the Shell
@@ -68,7 +67,7 @@ public:
      */
     bool isRunning() const;
 
-    void setupSocketStreamer(const string host, const int port );
+    void setupSocketStreamer(const string host, const int port);
 
     ///////////////////////////////////////////////////////////
     // Parser functions
@@ -81,14 +80,12 @@ public:
      * name: Name to be used for identifying Element.
      * numData: Size of array.
      */
-    Id doCreate( string type, ObjId parent, string name,
-                 unsigned int numData,
-                 NodePolicy nodePolicy = MooseBlockBalance,
-                 unsigned int preferredNode = 1 );
+    Id doCreate(string type, ObjId parent, string name, unsigned int numData,
+        NodePolicy nodePolicy = MooseBlockBalance, unsigned int preferredNode = 1);
 
     // Same as before but with default nodePolicy and preferredNode. We are
     // hidning them away from the python bindings.
-    Id doCreate2( string type, ObjId parent, string name, unsigned int numData);
+    Id doCreate2(string type, ObjId parent, string name, unsigned int numData);
 
     /**
      * Delete specified Element and all its children and all
@@ -97,7 +94,7 @@ public:
      * the one Msg entry specified by the DataIndex part of the ObjId
      * argument is deleted.
      */
-    bool doDelete( ObjId oid );
+    bool doDelete(ObjId oid);
 
     /**
      * Sets up a Message of specified type.
@@ -105,22 +102,21 @@ public:
      * Here the 'args' vector handles whatever arguments we may need
      * to pass to the specified msgType.
      */
-    ObjId doAddMsg( const string& msgType,
-                    ObjId src, const string& srcField,
-                    ObjId dest, const string& destField );
+    ObjId doAddMsg(const string& msgType, ObjId src, const string& srcField, ObjId dest,
+        const string& destField);
 
     /**
      * Cleanly quits simulation, wrapping up all nodes and threads.
      */
-    void doQuit( );
+    void doQuit();
 
     /**
      * Starts off simulation, to run for 'runtime' more than current
      * time. This version is blocking, and returns only when the
      * simulation is done. If `nofity = true' then also notify user
-             * whenever 10\% of simulation is over.
+     * whenever 10\% of simulation is over.
      */
-    void doStart( double runtime, bool notify = false );
+    void doStart(double runtime, bool notify = false);
 
     /**
      * Starts off simulation, to run for 'runtime' more than current
@@ -131,7 +127,7 @@ public:
      * or 'doReinit' at any time to stop the run with increasing
      * levels of prejudice.
      */
-    void doNonBlockingStart( double runtime );
+    void doNonBlockingStart(double runtime);
 
     /**
      * Reinitializes simulation: time goes to zero, all scheduled
@@ -157,7 +153,7 @@ public:
      * shifts orig Element (including offspring) to newParent. All old
      * hierarchy, data, Msgs etc are preserved below the orig.
      */
-    void doMove( Id orig, ObjId newParent );
+    void doMove(Id orig, ObjId newParent);
 
     /**
      * Copies orig Element to newParent. n specifies how many copies
@@ -165,15 +161,15 @@ public:
      * copyExtMsgs specifies whether to also copy messages from orig
      * to objects outside the copy tree. Usually we don't do this.
      */
-    Id doCopy( Id orig, ObjId newParent, string newName,
-               unsigned int n, bool toGlobal, bool copyExtMsgs );
+    Id doCopy(Id orig, ObjId newParent, string newName, unsigned int n, bool toGlobal,
+        bool copyExtMsgs);
 
     /**
      * Looks up the Id specified by the given path. May include
      * relative references and the internal cwe
      * (current working Element) on the shell
      */
-    ObjId doFind( const string& path ) const;
+    ObjId doFind(const string& path) const;
 
     /**
      * Connects up process messages from the specified Tick to the
@@ -182,7 +178,7 @@ public:
      * The target on the path usually has the 'process' field but
      * other options are allowed, like 'init'
      */
-    void doUseClock( string path, string field, unsigned int tick );
+    void doUseClock(string path, string field, unsigned int tick);
 
     /**
      * Loads in a model to a specified path.
@@ -191,22 +187,8 @@ public:
      * Soon to learn .p, SBML, NeuroML.
      * Later to learn NineML
      */
-    Id doLoadModel( const string& fname, const string& modelpath,
-                    const string& solverClass = "" );
-
-    /**
-     * Saves specified model to specified file, using filetype
-     * identified by filename extension. Currently known filetypes are:
-     * .g: Kkit model
-     *
-     * Still to come:
-     * .p: GENESIS neuron morphology and channel spec file
-     * .sbml: SBML file
-     * .nml: NeuroML file
-     * .9ml: NineML file
-     * .snml: SigNeurML
-     */
-    void doSaveModel( Id model, const string& fileName, bool qflag = 0 ) const;
+    Id doLoadModel(
+        const string& fname, const string& modelpath, const string& solverClass = "");
 
     /**
      * This function synchronizes fieldDimension on the DataHandler
@@ -214,7 +196,7 @@ public:
      * number of Field entries in the table..
      * The tgt is the FieldElement whose fieldDimension needs updating.
      */
-    void doSyncDataHandler( Id tgt );
+    void doSyncDataHandler(Id tgt);
 
     /**
      * This function builds a reac-diffusion mesh starting at the
@@ -223,7 +205,7 @@ public:
      * redefined, and we now need to go through and update the child
      * reaction system.
      */
-    void doReacDiffMesh( Id baseCompartment );
+    void doReacDiffMesh(Id baseCompartment);
 
     /**
      * This function is called by the parser to tell the ProcessLoop
@@ -232,7 +214,7 @@ public:
      * full speed. When flag is true, then the ProcessLoop will sleep
      * a bit, when false it will work at full speed.
      */
-    void doSetParserIdleFlag( bool isParserIdle );
+    void doSetParserIdleFlag(bool isParserIdle);
 
     /**
      * Works through internal queue of operations that modify the
@@ -249,7 +231,7 @@ public:
      * Sets of a simulation for duration runTime. Handles
      * cases including single-thread, multithread, and multinode
      */
-    void start( double runTime );
+    void start(double runTime);
 
     /**
      * Initialize acks. This call should be done before the 'send' goes
@@ -269,7 +251,7 @@ public:
      * Generic handler for ack msgs from various nodes. Keeps track of
      * which nodes have responded.
      */
-    void handleAck( unsigned int ackNode, unsigned int status );
+    void handleAck(unsigned int ackNode, unsigned int status);
 
     /**
      * Test for receipt of acks from all nodes
@@ -282,10 +264,9 @@ public:
      */
     void handleQuit();
 
-    void handleCreate( const Eref& e,
-                       string type, ObjId parent, Id newElm, string name,
-                       NodeBalance nb, unsigned int parentMsgIndex );
-    void destroy( const Eref& e, ObjId oid);
+    void handleCreate(const Eref& e, string type, ObjId parent, Id newElm, string name,
+        NodeBalance nb, unsigned int parentMsgIndex);
+    void destroy(const Eref& e, ObjId oid);
 
     /**
      * Function that does the actual work of creating a new Element.
@@ -295,12 +276,12 @@ public:
      * The parentMsgIndex specifies the index for the
      * parent-child message.
      */
-    void innerCreate( string type, ObjId parent, Id newElm, string name,
-                      const NodeBalance& nb, unsigned int parentMsgIndex );
+    void innerCreate(string type, ObjId parent, Id newElm, string name,
+        const NodeBalance& nb, unsigned int parentMsgIndex);
 
     /// Does actual work of copying. Returns true on success.
-    bool innerCopy( const vector< ObjId >& args, const string& newName,
-                    unsigned int n, bool toGlobal, bool copyExtMsgs );
+    bool innerCopy(const vector<ObjId>& args, const string& newName, unsigned int n,
+        bool toGlobal, bool copyExtMsgs);
 
     /**
      * Connects src to dest on appropriate fields, with specified
@@ -308,35 +289,31 @@ public:
      * This inner function does NOT send an ack. Returns true on
      * success
      */
-    const Msg* innerAddMsg( string msgType, ObjId src, string srcField,
-                            ObjId dest, string destField, unsigned int msgIndex );
+    const Msg* innerAddMsg(string msgType, ObjId src, string srcField, ObjId dest,
+        string destField, unsigned int msgIndex);
 
     /**
      * Connects src to dest on appropriate fields, with specified
      * msgType.
      * This wrapper function sends the ack back to the master node.
      */
-    void handleAddMsg( const Eref& e,
-                       string msgType,
-                       ObjId src, string srcField,
-                       ObjId dest, string destField,
-                       unsigned int msgIndex );
+    void handleAddMsg(const Eref& e, string msgType, ObjId src, string srcField,
+        ObjId dest, string destField, unsigned int msgIndex);
 
     /**
      * Moves Element orig onto the newParent.
      */
-    bool innerMove( Id orig, ObjId newParent );
+    bool innerMove(Id orig, ObjId newParent);
 
     /**
      * Handler to move Element orig onto the newParent.
      */
-    void handleMove( const Eref& e,
-                     Id orig, ObjId newParent );
+    void handleMove(const Eref& e, Id orig, ObjId newParent);
 
     /**
      * Handles sync of DataHandler indexing across nodes
      */
-    void handleSync( const Eref& e, Id elm, FuncId fid);
+    void handleSync(const Eref& e, Id elm, FuncId fid);
 
     /**
      * Deep copy of source element to target, renaming it to newName.
@@ -347,33 +324,30 @@ public:
      * Normally only copies msgs within the tree, but if the flag
      * copyExtMsgs is true then it copies external Msgs too.
      */
-    void handleCopy( const Eref& e,
-                     vector< ObjId > args, string newName, unsigned int n,
-                     bool toGlobal, bool copyExtMsgs );
+    void handleCopy(const Eref& e, vector<ObjId> args, string newName, unsigned int n,
+        bool toGlobal, bool copyExtMsgs);
 
     /**
      * Sets up scheduling for elements on the path.
      */
-    bool innerUseClock( string path, string field,
-                        unsigned int tick, unsigned int msgIndex);
+    bool innerUseClock(
+        string path, string field, unsigned int tick, unsigned int msgIndex);
 
-    void handleUseClock( const Eref& e,
-                         string path, string field, unsigned int tick,
-                         unsigned int msgIndex );
+    void handleUseClock(const Eref& e, string path, string field, unsigned int tick,
+        unsigned int msgIndex);
 
     /**
      * Utility function to set up messages to schedule a list of Ids
      * using the specified field and tick
      */
-    void addClockMsgs( const vector< ObjId >& list,
-                       const string& field, unsigned int tick, unsigned int msgIndex );
+    void addClockMsgs(const vector<ObjId>& list, const string& field, unsigned int tick,
+        unsigned int msgIndex);
 
     /**
      * Utility function to unschedule the specified elist operating
      * on the specified field, typically 'process'
      */
-    static void dropClockMsgs(
-        const vector< ObjId >& list, const string& field );
+    static void dropClockMsgs(const vector<ObjId>& list, const string& field);
 
     ////////////////////////////////////////////////////////////////
     // Thread and MPI handling functions
@@ -384,8 +358,7 @@ public:
      * have the same number of cores available.
      */
     static void setHardware(
-        unsigned int numCores, unsigned int numNodes,
-        unsigned int myNode );
+        unsigned int numCores, unsigned int numNodes, unsigned int myNode);
 
     static unsigned int myNode();
     static unsigned int numNodes();
@@ -438,37 +411,37 @@ public:
     /**
      * Checks for highest 'val' on all nodes
      */
-    static unsigned int reduceInt( unsigned int val );
+    static unsigned int reduceInt(unsigned int val);
 
     ////////////////////////////////////////////////////////////////
     // Sets up clock ticks. Essentially is a call into the
     // Clock::setupTick function, but may be needed to be called from
     // the parser so it is a Shell function too.
-    void doSetClock( unsigned int tickNum, double dt );
+    void doSetClock(unsigned int tickNum, double dt);
 
     // Should set these up as streams so that we can build error
     // messages similar to cout.
-    void warning( const string& text );
-    void error( const string& text );
+    void warning(const string& text);
+    void error(const string& text);
 
     static const Cinfo* initCinfo();
 
     ////////////////////////////////////////////////////////////////
     // Utility functions
     ////////////////////////////////////////////////////////////////
-    static bool adopt( ObjId parent, Id child, unsigned int msgIndex );
-    static bool adopt( Id parent, Id child, unsigned int msgIndex );
+    static bool adopt(ObjId parent, Id child, unsigned int msgIndex);
+    static bool adopt(Id parent, Id child, unsigned int msgIndex);
 
     static const unsigned int OkStatus;
     static const unsigned int ErrorStatus;
 
     // Initialization function, used only in main.cpp:init()
-    void setShellElement( Element* shelle );
+    void setShellElement(Element* shelle);
 
     /// Static func for returning the ProcInfo of the shell.
     static const ProcInfo* procInfo();
 
-    const ProcInfo* getProcInfo( unsigned int index ) const;
+    const ProcInfo* getProcInfo(unsigned int index) const;
 
     /**
      * Chops up the names in the string into the vector of strings,
@@ -476,14 +449,13 @@ public:
      * Returns true if it is an absolute path, that is, starts with the
      * separator.
      */
-    static bool chopString( const string& path, vector< string >& ret,
-                            char separator = '/' );
+    static bool chopString(const string& path, vector<string>& ret, char separator = '/');
 
     /**
      * Checks that the provided name is valid for an object.
      * This returns false if it finds the reserved path chars /#[]
      */
-    static bool isNameValid( const string& name );
+    static bool isNameValid(const string& name);
 
     /**
      * Chop up the path into a vector of Element names, and
@@ -499,8 +471,8 @@ public:
      * ret: {"foo", "bar", "zod" }
      * index: { {}, {10}, {3,4,5} }
      */
-    static bool chopPath( const string& path, vector< string >& ret,
-                          vector< unsigned int >& index );
+    static bool chopPath(
+        const string& path, vector<string>& ret, vector<unsigned int>& index);
 
     /**
      * Cleans up all Elements except /root itself, /clock, /classes,
@@ -513,17 +485,17 @@ public:
     /**
      * set the gettingVector_ flag
      */
-    void expectVector( bool flag );
+    void expectVector(bool flag);
 
 private:
-    Element* shelle_; // It is useful for the Shell to have this.
+    Element* shelle_;  // It is useful for the Shell to have this.
 
     /**
      * Buffer into which return values from the 'get' command are placed
      * Only index 0 is used for any single-value 'get' call.
      * If it was the 'getVec' command then the array is filled up
      */
-    vector< double* > getBuf_;
+    vector<double*> getBuf_;
 
     /**
      * Flag, used by the 'get' subsystem which maintains a buffer for
@@ -580,15 +552,14 @@ private:
      */
     static ProcInfo p_;
 
-    static vector< ProcInfo > threadProcs_;
+    static vector<ProcInfo> threadProcs_;
 
     /**
      * Array of threads, initialized in launchThreads.
      */
 
     static unsigned int numAcks_;
-    static vector< unsigned int > acked_;
-
+    static vector<unsigned int> acked_;
 
     /**
      * Flag to tell system to reinitialize. We use this to defer the
@@ -613,4 +584,4 @@ extern bool set( Eref& dest, const string& destField, const string& val );
 extern bool get( const Eref& dest, const string& destField );
 */
 
-#endif // _SHELL_H
+#endif  // _SHELL_H

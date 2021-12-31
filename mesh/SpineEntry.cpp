@@ -173,7 +173,7 @@ unsigned int SpineEntry::matchNeuroMeshEntriesToShaft(
 
 double SpineEntry::rootArea() const
 {
-	return root_.getDia() * root_.getDia() * PI * 0.25;
+	return root_.getDia() * root_.getDia() * M_PI * 0.25;
 }
 
 double SpineEntry::diffusionLength() const

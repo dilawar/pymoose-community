@@ -18,6 +18,7 @@ import sys
 import pydoc
 import os
 import typing as T
+from pathlib import Path
 
 import moose._moose as _moose
 from moose import model_utils
@@ -453,7 +454,7 @@ def setClock(clockid, dt):
     _moose.setClock(clockid, dt)
 
 
-def loadModel(filename, modelpath, solverclass="gsl"):
+def loadModel(filename : Path, modelpath : str , solverclass : str ="gsl"):
     """loadModel: Load model (genesis/cspace) from a file to a specified path.
 
     Parameters
@@ -800,7 +801,7 @@ def writeKkit(modelpath, filepath, sceneitems={}):
     return model_utils.mooseWriteKkit(modelpath, filepath, sceneitems)
 
 
-def readNML2(modelpath, verbose=False):
+def readNML2(modelpath : Path, verbose : bool =False):
     """Load neuroml2 model.
 
     Parameters
@@ -816,6 +817,7 @@ def readNML2(modelpath, verbose=False):
     ------
     FileNotFoundError: If modelpath is not found or not readable.
     """
+    assert modelpath.exists(), f'{modelpath} does not exists'
     return model_utils.mooseReadNML2(modelpath, verbose)
 
 

@@ -17,6 +17,8 @@
 #include "MarkovSolverBase.h"
 #include "MarkovSolver.h"
 
+#include <cmath>
+
 const Cinfo* MarkovSolver::initCinfo()
 {
     //////////////////////

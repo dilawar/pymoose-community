@@ -4,6 +4,7 @@ import os
 import moose
 import rdesigneur as rd
 import numpy as np
+from pathlib import Path
 
 sm_diam = 20e-6
 sm_len = 20e-6
@@ -18,7 +19,9 @@ CM = 0.01
 RA = 1.5
 Vrest = -0.065
 
-sdir_ = os.path.dirname(os.path.realpath(__file__))
+sdir_ = Path(__file__).parent.resolve()
+
+print(str(sdir_ / 'Na_Chan_Migliore2018_.Na_Chan()'))
 
 def test_proto():
     # Boilerplate
@@ -26,7 +29,7 @@ def test_proto():
         elecPlotDt = elecPlotDt,
         elecDt = elecDt,
         cellProto = [['somaProto', 'soma', sm_diam, sm_len]],
-        chanProto = [[ os.path.join(sdir_, 'Na_Chan_Migliore2018_.Na_Chan()'), 'Na']],
+        chanProto = [[ str(sdir_ / 'Na_Chan_Migliore2018_.Na_Chan()'), 'Na']],
         chanDistrib = [
             ['Na', 'soma', 'Gbar', '360']
             ],
@@ -40,6 +43,7 @@ def test_proto():
         ]
     )
     rdes.buildModel()
+    print('rdes is built')
 
     if moose.exists('/model/elec/soma/vclamp'):
         moose.element( '/model/elec/soma/vclamp' ).gain = CM*sm_area/elecDt
@@ -48,11 +52,13 @@ def test_proto():
         moose.element( '/model/elec/soma/vclamp' ).td = 0
 
     moose.reinit()
+    print('[INFO] Reinit')
     moose.start( 0.3 )
     rdes.display()
 
 def main():
     test_proto()
+    print('[INFO] Done.')
 
 if __name__ == '__main__':
     main()

@@ -15,9 +15,9 @@
 #include <functional>
 #include <chrono>
 
-#include "../external/pybind11/include/pybind11/pybind11.h"
-#include "../external/pybind11/include/pybind11/stl.h"
-#include "../external/pybind11/include/pybind11/numpy.h"
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <pybind11/numpy.h>
 
 namespace py = pybind11;
 using namespace std;
@@ -31,6 +31,7 @@ using namespace pybind11::literals;
 #include "../shell/Shell.h"
 #include "../shell/Wildcard.h"
 #include "../utility/strutil.h"
+
 #include "Finfo.h"
 #include "MooseVec.h"
 #include "helper.h"
@@ -55,8 +56,7 @@ map<string, string> mooseVersionInfo()
             {"minor", vers[1]},
             {"micro", vers[2]},
             {"releaselevel", vers[3]},
-            {"build_datetime", string(mbstr)},
-            {"compiler_string", string(COMPILER_STRING)}};
+            {"build_datetime", string(mbstr)}};
 }
 
 bool setFieldGeneric(const ObjId &oid, const string &fieldName,
@@ -455,7 +455,7 @@ PYBIND11_MODULE(_moose, m)
 
     // Attributes.
     m.attr("NA") = NA;
-    m.attr("PI") = PI;
+    m.attr("PI") = M_PI;
     m.attr("FaradayConst") = FaradayConst;
     m.attr("GasConst") = GasConst;
 

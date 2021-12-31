@@ -360,7 +360,7 @@ void testStats()
 	unsigned int size = 1000;
 	vector< double > sinewave( size, 0 );
 	for ( unsigned int i = 0; i < size; ++i ) {
-		sinewave[i] = sin( 2 * i * PI / static_cast< double >( size ) );
+		sinewave[i] = sin( 2 * i * M_PI / static_cast< double >( size ) );
 	}
 	ObjId tabid = shell->doCreate( "StimulusTable", ObjId(), "tab", 1 );
 	assert( tabid != ObjId() );
@@ -393,13 +393,13 @@ void testStats()
 	double wsdev = Field< double >::get( stat1, "wsdev" );
 	double wsum = Field< double >::get( stat1, "wsum" );
 	unsigned int wnum = Field< unsigned int >::get( stat1, "wnum" );
-	assert( doubleApprox( mean, 2.0 / PI ) );
+	assert( doubleApprox( mean, 2.0 / M_PI ) );
 	assert( doubleApprox( sdev, 0.3077627 ) );
-	assert( doubleApprox( sum, size / PI ) );
+	assert( doubleApprox( sum, size / M_PI ) );
 	assert( doubleApprox( num, size/2 ) );
-	assert( doubleApprox( wmean, 2.0 / PI ) );
+	assert( doubleApprox( wmean, 2.0 / M_PI ) );
 	// assert( doubleApprox( wsdev, 1.0/sqrt( 2.0 ) ) );
-	assert( doubleApprox( wsum, size / PI ) );
+	assert( doubleApprox( wsum, size / M_PI ) );
 	assert( wnum == size/2 );
 
 	shell->doStart( size );
@@ -411,9 +411,9 @@ void testStats()
 	wsdev = Field< double >::get( stat1, "wsdev" );
 	wsum = Field< double >::get( stat1, "wsum" );
 	wnum = Field< unsigned int >::get( stat1, "wnum" );
-	assert( doubleApprox( mean, 2.0 / (PI * 3.0) ) );
+	assert( doubleApprox( mean, 2.0 / (M_PI * 3.0) ) );
 	assert( doubleApprox( sdev, 0.6745136 ) );
-	assert( doubleApprox( sum, size / PI ) );
+	assert( doubleApprox( sum, size / M_PI ) );
 	assert( doubleApprox( num, 3 * size/2 ) );
 	assert( doubleApprox( wmean, 0 ) );
 	assert( doubleApprox( wsdev, 1.0/sqrt( 2.0 ) ) );

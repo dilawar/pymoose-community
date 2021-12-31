@@ -2,9 +2,8 @@
 # Utilties for loading NML and SBML models.
 # Authored and maintained by Harsha Rani
 
-from __future__ import absolute_import, print_function, division
-
 import os
+from pathlib import Path
 import moose._moose as _moose
 import moose.utils as mu
 
@@ -132,19 +131,20 @@ def mooseMergeChemModel(src, des):
 
 
 # NML2 reader and writer function.
-def mooseReadNML2(modelpath, verbose=False):
+def mooseReadNML2(modelpath : Path, verbose : True =False):
     """Read NeuroML model (version 2) and return reader object.
     """
     global nml2Import_, nml2ImportError_
     if not nml2Import_:
         raise RuntimeError("Could not load NML2 support:\n %s" % nml2ImportError_)
 
+    assert modelpath.exists(), f'{modelpath} dot not exists'
     reader = _neuroml2.NML2Reader(verbose=verbose)
     reader.read(modelpath)
     return reader
 
 
-def mooseWriteNML2(outfile):
+def mooseWriteNML2(outfile : Path):
     raise NotImplementedError("Writing to NML2 is not supported yet")
 
 
@@ -154,19 +154,20 @@ def mooseReadKkitGenesis(filename, modelpath, solverclass="gsl"):
     Only for genesis and cspace.
     """
 
-    if not os.path.isfile(os.path.realpath(filename)):
-        raise FileNotFoundError("Model file '%s' found." % filename)
+    filename = Path(filename)
+    if not filename.is_file():
+        raise FileNotFoundError(f"Model file '{filename}' is not found or not readable")
 
-    ext = os.path.splitext(filename)[1]
+    ext = filename.suffix
     sc = solverclass.lower().replace(" ", "")
 
     if ext in [".swc", ".p"]:
-        return _moose.loadModelInternal(filename, modelpath, solverclass)
+        return _moose.loadModelInternal(str(filename), modelpath, solverclass)
 
     if ext in [".g", ".cspace"]:
         # only if genesis or cspace file and method != ee then only
         # mooseAddChemSolver is called.
-        ret = _moose.loadModelInternal(filename, modelpath, "ee")
+        ret = _moose.loadModelInternal(str(filename), modelpath, "ee")
         method = "ee"
         if sc in ["gssa", "gillespie", "stochastic", "gsolve"]:
             method = "gssa"

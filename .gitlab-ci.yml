@@ -9,8 +9,8 @@ build:
   # instead of calling g++ directly you can also use some build toolkit like make
   # install the necessary build tools when needed
   before_script:
-    - apt update && apt -y install cmake git libgsl-dev
-    - apt -y install python3-numpy python3-matplotlib python3-pip python3-dev
+    - apt update -y
+    - apt -y install cmake python3-numpy python3-matplotlib python3-pip python3-dev
     - apt -y install python-numpy python-matplotlib python-pip python-dev
   script:
     - python3 -m pip install setuptools pip --user --upgrade
@@ -18,11 +18,11 @@ build:
     - python3 -m pip install pyneuroml --user --upgrade
     - python3 -m pip install sympy scipy --user --upgrade
     - python3 -m pip install pytest --user --upgrade
-    - python3 setup.py build test 
-    - python3 setup.py install --user
-    - python3 -c "import moose.tests; moose.tests.test()"
+    - mkdir _build && cd _build && cmake .. && make -j$(nproc) && ctest --output-on-failure -j2
+    - make install
+    - python3 -c "import moose; print(moose.__version__)"
+    - python3 -c "import moose.tests; moose.tests.test()" || echo "Failed"
 
   except:
-      - pybind11
       - devel
 

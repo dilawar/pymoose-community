@@ -45,7 +45,7 @@ namespace cnpy2
 // https://github.com/rogersce/cnpy
 char BigEndianTest();
 
-void split(vector<string>& strs, string& input, const string& pat);
+vector<string> split(const string& input, const string& pat);
 
 /**
  * @brief Check if a numpy file is sane or not.
@@ -76,7 +76,7 @@ void changeHeaderShape(std::ofstream& fs, const size_t data_len, const size_t nu
 
 // Use version 2.0 of npy fommat.
 // https://numpy.org/devdocs/reference/generated/numpy.lib.format.html
-static vector<char> __pre__ {
+static array<char, 8> __pre__ {
     (char)0x93, 'N', 'U', 'M', 'P', 'Y'         /* Magic */
     , (char)0x02, (char) 0x00               /* format */
 };

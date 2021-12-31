@@ -65,7 +65,7 @@ extern map<string, valarray<double>> solverProfMap;
  *
  * @return  A fixed path.
  */
-string fixPath(string path);
+string fixPath(const string& path);
 
 /**
  * @brief Checks if given path is correct.
@@ -88,7 +88,7 @@ int checkPath(const string& path);
  *
  * @return A string representing moose-path.
  */
-string joinPath(string pathA, string pathB);
+string joinPath(string& pathA, string& pathB);
 
 
 

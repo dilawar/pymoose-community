@@ -9,17 +9,7 @@ add_library(shell
     ShellCopy.cpp
     ShellThreads.cpp
     LoadModels.cpp
-    SaveModels.cpp
     Neutral.cpp
     Wildcard.cpp
     testShell.cpp
     )
-
-## version is set by top-level script ../CMakeLists.txt .
-#if(NOT MOOSE_VERSION)
-#    set(MOOSE_VERSION "undefined")
-#endif()
-#
-#set_target_properties(shell
-#    PROPERTIES COMPILE_FLAGS ${COMPILE_FLAGS} -DMOOSE_VERSION=\"${MOOSE_VERSION}\"
-#    )

@@ -15,12 +15,14 @@
 #include "CompartmentBase.h"
 #include "Compartment.h"
 #include "SymCompartment.h"
+
 #include <fstream>
 #include <iomanip>
+#include <cmath>
 
 // Minimum allowed radius of segment, in microns
 // Believe it or not, some otherwise reasonable files do have smaller radii
-static const double MinRadius = 0.04;
+constexpr double MinRadius = 0.04;
 
 ReadSwc::ReadSwc( const string& fname )
 {
@@ -262,12 +264,12 @@ static Id makeCompt( Id parent,
     Eref er = compt.eref();
     moose::CompartmentBase *cptr = reinterpret_cast< moose::CompartmentBase* >(
                                        compt.eref().data() );
-    double xa = seg.radius() * seg.radius() * PI * 1e-12;
+    double xa = seg.radius() * seg.radius() * M_PI * 1e-12;
     len *= 1e-6;
     double dia = seg.radius() * 2.0e-6;
-    cptr->setRm( er, RM / ( len * dia * PI ) );
+    cptr->setRm( er, RM / ( len * dia * M_PI ) );
     cptr->setRa( er, RA * len / xa );
-    cptr->setCm( er, CM * ( len * dia * PI ) );
+    cptr->setCm( er, CM * ( len * dia * M_PI ) );
     cptr->setDiameter( dia );
     cptr->setLength( len );
     cptr->setX0( x0 * 1e-6 );

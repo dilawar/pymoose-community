@@ -8,7 +8,9 @@
 #ifndef _STRINGUTIL_H
 #define _STRINGUTIL_H
 
-#include "../external/fmt/include/fmt/core.h"
+#ifdef USE_FMT_LIB
+#include <fmt/core.h>
+#endif
 
 #include <string>
 #include <sstream>
@@ -80,11 +82,8 @@ bool isPrefix(const std::string& a, const std::string& b);
 std::string textwrap(const std::string& text, const std::string& prefix = "",
                      const size_t width = 70);
 
+#ifdef USE_FMT_LIB
 std::string boxed(const std::string& text, const size_t width = 70);
-
-std::string capitalize(const string& f);
-
-void split(const string& text, const string& splitat, vector<string>& res);
 
 template <char U = '-'>
 std::string underlined(const string& text)
@@ -93,6 +92,12 @@ std::string underlined(const string& text)
     return fmt::format(string("{1:^{2}}\n{0:") + U + string("^{2}}\n"), "",
                        text, text.size());
 }
+#endif
+
+std::string capitalize(const string& f);
+
+void split(const string& text, const string& splitat, vector<string>& res);
+
 
 /* --------------------------------------------------------------------------*/
 /**

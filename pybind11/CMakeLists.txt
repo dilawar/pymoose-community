@@ -7,74 +7,82 @@ pybind11_add_module(_moose
     MooseVec.cpp 
     PyRun.cpp)
 
-add_dependencies(_moose libmoose)
-
 # Use in version_info dict.
-target_compile_definitions(_moose PRIVATE
-    COMPILER_STRING="${CMAKE_CXX_COMPILER_ID},${CMAKE_CXX_COMPILER},${CMAKE_CXX_COMPILER_VERSION}")
+target_compile_definitions(_moose PRIVATE USE_FMT_LIB=ON)
 
-set_target_properties(_moose PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/python/moose
-    PREFIX ""
-    SUFFIX ".so")
+set_target_properties(_moose PROPERTIES PREFIX "")
+target_link_libraries(_moose PRIVATE CONAN_PKG::pybind11 CONAN_PKG::fmt)
 
 if(APPLE)
     set(CMAKE_MODULE_LINKER_FLAGS "-undefined dynamic_lookup")
     message(STATUS "ADDING some linker flags ${CMAKE_EXE_LINKER_FLAGS}")
-    # cmake --help-policy CMP0042
     set_target_properties(_moose PROPERTIES MACOSX_RPATH OFF)
 endif(APPLE)
 
 if(APPLE)
     # OSX
-    target_link_libraries(_moose PRIVATE
-        "-Wl,-all_load"
-        ${MOOSE_LIBRARIES}
-        ${STATIC_LIBRARIES})
-    target_link_libraries(_moose PRIVATE ${SYSTEM_SHARED_LIBS})
-else(APPLE)
+    target_link_libraries(_moose PRIVATE "-Wl,-all_load" ${MOOSE_LIBRARIES})
+    # target_link_libraries(_moose PRIVATE ${SYSTEM_SHARED_LIBS})
+elseif(UNIX)
     # Linux
     target_link_libraries(_moose PRIVATE
         "-Wl,--whole-archive" 
         ${MOOSE_LIBRARIES} 
-        ${STATIC_LIBRARIES} 
         "-Wl,--no-whole-archive"
         ${SYSTEM_SHARED_LIBS})
+elseif(MSVC)
+    # mimic --whole-archive in MSVC :-/ (requires 2015v2 at least)
+    # set_target_properties(_moose PROPERTIES  LINK_FLAGS "/WHOLEARCHIVE")
+    target_link_libraries(_moose PRIVATE ${MOOSE_LIBRARIES})
+    set(MSVC_WHOLE_ARCHIVE "")
+    foreach(_lib ${MOOSE_LIBRARIES})
+        message(STATUS " whole archive ${_lib}")
+        set(MSVC_WHOLE_ARCHIVE "${MSVC_WHOLE_ARCHIVE} /WHOLEARCHIVE:${_lib}")
+    endforeach()
+    set_target_properties(_moose PROPERTIES LINK_FLAGS "${MSVC_WHOLE_ARCHIVE}")
 endif()
 
+# Move _moose.so to python/moose directory.
+# FIXME: LIBRARY_OUTPUT_DIRECTORY does not work with some new cmake
+# version. Probably a bug in CMake. Let's just do it explicitly.
+add_custom_command(TARGET _moose POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:_moose> ${CMAKE_SOURCE_DIR}/python/moose
+    COMMENT "Copying _moose module to python src folder"
+    )
 
+#
+# COPY Python module to binary directory.
 # Copy python tree to BUILD directory. User can set PYTHONPATH to
-# ${CMAKE_BINARY_DIR}/python. 
+# ${CMAKE_BINARY_DIR}/python and also to ${CMAKE_SOURE_DIR}/python
+# Usually its a good practice to keep final module in binary directory.
 set(PYMOOSE_BUILD_DIR ${CMAKE_BINARY_DIR}/python)
-add_custom_target(copy_python_tree ALL
+file(GLOB_RECURSE PY_SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../python/*.py)
+add_custom_target(_copy_python_source ALL
+    DEPENDS _moose  ${PY_SOURCE_FILES}
     # Copy whole Python's source tree to build directory.
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/python/
         ${PYMOOSE_BUILD_DIR}
     COMMENT "pybind11: Copying Python src ${CMAKE_SOURCE_DIR}/python → ${PYMOOSE_BUILD_DIR}"
-    DEPENDS _moose 
+    )
+
+#
+# Create a wheel 
+# copy setup.py.in as setup.py file in cwd.
+#
+configure_file(${CMAKE_SOURCE_DIR}/cmake/setup.py.in ${CMAKE_BINARY_DIR}/setup.py)
+
+add_custom_target(wheel ALL 
+    DEPENDS _moose
+    # COMMAND ${PYTHON_EXECUTABLE} -m pip install wheel --user
+    COMMAND ${PYTHON_EXECUTABLE} setup.py bdist_wheel -d ${CMAKE_BINARY_DIR} 
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    COMMENT "python's wheel is saved to ${CMAKE_BINARY_DIR}"
     VERBATIM)
 
- 
-# Create a binary distribution inside a directory. Installation will copy that
-# directory.
-set(_platform "CMAKE")
-set(PYMOOSE_BDIST_FILE ${CMAKE_BINARY_DIR}/pymoose-${VERSION_MOOSE}.${_platform}.tar.gz)
-set(PYMOOSE_INSTALL_DIR ${CMAKE_BINARY_DIR}/_pymoose_temp_install)
-file(MAKE_DIRECTORY ${PYMOOSE_INSTALL_DIR})
+#
+# Install the wheel in a local directory. 
+#
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/install_wheel.py.in
+    ${CMAKE_BINARY_DIR}/install_wheel.py)
 
-add_custom_command(OUTPUT ${PYMOOSE_BDIST_FILE}
-  COMMAND ${PYTHON_EXECUTABLE} setup.py build_py  
-  COMMAND ${PYTHON_EXECUTABLE} setup.py bdist_dumb 
-    --skip-build -p "${_platform}" -d ${CMAKE_BINARY_DIR} 
-  COMMAND ${CMAKE_COMMAND} -E chdir ${PYMOOSE_INSTALL_DIR} tar xf ${PYMOOSE_BDIST_FILE}
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  COMMENT "python's binary distribution is saved to ${CMAKE_BINARY_DIR}"
-  VERBATIM)
-
-add_custom_target(pymoose_sdist ALL
-    DEPENDS ${PYMOOSE_BDIST_FILE} _moose
-    COMMENT "Building pymoose source distribution.")
-
-install(DIRECTORY ${PYMOOSE_INSTALL_DIR}/usr/local/
-    DESTINATION ${CMAKE_INSTALL_PREFIX}
-    CONFIGURATIONS Debug Release)
+install(CODE "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_BINARY_DIR}/install_wheel.py)")

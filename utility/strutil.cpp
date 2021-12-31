@@ -264,6 +264,7 @@ string textwrap(const string& text, const string& prefix, const size_t width)
     return res;
 }
 
+#ifdef USE_FMT_LIB
 std::string boxed(const string& text, const size_t width)
 {
     return fmt::format(
@@ -272,6 +273,7 @@ std::string boxed(const string& text, const size_t width)
         "└{0:─^{2}}┘\n",
         "", text, width);
 }
+#endif
 
 std::string capitalize(const string& f)
 {

@@ -11,7 +11,6 @@
 #ifndef _HEADER_H
 #define _HEADER_H
 
-#include <math.h>
 #include <algorithm>
 #include <vector>
 #include <string>
@@ -22,13 +21,20 @@
 #include <typeinfo> // used in Conv.h to extract compiler independent typeid
 
 #include <cassert>
+#include <cmath>
 
-using namespace std;
 
-constexpr double PI = 3.141592653589793;
 constexpr double NA = 6.0221415e23;
 constexpr double FaradayConst =  96485.3415; // s A / mol
 constexpr double GasConst = 8.3144621; // R, units are J/(K.mol)
+
+// M_PI may not be available on MSVC
+#ifndef M_PI
+constexpr double M_PI = 3.14159265358979323846;
+#endif
+
+
+using namespace std;
 
 typedef unsigned short BindIndex;
 

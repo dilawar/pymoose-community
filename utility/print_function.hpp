@@ -27,12 +27,14 @@
 #include <sstream>
 #include <fstream>
 #include <vector>
+#include <array>
 #include <string>
 #include <map>
 #include <iomanip>
 #include <ctime>
 #include <algorithm>
-#include <cstring>
+
+using namespace std;
 
 #define T_RESET       "\033[0m"
 #define T_BLACK       "\033[30m"      /* Black */
@@ -51,8 +53,6 @@
 #define T_BOLDMAGENTA "\033[1m\033[35m"      /* Bold Magenta */
 #define T_BOLDCYAN    "\033[1m\033[36m"      /* Bold Cyan */
 #define T_BOLDWHITE   "\033[1m\033[37m"      /* Bold White */
-
-using namespace std;
 
 /* --------------------------------------------------------------------------*/
 /**
@@ -74,6 +74,7 @@ using namespace std;
     moose::showWarn( ss.str() ); \
     }
 
+
 namespace moose {
 
     /**
@@ -83,7 +84,7 @@ namespace moose {
         trace, debug, info , warning, fixme , error, fatal, failed
     };
 
-    static string levels_[9] = {
+    static array<string,9> levels_ = {
         "TRACE", "DEBUG", "INFO", "WARNING", "FIXME" , "ERROR", "FATAL", "FAILED"
     };
 
@@ -192,13 +193,13 @@ namespace moose {
         {
             if('`' == msg[i])
             {
-                if(!set and reset)
+                if((! set) && reset)
                 {
                     set = true;
                     reset = false;
                     ss << color;
                 }
-                else if(set && !reset)
+                else if(set && (!reset))
                 {
                     reset = true;
                     set = false;
@@ -223,25 +224,25 @@ namespace moose {
      */
     inline void showInfo( string msg )
     {
-        moose::__dump__( msg, moose::info );
+        __dump__( msg, moose::info );
     }
 
     inline void showWarn( string msg )
     {
-        moose::__dump__(msg, moose::warning );
+        __dump__(msg, moose::warning );
     }
 
     inline void showDebug( const string msg )
     {
 #ifdef DISABLE_DEBUG
 #else
-        moose::__dump__(msg, moose::debug );
+        __dump__(msg, moose::debug );
 #endif
     }
 
     inline void showError( string msg )
     {
-        moose::__dump__( msg, moose::error );
+        __dump__( msg, moose::error );
     }
 
     /**
@@ -260,55 +261,8 @@ namespace moose {
 }
 #endif     /* -----  not NDEBUG  ----- */
 
-    /*-----------------------------------------------------------------------------
-     *  Log to a file, and also to console.
-     *-----------------------------------------------------------------------------*/
-    inline bool isBackTick(char a)
-    {
-        if('`' == a)
-            return true;
-        return false;
-    }
-
-    inline string formattedMsg(string& msg)
-    {
-        remove_if(msg.begin(), msg.end(), isBackTick);
-        return msg;
-    }
-
-    /**
-     * @brief Log to console (and to a log-file)
-     *
-     * @param msg String, message to be written.
-     * @param type Type of the message.
-     * @param redirectToConsole
-     * @param removeTicks
-     */
-    inline void log(string msg, serverity_level_ type = debug
-            , bool redirectToConsole = true
-            , bool removeTicks = true
-            )
-    {
-
-        if(redirectToConsole)
-            __dump__(msg, type, true);
-
-        /* remove any backtick from the string. */
-        formattedMsg( msg );
-
-        fstream logF;
-        logF.open( "__moose__.log", ios::app);
-        time_t rawtime; time(&rawtime);
-        struct tm* timeinfo;
-        timeinfo = localtime(&rawtime);
-
-        logF << asctime(timeinfo) << ": " << msg;
-
-        logF.close();
-    }
-
     template<typename T>
-    void print_array( T* a, size_t n, const string prefix = "" )
+    void print_array( T* a, size_t n, const string& prefix = "" )
     {
         stringstream ss;
         ss << prefix;

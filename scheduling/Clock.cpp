@@ -56,6 +56,10 @@
 #include <future>
 #endif
 
+#include <cmath>
+using namespace std;
+
+
 // Declaration of some static variables.
 const unsigned int Clock::numTicks = 32;
 /// minimumDt is smaller than any known event on the scales MOOSE handles.

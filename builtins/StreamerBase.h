@@ -16,9 +16,8 @@
 
 #define STRINGSTREAM_DOUBLE_PRECISION       10
 
-#include <iostream>
-#include <string>
-#include <map>
+#include "../basecode/header.h"
+
 #include <fstream>
 #include <sstream>
 
@@ -26,14 +25,12 @@
 
 using namespace std;
 
-class TableBase;
-
-enum OpenMode {WRITE, APPEND, WRITE_STR, APPEND_STR, WRITE_BIN, APPEND_BIN};
 
 class StreamerBase : public TableBase
 {
 
 public:
+
     StreamerBase();
     ~StreamerBase();
 

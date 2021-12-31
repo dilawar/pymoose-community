@@ -510,7 +510,7 @@ double CylMesh::getMeshEntryVolume( unsigned int fid ) const
     double ri = r0_ + (fid + 0.5) * rSlope_;
     double leni = len0 + ( fid + 0.5 ) * lenSlope_;
 
-    return leni * ri * ri * PI;
+    return leni * ri * ri * M_PI;
 }
 
 /// Virtual function to return coords of mesh Entry.
@@ -557,27 +557,27 @@ vector< double > CylMesh::getDiffusionArea( unsigned int fid ) const
     if ( fid == 0 ) {
         if ( isToroid_ ) {
             vector < double > ret( 2 );
-            ret[0] = rlow * rlow * PI;
-            ret[1] = rhigh * rhigh * PI;
+            ret[0] = rlow * rlow * M_PI;
+            ret[1] = rhigh * rhigh * M_PI;
             return ret;
         } else {
-            return vector < double >( 1, rhigh * rhigh * PI );
+            return vector < double >( 1, rhigh * rhigh * M_PI );
         }
     }
 
     if ( fid == (numEntries_ - 1 ) ) {
         if ( isToroid_ ) {
             vector < double > ret( 2 );
-            ret[0] = rlow * rlow * PI;
-            ret[1] = r0_ * r0_ * PI; // Wrapping around
+            ret[0] = rlow * rlow * M_PI;
+            ret[1] = r0_ * r0_ * M_PI; // Wrapping around
             return ret;
         } else {
-            return vector < double >( 1, rlow * rlow * PI );
+            return vector < double >( 1, rlow * rlow * M_PI );
         }
     }
     vector< double > ret( 2 );
-    ret[0] = rlow * rlow * PI;
-    ret[1] = rhigh * rhigh * PI;
+    ret[0] = rlow * rlow * M_PI;
+    ret[1] = rhigh * rhigh * M_PI;
     return ret;
 }
 
@@ -673,7 +673,7 @@ void CylMesh::innerBuildDefaultMesh( const Eref& e,
     /// Single voxel cylinder with diameter = length.
     /// vol = volume = pi.r^2.len.
     /// So len = 2r, volume = pi*r^2*2r = 2pi*r^3 so r = (volume/2pi)^(1/3)
-    double r = pow( ( volume / ( PI * 2 ) ), 1.0 / 3 );
+    double r = pow( ( volume / ( M_PI * 2 ) ), 1.0 / 3 );
     vector< double > coords( 9, 0 );
     coords[3] = 2 * r;
     coords[6] = r;
@@ -728,7 +728,7 @@ const vector< double >& CylMesh::getVoxelArea() const
         double frac = ( 0.5 + static_cast< double >( i ) ) /
             static_cast< double >( numEntries_ );
         double r = r0_ * ( 1.0 - frac ) + r1_ * frac;
-        area[i] = r * r * PI;
+        area[i] = r * r * M_PI;
     }
     return area;
 }
@@ -817,8 +817,8 @@ void CylMesh::buildStencil()
     for ( unsigned int i = 0; i < numEntries_; ++i ) {
         double rLow = r0_ + i * rSlope_;
         double rHigh = r0_ + (i + 1.0) * rSlope_;
-        double aLow = rLow * rLow * PI;
-        double aHigh = rHigh * rHigh * PI;
+        double aLow = rLow * rLow * M_PI;
+        double aHigh = rHigh * rHigh * M_PI;
         vector< double > entry;
         vector< unsigned int > colIndex;
         if ( i == 0 ) {
@@ -832,9 +832,9 @@ void CylMesh::buildStencil()
             if ( isToroid_ ) {
                 colIndex.push_back( 0 );
                 if ( r0_ < r1_ )
-                    entry.push_back( r0_ * r0_ * PI / diffLength_ );
+                    entry.push_back( r0_ * r0_ * M_PI / diffLength_ );
                 else
-                    entry.push_back( r1_ * r1_ * PI / diffLength_ );
+                    entry.push_back( r1_ * r1_ * M_PI / diffLength_ );
             }
             colIndex.push_back( numEntries_ - 2 );
             entry.push_back( aLow / diffLength_ );
@@ -909,9 +909,9 @@ void CylMesh::matchCylMeshEntries( const CylMesh* other,
         if ( ( dr1/totLen_ < EPSILON && dr1/other->totLen_ < EPSILON ) ) {
             double xda;
             if ( r0_ < other->r0_ )
-                xda = 2 * r0_ * r0_ * PI / ( diffLength_ + other->diffLength_ );
+                xda = 2 * r0_ * r0_ * M_PI / ( diffLength_ + other->diffLength_ );
             else
-                xda = 2 * other->r0_ * other->r0_ * PI /
+                xda = 2 * other->r0_ * other->r0_ * M_PI /
                     ( diffLength_ + other->diffLength_ );
             ret.push_back( VoxelJunction( 0, 0, xda ) );
             ret.back().first = 0;
@@ -923,9 +923,9 @@ void CylMesh::matchCylMeshEntries( const CylMesh* other,
         if ( ( dr2/totLen_ < EPSILON && dr2/other->totLen_ < EPSILON ) ) {
             double xda;
             if ( r1_ < other->r1_ )
-                xda = 2 * r1_ * r1_ * PI / ( diffLength_ + other->diffLength_ );
+                xda = 2 * r1_ * r1_ * M_PI / ( diffLength_ + other->diffLength_ );
             else
-                xda = 2 * other->r1_ * other->r1_ * PI /
+                xda = 2 * other->r1_ * other->r1_ * M_PI /
                     ( diffLength_ + other->diffLength_ );
             ret.push_back( VoxelJunction( numEntries_ - 1,
                         other->numEntries_ - 1, xda ) );
@@ -938,9 +938,9 @@ void CylMesh::matchCylMeshEntries( const CylMesh* other,
         if ( ( dr3/totLen_ < EPSILON && dr3/other->totLen_ < EPSILON ) ) {
             double xda;
             if ( r1_ < other->r0_ )
-                xda = 2 * r1_ * r1_ * PI / ( diffLength_ + other->diffLength_ );
+                xda = 2 * r1_ * r1_ * M_PI / ( diffLength_ + other->diffLength_ );
             else
-                xda = 2 * other->r0_ * other->r0_ * PI /
+                xda = 2 * other->r0_ * other->r0_ * M_PI /
                     ( diffLength_ + other->diffLength_ );
             ret.push_back( VoxelJunction( numEntries_ - 1, 0, xda ) );
             ret.back().first = numEntries_ - 1;
@@ -952,9 +952,9 @@ void CylMesh::matchCylMeshEntries( const CylMesh* other,
         if ( ( dr4/totLen_ < EPSILON && dr4/other->totLen_ < EPSILON ) ) {
             double xda;
             if ( r0_ < other->r1_ )
-                xda = 2 * r0_ * r0_ * PI / ( diffLength_ + other->diffLength_ );
+                xda = 2 * r0_ * r0_ * M_PI / ( diffLength_ + other->diffLength_ );
             else
-                xda = 2 * other->r1_ * other->r1_ * PI /
+                xda = 2 * other->r1_ * other->r1_ * M_PI /
                     ( diffLength_ + other->diffLength_ );
             ret.push_back( VoxelJunction( 0, other->numEntries_ - 1, xda ));
             ret.back().first = 0;
@@ -991,9 +991,9 @@ void fillPointsOnCircle(
     // This will cause small errors in area estimate but they will
     // be anisotropic. The alternative will have large errors toward
     // 360 degrees, but not elsewhere.
-    unsigned int numAngle = floor( 2.0 * PI * r / h + 0.5 );
+    unsigned int numAngle = floor( 2.0 * M_PI * r / h + 0.5 );
     assert( numAngle > 0 );
-    double dtheta = 2.0 * PI / numAngle;
+    double dtheta = 2.0 * M_PI / numAngle;
     double dArea = h * dtheta * r;
     // March along points on surface of circle centred at q.
     for ( unsigned int j = 0; j < numAngle; ++j ) {

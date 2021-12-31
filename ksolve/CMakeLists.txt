@@ -22,6 +22,4 @@ set(KSOLVE_SRCS
     )
 
 add_library( ksolve ${KSOLVE_SRCS} )
-
-target_include_directories(ksolve PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../external/eigen-3.3.8)
-
+target_link_libraries(ksolve CONAN_PKG::boost CONAN_PKG::eigen)

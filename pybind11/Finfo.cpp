@@ -9,10 +9,10 @@
 //
 // =====================================================================================
 
-#include "../external/pybind11/include/pybind11/pybind11.h"
-#include "../external/pybind11/include/pybind11/stl.h"
-#include "../external/pybind11/include/pybind11/numpy.h"
-#include "../external/pybind11/include/pybind11/functional.h"
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <pybind11/numpy.h>
+#include <pybind11/functional.h>
 
 namespace py = pybind11;
 
@@ -245,7 +245,7 @@ py::object __Finfo__::getFieldValue(const ObjId& oid, const Finfo* f)
     auto fname = f->name();
     py::object r = py::none();
 
-    if(rttType == "double" or rttType == "float")
+    if(rttType == "double" || rttType == "float")
         r = pybind11::float_(getField<double>(oid, fname));
     else if(rttType == "vector<double>") {
         r = getFieldNumpy<double>(oid, fname);

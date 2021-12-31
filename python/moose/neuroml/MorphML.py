@@ -15,29 +15,13 @@ It is assumed that any channels and synapses referred to by above MorphML
 have already been loaded under that same name in /library in MOOSE (use ChannelML loader).
 """
 
-from __future__ import print_function
-from xml.etree import cElementTree as ET # cELementTree is mostly API-compatible but faster than ElementTree
-import string
+from xml.etree import cElementTree as ET
 import sys
 import math
-from os import path
 import moose
-from moose import utils as moose_utils
+import moose.utils as mu
 from moose.neuroml import utils as neuroml_utils
 from moose.neuroml.ChannelML import ChannelML, make_new_synapse
-
-import logging
-# define a Handler which writes INFO messages or higher to the sys.stderr
-console = logging.StreamHandler()
-console.setLevel(logging.INFO)
-# set a format which is simpler for console use
-formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
-# tell the handler to use this format
-console.setFormatter(formatter)
-# add the handler to the root logger
-logging.getLogger('moose.nml.morphml').addHandler(console)
-_logger = logging.getLogger('')
-
 
 class MorphML():
 
@@ -63,11 +47,11 @@ class MorphML():
         see readMorphML(...) for segDict and cableDict
         """
 
-        _logger.info("Reading morphology from %s" % filename)
+        mu.info("Reading morphology from %s" % filename)
         try:
             tree = ET.parse(filename)
         except Exception as e:
-            _logger.error("Failed to load morphology from file %s" % filename)
+            mu.error("Failed to load morphology from file %s" % filename)
 
         neuroml_element = tree.getroot()
         cellsDict = {}
@@ -99,7 +83,7 @@ class MorphML():
         # creates /library in MOOSE tree; elif present, wraps
         if not moose.exists('/library'):
             moose.Neutral('/library') 
-        _logger.info("Loading cell %s into /library ." % cellname)
+        mu.info("Loading cell %s into /library ." % cellname)
 
         #~ moosecell = moose.Cell('/library/'+cellname)
         #using moose Neuron class - in previous version 'Cell' class Chaitanya
@@ -115,7 +99,7 @@ class MorphML():
             self.createPotentialSynapses = params['createPotentialSynapses']
         else:
             self.createPotentialSynapses = False
-        _logger.info("readMorphML using combineSegments = %s" % self.combineSegments)
+        mu.info("readMorphML using combineSegments = %s" % self.combineSegments)
 
         ###############################################
         #### load cablegroups into a dictionary
@@ -140,7 +124,7 @@ class MorphML():
                     self.cablegroupsInhomoparamsDict[cablegroupname].append(\
                                 (inhomoparamname,inhomoparamvar))
                 else:
-                    _logger.warning('Only "Path Length from root" metric is '
+                    mu.warning('Only "Path Length from root" metric is '
                             ' supported currently, ignoring %s ' % metric.text
                             )
 
@@ -170,7 +154,7 @@ class MorphML():
             if not passive:
                 ## if channel does not exist in library load it from xml file
                 if not moose.exists("/library/"+mechanismname):
-                    _logger.info("Loading mechanism %s into library." % mechanismname)
+                    mu.info("Loading mechanism %s into library." % mechanismname)
                     cmlR = ChannelML(self.nml_params)
                     model_filename = mechanismname+'.xml'
                     model_path = neuroml_utils.find_first_file(model_filename,self.model_dir)
@@ -185,7 +169,7 @@ class MorphML():
                     ## set those compartments to be LIF for which
                     ## any integrate_and_fire parameter is set
                     if not moose.exists( "/library/"+mechanismname):
-                        _logger.warn("Mechanism doesn't exist: %s " % mechanismname)
+                        mu.warn("Mechanism doesn't exist: %s " % mechanismname)
                         moose.le( '/library' )
                     moosemech = moose.element("/library/"+mechanismname)
                     if moose.exists(moosemech.path+"/integrate_and_fire"):
@@ -353,7 +337,7 @@ class MorphML():
                 (running_comp.x,running_comp.y,running_comp.z),\
                 running_comp.diameter,running_comp.length,[]]
             if neuroml_utils.neuroml_debug:
-                _logger.info('Set up compartment/section %s' % running_comp.name)
+                mu.info('Set up compartment/section %s' % running_comp.name)
 
         ###############################################
         #### load biophysics into the compartments
@@ -400,7 +384,7 @@ class MorphML():
                 if "passive_conductance" in mechanism.attrib:
                     if mechanism.attrib['passive_conductance'] in ["true",'True','TRUE']:
                         passive = True
-                _logger.info("Loading mechanism %s " % mechanismname)
+                mu.info("Loading mechanism %s " % mechanismname)
                 ## ONLY creates channel if at least one parameter (like gmax) is specified in the xml
                 ## Neuroml does not allow you to specify all default values.
                 ## However, granule cell example in neuroconstruct has Ca ion pool without
@@ -425,7 +409,7 @@ class MorphML():
                             self.set_group_compartment_param(cell, cellname, parameter,\
                              'inject', Ifactor*float(parameter.attrib["value"]), self.bio)
                         else:
-                            _logger.warning(["Yo programmer of MorphML! You didn't"
+                            mu.warning(["Yo programmer of MorphML! You didn't"
                                 , " implement parameter %s " % parametername
                                 , " in mechanism %s " % mechanismname
                                 ]
@@ -455,7 +439,7 @@ class MorphML():
                              't_refrac', Tfactor*float(parameter.attrib["value"]),\
                              self.bio, mechanismname)
                         else:
-                            _logger.warning(["Yo programmer of MorphML import! You didn't"
+                            mu.warning(["Yo programmer of MorphML import! You didn't"
                                     , " implement parameter %s " % parametername
                                     , " in mechanism %s " % mechanismname ]
                                     )
@@ -496,7 +480,7 @@ class MorphML():
                                         # careful about physiol vs SI units
                         else:
                             inhomo_eqn = inhomo_value_value
-                            _logger.warning('Physiol. vs SI units translation not'
+                            mu.warning('Physiol. vs SI units translation not'
                             ' implemented for parameter '+parametername+
                             'in channel '+mechanismname)+'. Use SI units'
                             'or ask for implementation.'
@@ -509,7 +493,7 @@ class MorphML():
             #### Am connecting these at the very end so that all channels and pools have been created
             #### Note: this function is in moose.utils not moose.neuroml.utils !
             for compartment_list in self.cellDictByCableId[cellname][1].values():
-                moose_utils.connect_CaConc(compartment_list,\
+                mu.connect_CaConc(compartment_list,\
                     self.temperature+neuroml_utils.ZeroCKelvin) # temperature should be in Kelvin for Nernst
 
         ##########################################################
@@ -543,7 +527,7 @@ class MorphML():
                     comp_list.append(compartment.name)
             self.cableDict[cablegroupname] = comp_list
 
-        _logger.info("Finished loading into library, cell: %s " % cellname)
+        mu.info("Finished loading into library, cell: %s " % cellname)
         return {cellname:(self.segDict,self.cableDict)}
 
     def set_group_compartment_param(self, cell, cellname, parameter,\
@@ -577,7 +561,7 @@ class MorphML():
             compartment.initVm = value
         elif name == 'inject':
             # this reader converts to SI
-            _logger.info("Comparment %s inject %s A." % (compartment.name, value))
+            mu.info("Comparment %s inject %s A." % (compartment.name, value))
             compartment.inject = value
         elif name == 'v_reset':
             compartment.vReset = value # compartment is a moose.LIF instance (intfire)
@@ -586,7 +570,7 @@ class MorphML():
         elif name == 't_refrac':
             compartment.refractoryPeriod = value # compartment is a moose.LIF instance (intfire)
         elif name == 'g_refrac':
-            _logger.info("SORRY, current moose.LIF doesn't support g_refrac.")
+            mu.info("SORRY, current moose.LIF doesn't support g_refrac.")
         elif mechanismname == 'synapse': # synapse being added to the compartment
             ## these are potential locations, we do not actually make synapses,
             ## unless the user has explicitly asked for it
@@ -652,7 +636,7 @@ class MorphML():
                     ## BUT, value has been multiplied by Gfactor as a Gbar,
                     ## SI or physiological not known here,
                     ## ignoring Gbar for CaConc, instead of passing units here
-                    child = moose_utils.get_child_Mstring(caconc,'phi')
+                    child = mu.get_child_Mstring(caconc,'phi')
                     if child is not None:
                         #child.value = value
                         pass
@@ -669,4 +653,4 @@ class MorphML():
                 ## B is set for caconc based on thickness of Ca shell and compartment l and dia.
                 ## OR based on the Mstring phi under CaConc path.
         if neuroml_utils.neuroml_debug:
-            _logger.info("Setting %s  for comparment %s to %s" % (name, compartment.path, value))
+            mu.info("Setting %s  for comparment %s to %s" % (name, compartment.path, value))

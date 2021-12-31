@@ -12,7 +12,9 @@
 #include "ChanCommon.h"
 #include "MgBlock.h"
 
-const double EPSILON = 1.0e-12;
+#include <cmath>
+
+constexpr double EPSILON = 1.0e-12;
 
 const Cinfo* MgBlock::initCinfo()
 {

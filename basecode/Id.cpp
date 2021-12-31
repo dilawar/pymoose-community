@@ -142,7 +142,7 @@ Id Id::nextId()
 }
 
 // Static func.
-unsigned int Id::numIds()
+size_t Id::numIds()
 {
     return elements().size();
 }

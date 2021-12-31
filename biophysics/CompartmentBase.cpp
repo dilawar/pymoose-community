@@ -14,6 +14,10 @@
 #include "../shell/Wildcard.h"
 
 static const double RANGE = 4.0e-17;
+
+#include <cmath>
+using namespace std;
+
 using namespace moose;
 
 /*

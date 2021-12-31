@@ -401,9 +401,9 @@ void Stoich::setDsolve(Id dsolve)
 {
     dsolve_     = Id();
     dinterface_ = 0;
-    if(not(dsolve.element()->cinfo()->isA("Dsolve"))) {
-        cout << "Error: Stoich::setDsolve: invalid class assigned,"
-                " should be Dsolve\n";
+    if(! dsolve.element()->cinfo()->isA("Dsolve")) {
+        cerr << "Error: Stoich::setDsolve: invalid class assigned,"
+                " should be Dsolve." << endl;
         return;
     }
     dsolve_     = dsolve;

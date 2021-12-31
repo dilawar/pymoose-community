@@ -60,7 +60,7 @@ public:
     /**
      * Returns the number of Ids in use.
      */
-    static unsigned int numIds();
+    static size_t numIds();
 
     /**
      * The specified element is placed into current id.

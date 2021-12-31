@@ -49,10 +49,12 @@
 #include "../basecode/Dinfo.h"
 #include "VClamp.h"
 
+#include <cmath>
+ 
 using namespace moose;
 
-const unsigned int VClamp::DERIVATIVE_ON_PV = 1;
-const unsigned int VClamp::PROPORTIONAL_ON_PV = 2;
+constexpr unsigned int VClamp::DERIVATIVE_ON_PV = 1;
+constexpr unsigned int VClamp::PROPORTIONAL_ON_PV = 2;
 
 
 SrcFinfo1< double >* VClamp::currentOut()

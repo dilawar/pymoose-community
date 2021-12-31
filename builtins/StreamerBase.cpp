@@ -1,30 +1,24 @@
 /***
- *       Filename:  StreamerBase.cpp
- *
  *    Description:  Stream table data.
- *
- *        Version:  0.0.1
  *        Created:  2016-04-26
 
- *       Revision:  none
- *
  *         Author:  Dilawar Singh <dilawars@ncbs.res.in>
  *   Organization:  NCBS Bangalore
  *
- *        License:  GNU GPL2
+ *        License:  GNU GPLv3
  */
-
-
-#include "../basecode/global.h"
-#include "../basecode/header.h"
-#include "StreamerBase.h"
-
-#include "../scheduling/Clock.h"
-#include "../utility/cnpy.hpp"
 
 #include <algorithm>
 #include <sstream>
 #include <memory>
+#include <string>
+#include <sstream>
+#include <vector>
+
+#include "StreamerBase.h"
+#include "../scheduling/Clock.h"
+#include "../utility/cnpy.hpp"
+
 
 // Class function definitions
 StreamerBase::StreamerBase()
@@ -57,7 +51,7 @@ void StreamerBase::setOutFilepath( string filepath )
 
 void StreamerBase::writeToOutFile( const string& filepath
         , const string& outputFormat
-        , const OpenMode openmode
+        , const enum OpenMode openmode
         , const vector<double>& data
         , const vector<string>& columns
         )
@@ -67,10 +61,10 @@ void StreamerBase::writeToOutFile( const string& filepath
 
     if("npy" == outputFormat  || "npz" == outputFormat)
     {
-        OpenMode m = (openmode == WRITE)?WRITE_BIN:APPEND_BIN;
+        auto m = (openmode == WRITE)?WRITE_BIN:APPEND_BIN;
         writeToNPYFile( filepath, m, data, columns );
     }
-    else if( "csv" == outputFormat or "dat" == outputFormat )
+    else if( "csv" == outputFormat || "dat" == outputFormat )
     {
         OpenMode m = (openmode == WRITE)?WRITE_STR:APPEND_STR;
         writeToCSVFile( filepath, m, data, columns );
@@ -114,7 +108,7 @@ void StreamerBase::writeToCSVFile( const string& filepath, const OpenMode openmo
     {
         // Start of a new row.
         for( unsigned int ii = 0; ii < columns.size(); ii++ )
-            text += moose::toString( data[i+ii] ) + delimiter_;
+            text += std::to_string( data[i+ii] ) + delimiter_;
 
         // At the end of each row, we remove the delimiter_ and append newline_.
         *(text.end()-1) = eol;
@@ -139,8 +133,8 @@ void StreamerBase::writeToNPYFile( const string& filepath, const OpenMode openmo
 
 string StreamerBase::vectorToCSV( const vector<double>& ys, const string& fmt )
 {
-    string res{""};
-    for( auto v : ys )
-        res += std::to_string(v) + ",";
-    return res;
+    stringstream ss;
+    for( double v : ys )
+        ss << v << ",";
+    return ss.str();
 }

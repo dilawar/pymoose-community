@@ -149,7 +149,7 @@ template < class A > class HopFunc1: public OpFunc1Base< A >
 			}
 			if ( elm->isGlobal() ) {
 				Eref starter( elm,  0 );
-				remoteOpVec( starter, arg, op, 0, arg.size() );
+				remoteOpVec( starter, arg, op, 0, (unsigned int)arg.size() );
 			}
 		}
 
@@ -165,7 +165,7 @@ template < class A > class HopFunc1: public OpFunc1Base< A >
 				if ( elm->isGlobal() || er.getNode() != mooseMyNode() ) {
 					// Go just to the node where the fields reside, and
 					// assign the vector there. May be all nodes if global.
-					remoteOpVec( er, arg, op, 0, arg.size() );
+					remoteOpVec( er, arg, op, 0, (unsigned int)arg.size() );
 				}
 			} else {
 				dataOpVec( er, arg, op );

@@ -9,13 +9,8 @@ from datetime import datetime
 from collections import defaultdict
 import re
 
-import logging
-
-logger_ = logging.getLogger("moose.utils")
-
 import moose
 from moose.moose_constants import *
-from moose.print_utils import *
 
 try:
     from moose.network_utils import *
@@ -28,8 +23,29 @@ try:
 except Exception as e:
     logger_.warn("Plot utilities are not loaded due to '%s'" % e)
 
+# Global logger.
+import logging
+logger_ = logging.getLogger(__name__)
 
-def create_table_path(model, graph, element, field):
+
+def info(msg):
+    logger_.info(msg)
+
+def warn(msg):
+    logger_.warn(msg)
+
+def error(msg):
+    logger_.error(msg)
+
+def fatal(msg):
+    logger_.warn(msg)
+    raise Exception(msg)
+
+def debug(msg): 
+    logger_.debug(msg)
+
+
+def create_table_path(model, graph, element, field : str):
 
     field = field[0].upper() + field[1:]
 

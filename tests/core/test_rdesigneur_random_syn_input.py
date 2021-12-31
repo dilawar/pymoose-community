@@ -31,6 +31,7 @@ def test_rdes():
         plotList = [['soma', '1', '.', 'Vm', 'Soma membrane potential']]
     )
     rdes.buildModel()
+    print('[INFO] built rdesigneur')
     moose.reinit()
     moose.start( 0.3 )
     tables = moose.wildcardFind( '/##[TYPE=Table]' )

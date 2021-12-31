@@ -31,9 +31,13 @@
 
 using namespace std;
 
-inline bool doubleEq(double a, double b)
-{
-    return std::fabs(a-b) < 1e-7;
+namespace details {
+
+    inline bool doubleEq(double a, double b)
+    {
+        return std::fabs(a-b) < 1e-7;
+    }
+
 }
 
 static ostringstream assertStream;
@@ -130,7 +134,7 @@ static ostringstream assertStream;
     }
 
 #define ASSERT_DOUBLE_EQ(a, b, token)  \
-    if( ! doubleEq((a), (b)) ) { \
+    if( ! details::doubleEq((a), (b)) ) { \
         assertStream.str(""); \
         assertStream.precision( 12 ); \
         LOCATION(assertStream) \
@@ -140,7 +144,7 @@ static ostringstream assertStream;
     }
 
 #define ASSERT_DOUBLE_NEQ(a, b, token)  \
-    if( doubleEq(a, b) ) { \
+    if( details::doubleEq(a, b) ) { \
         assertStream.str(""); \
         LOCATION(assertStream); \
         assertStream.precision( 12 ); \

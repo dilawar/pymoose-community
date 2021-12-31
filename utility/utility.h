@@ -34,9 +34,6 @@ namespace moose
     string getEnv(const string& env);
     int getEnvInt(const string& env, const int defaultVal=1);
 
-    // In fileutils.cpp
-    bool filepath_exists( const string& path );
-
     /**
      * @brief Givem path of MOOSE element, return its name. It's behaviour is
      * like `basename` of unix command e.g. /a/b/c --> c

@@ -13,7 +13,7 @@
 #include <time.h>
 #include <math.h>
 #include <queue>
-#include <unistd.h> // for getopt
+
 #include "../scheduling/Clock.h"
 #include "../msg/DiagonalMsg.h"
 #include "../msg/SparseMsg.h"
@@ -149,38 +149,8 @@ Id init(int argc, char** argv, bool& doUnitTests)
      * Here we allow the user to override the automatic identification
      * of processor configuration
      */
-    while ( ( opt = getopt( argc, argv, "hiqun:b:B:" ) ) != -1 )
-    {
-        switch ( opt )
-        {
-        case 'i' : // infinite loop, used for multinode debugging, to give gdb something to attach to.
-            isInfinite = 1;
-            break;
-        case 'n': // Multiple nodes
-            numNodes = (unsigned int)atoi( optarg );
-        break;
-        case 'B': // Benchmark plus dump data: handle later.
-            break;
-        case 'u': // Do unit tests, pass back.
-            doUnitTests = true;
-            break;
-        case 'q': // quit immediately after completion.
-            quitFlag = 1;
-            break;
-        case 'h': // help
-        default:
-            cout << "Usage: moose -help -infiniteLoop -unit_tests -quit -n numNodes\n";
-
-            exit( 1 );
-        }
-    }
-    if ( myNode == 0 )
-    {
-#ifndef QUIET_MODE
-        cout << "on node " << myNode << ", numNodes = "
-             << numNodes << ", numCores = " << numCores << endl;
-#endif
-    }
+    doUnitTests = 1;
+    quitFlag = 1;
 
     Id shellId;
     Element* shelle =

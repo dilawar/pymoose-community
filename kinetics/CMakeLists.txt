@@ -12,7 +12,6 @@ add_library(kinetics
     Species.cpp
     ConcChan.cpp
     ReadKkit.cpp
-    WriteKkit.cpp
     ReadCspace.cpp
     lookupVolumeFromMesh.cpp
     testKinetics.cpp

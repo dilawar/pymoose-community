@@ -1523,9 +1523,9 @@ static Id addCompartment(const string& name, Id neuron, Id parent, double dx,
     double length = sqrt(dx * dx + dy * dy + dz * dz);
     Field<double>::set(compt, "length", length);
     Field<double>::set(compt, "diameter", dia);
-    Field<double>::set(compt, "Rm", 1.0 / (PI * length * dia));
-    Field<double>::set(compt, "Cm", 0.01 * (PI * length * dia));
-    Field<double>::set(compt, "Ra", 1 * length / (PI * 0.25 * dia * dia));
+    Field<double>::set(compt, "Rm", 1.0 / (M_PI * length * dia));
+    Field<double>::set(compt, "Cm", 0.01 * (M_PI * length * dia));
+    Field<double>::set(compt, "Ra", 1 * length / (M_PI * 0.25 * dia * dia));
     return compt;
 }
 

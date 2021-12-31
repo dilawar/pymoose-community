@@ -63,7 +63,7 @@ void testPoolVolumeScaling()
 	Field< vector< double > >::set( comptId, "coords", coords );
 
 	double volume = Field< double >::get( poolId, "volume" );
-	assert( doubleEq( volume, PI * x1 * (r0+r1) * (r0+r1) / 4.0 ) );
+	assert( doubleEq( volume, M_PI * x1 * (r0+r1) * (r0+r1) / 4.0 ) );
 
 	Field< double >::set( poolId, "n", 400 );
 	double volscale = 1 / ( NA * volume );
@@ -282,13 +282,6 @@ void testMMenzProcess()
 	cout << "." << flush;
 }
 
-void testWriteKkit( Id id )
-{
-	extern void writeKkit( Id model, const string& s );
-	writeKkit( id, "kkitWriteTest.g" );
-	cout << "." << flush;
-}
-
 void testVolSort()
 {
 	vector< unsigned int > findVolOrder( const vector< double >& vols );
@@ -336,9 +329,6 @@ void testKinetics()
 	testReacVolumeScaling();
 	testReadCspace();
 	testVolSort();
-
-	// This is now handled with real models in the regression tests.
-	// testWriteKkit( Id() );
 }
 
 void testMpiKinetics( )

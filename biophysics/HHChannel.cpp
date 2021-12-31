@@ -16,6 +16,10 @@
 #include "HHChannel.h"
 #include "../shell/Shell.h"
 
+#include <cmath>
+using namespace std;
+
+
 const double HHChannel::EPSILON = 1.0e-10;
 const int HHChannel::INSTANT_X = 1;
 const int HHChannel::INSTANT_Y = 2;

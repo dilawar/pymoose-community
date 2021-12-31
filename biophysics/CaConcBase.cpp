@@ -258,11 +258,11 @@ double CaConcBase::getFloor( const Eref& e ) const
 
 void CaConcBase::updateDimensions( const Eref& e )
 {
-    double vol = PI * diameter_ * diameter_ * length_ * 0.25;
+    double vol = M_PI * diameter_ * diameter_ * length_ * 0.25;
     if ( thickness_ > 0 && thickness_ < diameter_/2.0 )
     {
         double coreRadius = diameter_ / 2.0 - thickness_;
-        vol -= PI * coreRadius * coreRadius * length_;
+        vol -= M_PI * coreRadius * coreRadius * length_;
     }
     double B = 1.0 / ( VALENCE* FaradayConst * vol );
     vSetB( e, B );

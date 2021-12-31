@@ -22,12 +22,9 @@ set -e
 
 BUILDDIR=_build_travis
 
-NPROC=$(nproc)
+NPROC=3
 (
-    # Make sure not to pick up python from /opt.
-    PATH=/usr/local/bin:/usr/bin:$PATH
-
-    PYTHON3=$(which python3)
+    PYTHON3=$(which python)
 
     # Get pylint
     $PYTHON3 -m pip install pylint --user

@@ -59,15 +59,20 @@ set(SRCS
     Interpol.cpp
     StimulusTable.cpp
     TimeTable.cpp
-    StreamerBase.cpp
-    Streamer.cpp
     Stats.cpp
     Interpol2D.cpp
     SpikeStats.cpp
     MooseParser.cpp
-    SocketStreamer.cpp
+    StreamerBase.cpp
+    Streamer.cpp
     testBuiltins.cpp
     )
+
+if(UNIX)
+    # Socketstreamer uses sys/socket.h which is unix only. There may be an easy
+    # way to port this to Windows but it is a rarely used utility.
+    list(APPEND SRCS SocketStreamer.cpp)
+endif()
 
 if(WITH_NSDF AND HDF5_FOUND)
     list(APPEND SRCS
@@ -81,6 +86,12 @@ if(WITH_NSDF AND HDF5_FOUND)
 endif()
 
 add_library(moose_builtins ${SRCS} )
+
+if(MSVC)
+    # exprtk is a bigobj.
+    target_compile_options(moose_builtins PRIVATE "/bigobj")
+endif()
+
 if(WITH_NSDF AND HDF5_FOUND)
     target_link_libraries(moose_builtins ${HDF5_CXX_LIBRARIES} ${HDF5_HL_LIBRARIES})
 endif()

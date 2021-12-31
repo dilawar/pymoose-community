@@ -15,10 +15,14 @@
 #include "HHGate2D.h"
 #include "HHChannel2D.h"
 
-const double HHChannel2D::EPSILON = 1.0e-10;
-const int HHChannel2D::INSTANT_X = 1;
-const int HHChannel2D::INSTANT_Y = 2;
-const int HHChannel2D::INSTANT_Z = 4;
+#include <cmath>
+using namespace std;
+
+
+constexpr double HHChannel2D::EPSILON = 1.0e-10;
+constexpr int HHChannel2D::INSTANT_X = 1;
+constexpr int HHChannel2D::INSTANT_Y = 2;
+constexpr int HHChannel2D::INSTANT_Z = 4;
 
 const Cinfo* HHChannel2D::initCinfo()
 {

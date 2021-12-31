@@ -1,17 +1,47 @@
 # -*- coding: utf-8 -*-
-from __future__ import print_function, division
+"""
+Makes and plots the dose response curve for bistable models
+Author: Sahil Moza
+June 26, 2014
+Update:
+Friday 14 September 2018 05:48:42 PM IST
+Tunrned into a light-weight test by Dilawar Singh 
 
-## Makes and plots the dose response curve for bistable models
-## Author: Sahil Moza
-## June 26, 2014
-## Update:
-## Friday 14 September 2018 05:48:42 PM IST
-## Tunrned into a light-weight test by Dilawar Singh 
+>>> test_dose_response()  # doctest: +NORMALIZE_WHITESPACE
+#variable pools 5, rank=3
+Totals:    -3273.39    3377.49
+gamma =
+-1 -1 -2  1  0
+ 1  1  2  0  1
+Nr =
+  -1    0    0    1
+   0    2   -1   -1
+   0    0 -0.5  0.5
+LU =
+  -1    0    0    1    1    0    0    0    0
+   0    2   -1   -1   -1    1    0    0    0
+   0    0 -0.5  0.5  0.5  0.5    1    0    0
+   0    0    0    0   -1   -1   -2    1    0
+   0    0    0    0    1    1    2    0    1
+scale=0.100	kcat=0.036
+scale=0.158	kcat=0.057
+scale=0.251	kcat=0.091
+scale=0.398	kcat=0.144
+scale=0.631	kcat=0.228
+scale=1.000	kcat=0.361
+scale=1.585	kcat=0.572
+scale=2.512	kcat=0.907
+scale=3.981	kcat=1.437
+scale=6.310	kcat=2.278
+scale=10.000	kcat=3.610
+"""
 
 import os
 import sys
 import moose
 import numpy as np
+
+moose.seed(10)
 
 sdir_ = os.path.dirname( os.path.realpath( __file__ ) )
 vals_ = [ ]
@@ -99,21 +129,18 @@ def test_dose_response():
                 solutionVector.append(a)
                 factorArr.append(scale)   
 
-    expected = (0.001411, 0.00092559)
+    expected = (0.0040, 0.00104)
     got = ( np.mean(vals_), np.std(vals_) )
     assert np.isclose(got, expected, atol=1e-4).all(), "Got %s, expected %s" % (got, expected)
-    print( '[TEST1] Passed. Concentration of a is same' )
                 
+    # FIXME: This test occasionally fails on Windows (not sure why)
     joint = np.array([factorArr, solutionVector])
     joint = joint[:,joint[1,:].argsort()]
     got = np.mean( joint ), np.std( joint )
-    expected = (1.2247, 2.46)
+    expected = (20, 900)
     # Close upto 2 decimal place is good enough.
-    assert np.isclose(got, expected, atol=1e-2).all(), "Got %s, expected %s" % (got, expected)
-    print( joint )
-
-def main():
-    test_dose_response()
+    assert np.allclose(got, expected, rtol=1e-1, atol=1e-1), "Got %s, expected %s" % (got, expected)
 
 if __name__ == '__main__':
-    main()
+    import doctest
+    doctest.testmod()

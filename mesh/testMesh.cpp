@@ -100,12 +100,12 @@ void testCylBase()
 	CylBase  a( 0, 0, 0, 1,   1, 1 );
 	CylBase  b( 1, 2, 3, 1,   2, 10 );
 
-	assert( doubleEq( b.volume( a ), PI * 0.25 * 2 ) );
+	assert( doubleEq( b.volume( a ), M_PI * 0.25 * 2 ) );
 	assert( a.getNumDivs() == 1 );
 	assert( b.getNumDivs() == 10 );
 
 	for ( unsigned int i = 0; i < 10; ++i ) {
-		assert( doubleEq( b.voxelVolume( a, i ), PI * 0.25 * 2 * 0.1 ) );
+		assert( doubleEq( b.voxelVolume( a, i ), M_PI * 0.25 * 2 * 0.1 ) );
 		vector< double > coords = b.getCoordinates( a, i );
 		double x = i;
 		assert( doubleEq( coords[0], x / 10.0 ) );
@@ -119,20 +119,20 @@ void testCylBase()
 		assert( doubleEq( coords[8], 0.0 ) );
 		assert( doubleEq( coords[9], 0.0 ) );
 
-		assert( doubleEq( b.getDiffusionArea( a, i ), PI * 0.25 ) );
+		assert( doubleEq( b.getDiffusionArea( a, i ), M_PI * 0.25 ) );
 	}
 	b.setDia( 2.0 );
 	assert( doubleEq( b.getDia(), 2.0 ) );
-	assert( doubleEq( b.volume( a ), PI * (2*(0.5*0.5+0.5+1)/3.0) ) );
+	assert( doubleEq( b.volume( a ), M_PI * (2*(0.5*0.5+0.5+1)/3.0) ) );
 	for ( unsigned int i = 0; i < 10; ++i ) {
 		double x = static_cast< double >( i ) / 10.0;
 		double r0 = 0.5 * ( a.getDia() * ( 1.0 - x ) + b.getDia() * x );
 		x = x + 0.1;
 		double r1 = 0.5 * ( a.getDia() * ( 1.0 - x ) + b.getDia() * x );
 		// len = 2, and we have 10 segments of it.
-		double vv = 0.2 * ( r0 * r0 + r0 * r1 + r1 * r1 ) * PI / 3.0;
+		double vv = 0.2 * ( r0 * r0 + r0 * r1 + r1 * r1 ) * M_PI / 3.0;
 		assert( doubleEq( b.voxelVolume( a, i ), vv ) );
-		assert( doubleEq( b.getDiffusionArea( a, i ), PI * r0 * r0 ) );
+		assert( doubleEq( b.getDiffusionArea( a, i ), M_PI * r0 * r0 ) );
 	}
 
 	cout << "." << flush;
@@ -164,7 +164,7 @@ void testNeuroNode()
 	assert( na.children().size() == 2 );
 	assert( na.children()[0] == 2 );
 	assert( na.children()[1] == 4 );
-	assert( doubleEq( na.volume( a ), PI * 0.25 ) );
+	assert( doubleEq( na.volume( a ), M_PI * 0.25 ) );
 
 	assert( ndummy.parent() == 0 );
 	assert( ndummy.startFid() == 1 );
@@ -182,7 +182,7 @@ void testNeuroNode()
 	assert( nb.isSphere() == false );
 	assert( nb.isStartNode() == false );
 	assert( nb.children().size() == 0 );
-	assert( doubleEq( nb.volume( a ), PI * (2*(0.5*0.5+0.5+1)/3.0) ) );
+	assert( doubleEq( nb.volume( a ), M_PI * (2*(0.5*0.5+0.5+1)/3.0) ) );
 
 	cout << "." << flush;
 }
@@ -394,7 +394,7 @@ void testCylMesh()
 	assert( doubleEq( cm.getDiffLength(), totLen / 5 ) );
 
 	///////////////////////////////////////////////////////////////
-	assert( doubleEq( cm.getMeshEntryVolume( 2 ), 2.5 * 2.5 * PI * totLen / 5 ) );
+	assert( doubleEq( cm.getMeshEntryVolume( 2 ), 2.5 * 2.5 * M_PI * totLen / 5 ) );
 
 	///////////////////////////////////////////////////////////////
 	// LenSlope/totLen = 0.016 =
@@ -428,8 +428,8 @@ void testCylMesh()
 	///////////////////////////////////////////////////////////////
 	coords = cm.getDiffusionArea( 2 );
 	assert( coords.size() == 2 );
-	assert( doubleEq( coords[0], 2.4 * 2.4 * PI ) );
-	assert( doubleEq( coords[1], 2.6 * 2.6 * PI ) );
+	assert( doubleEq( coords[0], 2.4 * 2.4 * M_PI ) );
+	assert( doubleEq( coords[1], 2.6 * 2.6 * M_PI ) );
 
 	///////////////////////////////////////////////////////////////
 	coords = cm.getCoords( Id().eref(), 0 );
@@ -495,7 +495,7 @@ void testCylMesh()
 		double r = cm.getR0() +
 				( cm.getR1() - cm.getR0() ) *
 				cm.getDiffLength() * ( 0.5 + i ) / cm.getTotLength();
-		double a = r * cm.getDiffLength() * 2 * PI;
+		double a = r * cm.getDiffLength() * 2 * M_PI;
 		//assert( doubleApprox( ret[i].diffScale, a ) );
 		// cout << i << ". mesh: " << ret[i].diffScale << ", calc: " << a << endl;
 		assert( fabs( ret[i].diffScale - a ) < 0.5 );
@@ -522,7 +522,7 @@ void testCylMesh()
 	assert( vj.size() == 1 );
 	assert( vj[0].first == 0 );
 	assert( vj[0].second == cm2.getNumEntries() - 1 );
-	double xda = 2.0 * 1 * 1 * PI / ( cm.getDiffLength() + cm2.getDiffLength() );
+	double xda = 2.0 * 1 * 1 * M_PI / ( cm.getDiffLength() + cm2.getDiffLength() );
 	assert( doubleEq( vj[0].diffScale, xda ) );
 
 	cout << "." << flush;
@@ -578,7 +578,7 @@ void testMidLevelCylMesh()
 
 	double totLen = sqrt( 29.0 );
 	assert( doubleEq( Field< double >::get( oid, "volume" ),
-		1.5 * 1.5 * PI * totLen / 5 ) );
+		1.5 * 1.5 * M_PI * totLen / 5 ) );
 
 	vector< unsigned int > neighbors =
 		Field< vector< unsigned int > >::get( oid, "neighbors" );
@@ -865,8 +865,8 @@ Id makeCompt( Id parentCompt, Id parentObj,
 	Field< double >::set( ret, "x0", pax );
 	Field< double >::set( ret, "y0", pay );
 	Field< double >::set( ret, "z0", 0.0 );
-	double x = pax + len * cos( theta * PI / 180.0 );
-	double y = pay + len * sin( theta * PI / 180.0 );
+	double x = pax + len * cos( theta * M_PI / 180.0 );
+	double y = pay + len * sin( theta * M_PI / 180.0 );
 	Field< double >::set( ret, "x", x );
 	Field< double >::set( ret, "y", y );
 	Field< double >::set( ret, "z", 0.0 );
@@ -910,15 +910,15 @@ Id makeSpine( Id parentCompt, Id parentObj, unsigned int index,
 	Field< double >::set( shaft, "x0", x );
 	Field< double >::set( shaft, "y0", y );
 	Field< double >::set( shaft, "z0", z );
-	double sy = y + len * cos( theta * PI / 180.0 );
-	double sz = z + len * sin( theta * PI / 180.0 );
+	double sy = y + len * cos( theta * M_PI / 180.0 );
+	double sz = z + len * sin( theta * M_PI / 180.0 );
 	Field< double >::set( shaft, "x", x );
 	Field< double >::set( shaft, "y", sy );
 	Field< double >::set( shaft, "z", sz );
 	Field< double >::set( shaft, "diameter", dia/10.0 );
 	Field< double >::set( shaft, "length", len );
-	double xa = PI * dia * dia / 400.0;
-	double circumference = PI * dia / 10.0;
+	double xa = M_PI * dia * dia / 400.0;
+	double circumference = M_PI * dia / 10.0;
 	Field< double >::set( shaft, "Ra", RA * len / xa );
 	Field< double >::set( shaft, "Rm", RM / ( len * circumference ) );
 	Field< double >::set( shaft, "Cm", CM * len * circumference );
@@ -929,15 +929,15 @@ Id makeSpine( Id parentCompt, Id parentObj, unsigned int index,
 	Field< double >::set( head, "x0", x );
 	Field< double >::set( head, "y0", sy );
 	Field< double >::set( head, "z0", sz );
-	double hy = sy + len * cos( theta * PI / 180.0 );
-	double hz = sz + len * sin( theta * PI / 180.0 );
+	double hy = sy + len * cos( theta * M_PI / 180.0 );
+	double hz = sz + len * sin( theta * M_PI / 180.0 );
 	Field< double >::set( head, "x", x );
 	Field< double >::set( head, "y", hy );
 	Field< double >::set( head, "z", hz );
 	Field< double >::set( head, "diameter", dia );
 	Field< double >::set( head, "length", len );
-	xa = PI * dia * dia / 4.0;
-	circumference = PI * dia;
+	xa = M_PI * dia * dia / 4.0;
+	circumference = M_PI * dia;
 	Field< double >::set( head, "Ra", RA * len / xa );
 	Field< double >::set( head, "Rm", RM / ( len * circumference ) );
 	Field< double >::set( head, "Cm", CM * len * circumference );
@@ -986,12 +986,12 @@ pair< unsigned int, unsigned int > buildBranchingCell(
 	return pair< unsigned int, unsigned int >( 17, 161 );
 }
 
-	// y = initConc * dx * (0.5 / sqrt( PI * DiffConst * runtime ) ) *
+	// y = initConc * dx * (0.5 / sqrt( M_PI * DiffConst * runtime ) ) *
 	//        exp( -x * x / ( 4 * DiffConst * runtime ) )
 double diffusionFunction( double D, double dx, double x, double t )
 {
 	return
-		dx * (0.5 / sqrt( PI * D * t ) ) * exp( -x * x / ( 4 * D * t ) );
+		dx * (0.5 / sqrt( M_PI * D * t ) ) * exp( -x * x / ( 4 * D * t ) );
 }
 
 void testNeuroMeshLinear()
@@ -1036,7 +1036,7 @@ void testNeuroMeshLinear()
 
 	MeshCompt* mc = reinterpret_cast< MeshCompt* >( nm.eref().data() );
 	assert( mc->getNumEntries() == numCompts );
-	const double adx = dia * dia * PI * 0.25 / diffLength;
+	const double adx = dia * dia * M_PI * 0.25 / diffLength;
 	for ( unsigned int i = 0; i < numCompts; ++i ) {
 		const double* entry;
 		const unsigned int* colIndex;
@@ -1154,8 +1154,8 @@ void testNeuroMeshBranching()
 	for ( unsigned int i = 0; i < ndc; ++i )
 		vol[i] = neuro->getMeshEntryVolume( i );
 
-	assert( doubleEq( vol[0], dia * dia * 0.25 * PI * diffLength ) );
-	assert( doubleEq( vol[1], dia * dia * 0.125 * PI * diffLength ) );
+	assert( doubleEq( vol[0], dia * dia * 0.25 * M_PI * diffLength ) );
+	assert( doubleEq( vol[1], dia * dia * 0.125 * M_PI * diffLength ) );
 	// Watch diffusion using stencil and direct calls to the flux
 	// calculations rather than going through the ksolve.
 	for ( double t = 0; t < maxt; t += dt ) {
@@ -1271,16 +1271,16 @@ void testNeuroMeshBranching()
 		double r = cm.getR0() +
 				( cm.getR1() - cm.getR0() ) *
 				cm.getDiffLength() * ( 0.5 + i ) / cm.getTotLength();
-		double a = r * cm.getDiffLength() * 2 * PI;
+		double a = r * cm.getDiffLength() * 2 * M_PI;
 		//assert( doubleApprox( vj[i].diffScale, a ) );
 		// cout << i << ". mesh: " << vj[i].diffScale << ", calc: " << a << endl;
 		assert( fabs( vj[i].diffScale - a ) < 0.5 );
 		*/
 	}
-	double a2 = dia * dia * PI +
-			4 * len * dia * PI / sqrt( 2.0 ) +
-			4 * len * dia * PI / 2.0 +
-			8 * len * dia * PI / (2.0 * sqrt( 2.0 ) );
+	double a2 = dia * dia * M_PI +
+			4 * len * dia * M_PI / sqrt( 2.0 ) +
+			4 * len * dia * M_PI / 2.0 +
+			8 * len * dia * M_PI / (2.0 * sqrt( 2.0 ) );
 
 	// Scaling is needed otherwise doubleApprox treats both as zero.
 	assert( doubleApprox( area * 1e8, a2 * 1e8 ) );
@@ -1299,15 +1299,15 @@ static const unsigned int EMPTY = ~0;
 static const unsigned int SURFACE = ~1;
 static const unsigned int ABUT = ~2;
 static const unsigned int MULTI = ~3;
-typedef pair< unsigned int, unsigned int > PII;
+typedef pair< unsigned int, unsigned int > M_PII;
 extern void setIntersectVoxel(
-		vector< PII >& intersect,
+		vector< M_PII >& intersect,
 		unsigned int ix, unsigned int iy, unsigned int iz,
 		unsigned int nx, unsigned int ny, unsigned int nz,
 		unsigned int meshIndex );
 
 extern void checkAbut(
-		const vector< PII >& intersect,
+		const vector< M_PII >& intersect,
 		unsigned int ix, unsigned int iy, unsigned int iz,
 		unsigned int nx, unsigned int ny, unsigned int nz,
 		unsigned int meshIndex,
@@ -1339,7 +1339,7 @@ void testIntersectVoxel()
 	unsigned int nx = 5;
 	unsigned int ny = 3;
 	unsigned int nz = 1;
-	vector< PII > intersect( nx * ny * nz, PII(
+	vector< M_PII > intersect( nx * ny * nz, M_PII(
 							CubeMesh::EMPTY, CubeMesh::EMPTY ) );
 	unsigned int meshIndex = 0;
 	setIntersectVoxel( intersect, 1, 0, 0, nx, ny, nz, meshIndex++ );
@@ -1721,7 +1721,7 @@ void testSpineEntry()
 	assert( se.parent() == 1234 );
 	assert( se.shaftId() == neck );
 	assert( se.headId() == head );
-	assert( doubleEq( se.volume(), 1e-18 * PI/4.0  ) );
+	assert( doubleEq( se.volume(), 1e-18 * M_PI/4.0  ) );
 	double x, y, z;
 	se.mid( x, y, z );
 	assert( doubleEq( x, 1.5e-6 ) );
@@ -1749,14 +1749,14 @@ void testSpineEntry()
 	assert( vj.size() == 1 );
 	assert( vj[0].first == 1234 );
 	assert( vj[0].second == 0 );
-	assert( doubleApprox( vj[0].diffScale * 1e10, 1e-12 * PI * 1e10 ) );
+	assert( doubleApprox( vj[0].diffScale * 1e10, 1e-12 * M_PI * 1e10 ) );
 
 	vj.clear();
 	se.matchCubeMeshEntriesToPSD( &cube, 4321, 0.1, vj );
 	assert( vj.size() == 1 );
 	assert( vj[0].first == 4321 );
 	assert( vj[0].second == 0 );
-	assert( doubleApprox( vj[0].diffScale * 1e10, 1e-12 * PI * 0.25 * 1e10 ) );
+	assert( doubleApprox( vj[0].diffScale * 1e10, 1e-12 * M_PI * 0.25 * 1e10 ) );
 
 	/////////////////////////////////////////////////////////
 	shell->doDelete( cell );
@@ -1809,7 +1809,7 @@ void testSpineAndPsdMesh()
 	SpineMesh* s = reinterpret_cast< SpineMesh* >( sm.eref().data() );
 	for ( unsigned int i = 0; i < sdc; ++i ) {
 		assert( s->spines()[i].parent() == 40 + i * numCompts/numSpines );
-		assert( doubleEq( s->spines()[i].volume(), PI * 0.25e-12 ) );
+		assert( doubleEq( s->spines()[i].volume(), M_PI * 0.25e-12 ) );
 		double x = i * diffLength * numCompts/numSpines;
 		unsigned int index = 0;
 		s->nearest( x, 0, 0, index );
@@ -1824,7 +1824,7 @@ void testSpineAndPsdMesh()
 	for ( unsigned int i = 0; i < numSpines; ++i ) {
 		assert( ret[i].first == i );
 		assert( ret[i].second == s->spines()[i].parent() );
-		assert( doubleEq( ret[i].diffScale, PI * 0.25e-14 / 1.5e-6 ) );
+		assert( doubleEq( ret[i].diffScale, M_PI * 0.25e-14 / 1.5e-6 ) );
 	}
 
 	// Check coupling to CubeMesh.
@@ -1849,7 +1849,7 @@ void testSpineAndPsdMesh()
 		assert( ret[i].first == i );
 		unsigned int cubeIndex = i + 5;
 		assert( ret[i].second == cubeIndex );
-		assert( doubleApprox( ret[i].diffScale * 1e10, PI * 1e-12 * 1e10 ) );
+		assert( doubleApprox( ret[i].diffScale * 1e10, M_PI * 1e-12 * 1e10 ) );
 		/*
 		cout << i << " cubeIndex=" << cubeIndex << ", (" <<
 				ret[i].first << ", " << ret[i].second << ") : " <<
@@ -1866,7 +1866,7 @@ void testSpineAndPsdMesh()
 		assert( p->parent( i ) == i );
 		ObjId oi( pe, i );
 		double area = Field< double >::get( oi, "volume" );
-		assert( doubleEq( area, 1e-12 * 0.25 * PI ) );
+		assert( doubleEq( area, 1e-12 * 0.25 * M_PI ) );
 		unsigned int dim = Field< unsigned int >::get( oi, "dimensions" );
 		assert( dim == 2 );
 		double x = i * diffLength * numCompts/numSpines;
@@ -1881,7 +1881,7 @@ void testSpineAndPsdMesh()
 		assert( ret[i].first == i );
 		assert( ret[i].second == i );
 		assert( doubleApprox( ret[i].diffScale * 1e10,
-								1e10 * 0.25 * PI * 1e-12 / 0.5e-6 ) );
+								1e10 * 0.25 * M_PI * 1e-12 / 0.5e-6 ) );
 	}
 	ret.clear();
 	p->matchMeshEntries( &cube, ret );
@@ -1890,7 +1890,7 @@ void testSpineAndPsdMesh()
 		assert( ret[i].first == i );
 		unsigned int cubeIndex = i + 5;
 		assert( ret[i].second == cubeIndex );
-		assert( doubleApprox( ret[i].diffScale * 1e10, 0.25 * PI * 1e-12 * 1e10 ) );
+		assert( doubleApprox( ret[i].diffScale * 1e10, 0.25 * M_PI * 1e-12 * 1e10 ) );
 	}
 
 

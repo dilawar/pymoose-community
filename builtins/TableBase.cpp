@@ -8,10 +8,12 @@
 **********************************************************************/
 
 #include "../basecode/header.h"
+#include "../utility/strutil.h"
 
 #include <fstream>
+#include <vector>
+using namespace std;
 
-#include "../utility/strutil.h"
 #include "TableBase.h"
 
 const Cinfo* TableBase::initCinfo()
