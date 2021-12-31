@@ -1,14 +1,15 @@
-__IMP:__ This is fork of https://github.com/BhallaLab/moose-core. I had to maintain a separate fork because upstream 
-didn't respond to various PRs I submitted. To avoid confusion, I have renamed to fork to `pymoose-community`. I don't 
-intend to maintain compatibility with upstream.
+__IMP:__ This is fork of https://github.com/BhallaLab/moose-core because the upstream 
+didn't respond to various PRs I submitted. To avoid confusion, I have renamed this fork 
+to `pymoose-community`. I don't intend to maintain compatibility with upstream.
 
+# About
 
-This is (forked) core computational engine of [MOOSE simulator](https://github.com/BhallaLab/moose). This repository contains
+This is core computational engine of [MOOSE simulator](https://github.com/BhallaLab/moose). This repository contains
 C++ codebase and python interface called `pymoose`. For more details about original MOOSE simulator, visit https://moose.ncbs.res.in .
 
 # Installation
 
-This repository is sufficient for using MOOSE as a python module. We provide python package via `pip`.
+We provide python package via `pip`. Note that you may have to uninstall `pymoose` to install this fork.
 
     $ pip install pymoose-community --user 
 
