@@ -24,9 +24,9 @@ with (Path("@CMAKE_SOURCE_DIR@") / "README.md").open() as f:
 
 
 setup(
-    name="pymoose",
+    name="pymoose-community",
     version="@VERSION_MOOSE@",
-    description="Python scripting interface of MOOSE Simulator (https://moose.ncbs.res.in)",
+    description="Fork of Python scripting interface of MOOSE Simulator (https://moose.ncbs.res.in)",
     long_description=readme,
     long_description_content_type="text/markdown",
     author="MOOSERes",
