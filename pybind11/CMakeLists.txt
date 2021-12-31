@@ -1,17 +1,19 @@
 # Add pybind11 module.
+find_package(pybind11 REQUIRED)
+find_package(fmt REQUIRED)
 
-pybind11_add_module(_moose 
-    pymoose.cpp 
-    helper.cpp 
+pybind11_add_module(_moose
+    pymoose.cpp
+    helper.cpp
     Finfo.cpp
-    MooseVec.cpp 
+    MooseVec.cpp
     PyRun.cpp)
 
 # Use in version_info dict.
 target_compile_definitions(_moose PRIVATE USE_FMT_LIB=ON)
 
 set_target_properties(_moose PROPERTIES PREFIX "")
-target_link_libraries(_moose PRIVATE CONAN_PKG::pybind11 CONAN_PKG::fmt)
+target_link_libraries(_moose PRIVATE pybind11::pybind11 fmt::fmt)
 
 if(APPLE)
     set(CMAKE_MODULE_LINKER_FLAGS "-undefined dynamic_lookup")
@@ -26,8 +28,8 @@ if(APPLE)
 elseif(UNIX)
     # Linux
     target_link_libraries(_moose PRIVATE
-        "-Wl,--whole-archive" 
-        ${MOOSE_LIBRARIES} 
+        "-Wl,--whole-archive"
+        ${MOOSE_LIBRARIES}
         "-Wl,--no-whole-archive"
         ${SYSTEM_SHARED_LIBS})
 elseif(MSVC)
@@ -66,21 +68,21 @@ add_custom_target(_copy_python_source ALL
     )
 
 #
-# Create a wheel 
+# Create a wheel
 # copy setup.py.in as setup.py file in cwd.
 #
 configure_file(${CMAKE_SOURCE_DIR}/cmake/setup.py.in ${CMAKE_BINARY_DIR}/setup.py)
 
-add_custom_target(wheel ALL 
+add_custom_target(wheel ALL
     DEPENDS _moose
     # COMMAND ${PYTHON_EXECUTABLE} -m pip install wheel --user
-    COMMAND ${PYTHON_EXECUTABLE} setup.py bdist_wheel -d ${CMAKE_BINARY_DIR} 
+    COMMAND ${PYTHON_EXECUTABLE} setup.py bdist_wheel -d ${CMAKE_BINARY_DIR}
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "python's wheel is saved to ${CMAKE_BINARY_DIR}"
     VERBATIM)
 
 #
-# Install the wheel in a local directory. 
+# Install the wheel in a local directory.
 #
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/install_wheel.py.in
     ${CMAKE_BINARY_DIR}/install_wheel.py)

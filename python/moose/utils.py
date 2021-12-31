@@ -3,7 +3,6 @@
 
 import types
 import token
-import symbol
 import math
 from datetime import datetime
 from collections import defaultdict
@@ -41,7 +40,7 @@ def fatal(msg):
     logger_.warn(msg)
     raise Exception(msg)
 
-def debug(msg): 
+def debug(msg):
     logger_.debug(msg)
 
 

@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.12)
 
+find_package(Eigen3 REQUIRED)
+find_package(Boost REQUIRED)
+
 set(KSOLVE_SRCS
     KinSparseMatrix.cpp
     ZombiePool.cpp
@@ -22,4 +25,4 @@ set(KSOLVE_SRCS
     )
 
 add_library( ksolve ${KSOLVE_SRCS} )
-target_link_libraries(ksolve CONAN_PKG::boost CONAN_PKG::eigen)
+target_link_libraries(ksolve PUBLIC Boost::headers Eigen3::Eigen3)

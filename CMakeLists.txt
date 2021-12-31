@@ -1,15 +1,13 @@
-cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 
 # Project to build MOOSE's python module.
 project(PyMOOSE LANGUAGES CXX)
-
 
 ################################ CMAKE OPTIONS ##################################
 option(WITH_MPI             "Enable Openmpi support (alpha)" OFF)
 option(WITH_NSDF            "Enable NSDF support. Requires hdf5" OFF)
 
 # For developers
-option(USE_CONAN            "Use conan to download dependencies" ON)
 option(WITH_ASAN            "Use AddressSanitizer (dev only)" OFF)
 option(GPROF                "Build for profiling using gprof" OFF)
 option(DEBUG                "Build with debug support" OFF)
@@ -22,14 +20,14 @@ if(MSVC)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W1")
 endif()
 
-# We find python executable here. Though mainly used inside pymoose. 
+# We find python executable here. Though mainly used inside pymoose.
 find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
 set(PYTHON_EXECUTABLE ${Python3_EXECUTABLE})
 set(CMAKE_MACOSX_RPATH OFF)
 
 if(NOT VERSION_MOOSE)
     string(TIMESTAMP TODAY "%Y%m%d")
-    set(VERSION_MOOSE "3.3.0.dev${TODAY}")
+    set(VERSION_MOOSE "3.4.0.dev${TODAY}")
 endif()
 
 
@@ -38,14 +36,38 @@ message(STATUS "MOOSE version ${VERSION_MOOSE}")
 
 ############################ BUILD CONFIGURATION #################################
 
-# include conan support.
-if(USE_CONAN)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/install_dep.cmake)
-else(USE_CONAN)
-    find_package(Boost 1.53 REQUIRED)
-    find_package(Pybind11 REQUIRED)
-    find_package(Eigen3 REQUIRED)
-endif(USE_CONAN)
+# install dependencies using conan
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Release")
+endif()
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
+list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
+    message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
+    file(DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/v0.16.1/conan.cmake"
+        "${CMAKE_BINARY_DIR}/conan.cmake"
+        EXPECTED_HASH SHA256=396e16d0f5eabdc6a14afddbcfff62a54a7ee75c6da23f32f7a31bc85db23484
+        TLS_VERIFY ON)
+endif()
+find_program(CONAN_COMMAND NAMES conan conan.exe PATHS "C:/Program Files/Conan/conan")
+
+include(${CMAKE_BINARY_DIR}/conan.cmake)
+conan_cmake_configure(REQUIRES
+    boost/1.75.0
+    pybind11/2.8.1
+    eigen/3.3.9
+    fmt/7.1.3
+    GENERATORS cmake_find_package
+    OPTIONS boost:header_only=True)
+
+conan_cmake_autodetect(settings)
+conan_cmake_install(PATH_OR_REFERENCE .
+    BUILD missing
+    REMOTE conancenter
+    SETTINGS ${settings})
+
+find_package(Boost REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 # Default definitions.
 add_definitions(-DUSE_GENESIS_PARSER)
@@ -73,7 +95,7 @@ endif()
 # include paths.
 add_subdirectory(external)
 
-# Mostly development related scripts. 
+# Mostly development related scripts.
 add_subdirectory(devel)
 
 # Source code.
@@ -130,8 +152,8 @@ if(APPLE)
     target_link_libraries(moose.bin PRIVATE ${SYSTEM_SHARED_LIBS})
 elseif(UNIX)
     target_link_libraries(moose.bin PRIVATE
-        "-Wl,--whole-archive" 
-        ${MOOSE_LIBRARIES} 
+        "-Wl,--whole-archive"
+        ${MOOSE_LIBRARIES}
         "-Wl,--no-whole-archive"
         ${SYSTEM_SHARED_LIBS})
 elseif(MSVC)

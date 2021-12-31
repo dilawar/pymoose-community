@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
+find_package(Boost REQUIRED)
 
 set(BIOPHYSICS_SRCS
     IntFire.cpp
@@ -48,5 +49,5 @@ set(BIOPHYSICS_SRCS
     )
 
 add_library(biophysics ${BIOPHYSICS_SRCS})
-target_link_libraries(biophysics CONAN_PKG::boost)
+target_link_libraries(biophysics PRIVATE Boost::headers)
 
