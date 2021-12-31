@@ -23,7 +23,7 @@ jobs:
         sudo -E apt install python3-tk
         PYTHON=$(which python3)
         $PYTHON -m pip install pip --upgrade
-        $PYTHON -m pip install scipy pytest numpy matplotlib wheel setuptools
+        $PYTHON -m pip install conan wheel scipy pytest numpy matplotlib wheel setuptools
         $PYTHON -m pip install python-libsbml pyneuroml
     - name: Build
       run: |
