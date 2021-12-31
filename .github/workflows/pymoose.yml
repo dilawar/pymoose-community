@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.9]
+        python-version: ["3.0", "3.9", "3.10"]
 
     steps:
     - uses: actions/checkout@v2
@@ -23,7 +23,7 @@ jobs:
         sudo -E apt install python3-tk
         PYTHON=$(which python3)
         $PYTHON -m pip install pip --upgrade
-        $PYTHON -m pip install scipy pytest numpy matplotlib wheel setuptools 
+        $PYTHON -m pip install scipy pytest numpy matplotlib wheel setuptools
         $PYTHON -m pip install python-libsbml pyneuroml
     - name: Build
       run: |
