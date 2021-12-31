@@ -1,7 +1,7 @@
 # Moogul.py: MOOSE Graphics Using Lines
 # This is a fallback graphics interface for displaying neurons using
 # regular matplotlib routines.
-# Put in because the GL versions like moogli need all sorts of difficult 
+# Put in because the GL versions like moogli need all sorts of difficult
 # libraries and dependencies.
 # Copyright (C) Upinder S. Bhalla NCBS 2018
 # This program is licensed under the GNU Public License version 3.
@@ -19,7 +19,7 @@ class MoogulError( Exception ):
         return repr( self.value )
 
 class MooView:
-    ''' The MooView class is a window in which to display one or more 
+    ''' The MooView class is a window in which to display one or more
     moose cells, using the MooCell class.'''
     def __init__( self, swx = 10, swy = 12, hideAxis = True
     ):
@@ -34,7 +34,10 @@ class MooView:
         plt.rcParams['keymap.back'] = ''
         plt.rcParams['keymap.home'] = ''
         plt.rcParams['keymap.forward'] = ''
-        plt.rcParams['keymap.all_axes'] = ''
+        try:
+            plt.rcParams['keymap.all_axes'] = ''  # deprecated
+        except Exception:
+            pass
         self.hideAxis = hideAxis
         if self.hideAxis:
             self.ax.set_axis_off()
@@ -47,7 +50,7 @@ class MooView:
         self.drawables_.append( n )
 
     def firstDraw( self, rotation = 0.0, elev = 0.0, azim = 0.0 ):
-        self.coordMax = 0.0 
+        self.coordMax = 0.0
         self.coordMin = 0.0
         if rotation == 0.0:
             self.doRotation = False
@@ -55,7 +58,7 @@ class MooView:
         else:
             self.doRotation = True
             self.rotation = rotation * 180/np.pi # arg units: radians/frame
-        
+
         self.azim = azim * 180/np.pi
         self.elev = elev * 180/np.pi
         for i in self.drawables_:
@@ -65,7 +68,7 @@ class MooView:
         if self.coordMin == self.coordMax:
             self.coordMax = 1+self.coordMin
 
-            
+
         self.ax.set_xlim3d( self.coordMin, self.coordMax )
         self.ax.set_ylim3d( self.coordMin, self.coordMax )
         self.ax.set_zlim3d( self.coordMin, self.coordMax )
@@ -74,7 +77,7 @@ class MooView:
         #self.colorbar = plt.colorbar( self.drawables_[0].segments )
         self.colorbar = self.fig_.colorbar( self.drawables_[0].segments )
         self.colorbar.set_label( self.drawables_[0].fieldInfo[3])
-        self.timeStr = self.ax.text2D( 0.05, 0.05, 
+        self.timeStr = self.ax.text2D( 0.05, 0.05,
                 "Time= 0.0", transform=self.ax.transAxes)
         self.fig_.canvas.draw()
         plt.show()
@@ -204,7 +207,7 @@ class MooDrawable:
         return
 
     def drawForTheFirstTime( self, ax ):
-        self.segments = Line3DCollection( self.activeCoords, 
+        self.segments = Line3DCollection( self.activeCoords,
                 linewidths = self.linewidth, cmap = plt.get_cmap(self.colormap) )
         self.cax = ax.add_collection3d( self.segments )
         self.segments.set_array( self.valMin + np.array( range( len(self.activeCoords) ) ) * (self.valMax-self.valMin)/len(self.activeCoords) )
@@ -220,20 +223,20 @@ class MooNeuron( MooDrawable ):
     def __init__( self,
         neuronId,
         fieldInfo,
-        field = 'Vm', 
-        relativeObj = '.', 
-        maxLineWidth = 20, 
-        colormap = 'jet', 
-        lenScale = 1e6, diaScale = 1e6, autoscale = False, 
+        field = 'Vm',
+        relativeObj = '.',
+        maxLineWidth = 20,
+        colormap = 'jet',
+        lenScale = 1e6, diaScale = 1e6, autoscale = False,
         valMin = -0.1, valMax = 0.05,
     ):
-        #self.isFieldOnCompt = 
+        #self.isFieldOnCompt =
             #field in ( 'Vm', 'Im', 'Rm', 'Cm', 'Ra', 'inject', 'diameter' )
-        
-        MooDrawable.__init__( self, fieldInfo, field = field, 
-                relativeObj = relativeObj, maxLineWidth = maxLineWidth, 
-                colormap = colormap, lenScale = lenScale, 
-                diaScale = diaScale, autoscale = autoscale, 
+
+        MooDrawable.__init__( self, fieldInfo, field = field,
+                relativeObj = relativeObj, maxLineWidth = maxLineWidth,
+                colormap = colormap, lenScale = lenScale,
+                diaScale = diaScale, autoscale = autoscale,
                 valMin = valMin, valMax = valMax )
         self.neuronId = neuronId
         self.updateCoords()
@@ -244,9 +247,9 @@ class MooNeuron( MooDrawable ):
         # Matplotlib3d isn't able to do full rotations about an y axis,
         # which is what the NeuroMorpho models use, so
         # here we shuffle the axes around. Should be an option.
-        #coords = np.array([[[i.x0,i.y0,i.z0],[i.x,i.y,i.z]] 
+        #coords = np.array([[[i.x0,i.y0,i.z0],[i.x,i.y,i.z]]
             #for i in self.compts_])
-        coords = np.array([[[i.z0,i.x0,i.y0],[i.z,i.x,i.y]] 
+        coords = np.array([[[i.z0,i.x0,i.y0],[i.z,i.x,i.y]]
             for i in self.compts_])
         dia = np.array([i.diameter for i in self.compts_])
         if self.relativeObj == '.':
@@ -276,18 +279,18 @@ class MooReacSystem( MooDrawable ):
     ''' Draws collection of line segments of defined dia and color'''
     def __init__( self,
         mooObj, fieldInfo,
-        field = 'conc', 
-        relativeObj = '.', 
-        maxLineWidth = 100, 
-        colormap = 'jet', 
-        lenScale = 1e6, diaScale = 20e6, autoscale = False, 
+        field = 'conc',
+        relativeObj = '.',
+        maxLineWidth = 100,
+        colormap = 'jet',
+        lenScale = 1e6, diaScale = 20e6, autoscale = False,
         valMin = 0.0, valMax = 1.0
     ):
-        
-        MooDrawable.__init__( self, fieldInfo, field = field, 
-                relativeObj = relativeObj, maxLineWidth = maxLineWidth, 
-                colormap = colormap, lenScale = lenScale, 
-                diaScale = diaScale, autoscale = autoscale, 
+
+        MooDrawable.__init__( self, fieldInfo, field = field,
+                relativeObj = relativeObj, maxLineWidth = maxLineWidth,
+                colormap = colormap, lenScale = lenScale,
+                diaScale = diaScale, autoscale = autoscale,
                 valMin = valMin, valMax = valMax )
         self.mooObj = mooObj
         self.updateCoords()
