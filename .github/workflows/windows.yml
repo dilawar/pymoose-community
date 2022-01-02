@@ -25,7 +25,7 @@ jobs:
         cd build
         PYTHON=$(which python)
         $PYTHON -m pip install pip wheel setuptools --upgrade
-        $PYTHON -m pip install numpy pytest matplotlib
+        $PYTHON -m pip install numpy pytest matplotlib conan
         $PYTHON -m pip install python-libsbml pyneuroml
         cmake -DPython3_EXECUTABLE=$PYTHON ..
         cmake --build . --config Release

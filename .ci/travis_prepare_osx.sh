@@ -32,9 +32,9 @@ PYTHON3=$(which python)
 
 brew unlink numpy && brew link numpy || echo "Failed to link numpy"
 
-$PYTHON3 -m pip install pip setuptools wheel --upgrade 
-$PYTHON3 -m pip install matplotlib 
-$PYTHON3 -m pip install pyNeuroML libNeuroML
+$PYTHON3 -m pip install pip conan setuptools wheel --upgrade
+$PYTHON3 -m pip install matplotlib
+$PYTHON3 -m pip install pyNeuroML libNeuroML || echo "Failed to install neuroml"
 $PYTHON3 -m pip install scipy
 $PYTHON3 -m pip install pylint
 $PYTHON3 -m pip install pytest
