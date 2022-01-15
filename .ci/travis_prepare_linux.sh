@@ -1,9 +1,6 @@
 #!/bin/bash -
 #
-#   DESCRIPTION:  Prepare linux build environment on travis.
-#         NOTES: Always run with sudo permission.
-#        AUTHOR: Dilawar Singh (), dilawars@ncbs.res.in
-#  ORGANIZATION: NCBS Bangalore
+#        AUTHOR: Dilawar Singh (), dilawar.s.rajput@gmail.com
 #       CREATED: 01/02/2017 10:10:02 AM
 
 set -e -x

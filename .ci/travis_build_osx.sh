@@ -1,21 +1,8 @@
 #!/bin/bash -
-#===============================================================================
-#
-#          FILE: travis_build_linux.sh
-#
-#         USAGE: ./travis_build_linux.sh
-#
-#   DESCRIPTION:  Build  on linux environment.
-#
-#       OPTIONS: ---
-#  REQUIREMENTS: ---
-#          BUGS: ---
-#         NOTES: ---
-#        AUTHOR: Dilawar Singh (), dilawars@ncbs.res.in
-#  ORGANIZATION: NCBS Bangalore
+
+#        AUTHOR: Dilawar Singh (), dilawar.s.rajput@gmail.com
 #       CREATED: 01/02/2017 10:11:46 AM
 #      REVISION:  ---
-#===============================================================================
 
 set -o nounset                              # Treat unset variables as an error
 set -e
@@ -34,7 +21,7 @@ NPROC=3
     mkdir -p $BUILDDIR && cd $BUILDDIR \
         && cmake -DPYTHON_EXECUTABLE=$PYTHON3 \
         ..
-    make pylint -j$NPROC
+
     make -j$NPROC && MOOSE_NUM_THREAD=$NPROC ctest --output-on-failure -j$NPROC
 
     cd .. # Now with boost.
