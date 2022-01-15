@@ -10,6 +10,7 @@ brew install hdf5
 brew install python
 brew install numpy
 brew install boost
+brew install doxygen
 
 PYTHON3=$(which python)
 
